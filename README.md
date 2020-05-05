@@ -16,7 +16,7 @@ This project covers the development of an autonomous vehicle platform in a simul
    - joint_state_publisher_gui
    - [ros_controller](http://wiki.ros.org/ros_control#Install)
 	 
-2. Python 2.7
+2. [Python 2.7](https://www.python.org/download/releases/2.7/)
    - [pip](https://pypi.org/project/pip/)
    - [NumPy](https://pypi.org/project/numpy/)
   
