@@ -101,7 +101,6 @@ circle_road_gen.py is a custom script which will generate the <point> coordinate
    - Type `cd catkin_ws`
    
 2. Launch 
-   - Type `roslaunch ngeeann_av_description gazebo.launch`
    - Type `roslaunch ngeeann_av_description road.launch`
 
 ## Launching the models into Rviz
