@@ -21,6 +21,7 @@ This project covers the development of an autonomous vehicle platform in a simul
    - [NumPy](https://pypi.org/project/numpy/)
   
 3. [Gazebo 7.1](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
+   - [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
 
 4. [Git](https://git-scm.com/download/linux)
 
@@ -60,7 +61,10 @@ This project covers the development of an autonomous vehicle platform in a simul
     - `sudo apt-get install joint-state-publisher-gui`
   
 12. Install [ros_controller](http://wiki.ros.org/ros_control#Install)
-    - `sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers`
+    - `sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers
+    
+13. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
+    - `sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control`
     
 ## Usage
 1. Create catkin workspace
