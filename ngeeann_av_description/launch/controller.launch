@@ -1,0 +1,29 @@
+<launch>
+
+
+
+
+<rosparam file="$(find ngeeann_av_description)/config/controller.yaml" command="load"/>
+
+<!--
+<node name="controller_spawner" ns="/ngeeann_av" output="screen" pkg="controller_manager" respawn="false" type="spawner" args="br_axle_position_controller bl_axle_position_controller fr_axle_position_controller fl_axle_position_controller r_steer_position_controller l_steer_position_controller joint_state_controller "/>
+-->
+
+  <!-- load the controllers -->
+<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+	output="screen" ns="/ngeeann_av"
+	args="br_axle_position_controller 
+	bl_axle_position_controller 
+	fr_axle_position_controller 
+	fl_axle_position_controller 
+	r_steer_position_controller 
+	l_steer_position_controller 
+	joint_state_controller "/>
+
+
+
+<node name="robot_state_publisher" output="screen" pkg="robot_state_publisher" respawn="false" type="robot_state_publisher">
+  <remap from="/joint_states" to="/ngeeann_av/joint_states"/>
+</node>
+
+</launch>
