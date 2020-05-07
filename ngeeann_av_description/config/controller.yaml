@@ -1,4 +1,4 @@
-ngeeann_av_controller:
+ngeeann_av:
   # Publish all joint states -----------------------------------
   joint_state_controller:
     type: joint_state_controller/JointStateController
@@ -6,26 +6,26 @@ ngeeann_av_controller:
 
   # Position Controllers --------------------------------------
   br_axle_position_controller:
-    type: effort_controllers/JointPositionController
+    type: effort_controllers/JointVelocityController
     joint: br_axle
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    pid: {p: 30.0, i: 0.01, d: 0.01}
   bl_axle_position_controller:
-    type: effort_controllers/JointPositionController
+    type: effort_controllers/JointVelocityController
     joint: bl_axle
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    pid: {p: 30.0, i: 0.01, d: 0.01}
   fr_axle_position_controller:
-    type: effort_controllers/JointPositionController
+    type: effort_controllers/JointVelocityController
     joint: fr_axle
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    pid: {p: 30.0, i: 0.01, d: 0.01}
   fl_axle_position_controller:
-    type: effort_controllers/JointPositionController
+    type: effort_controllers/JointVelocityController
     joint: fl_axle
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    pid: {p: 30.0, i: 0.01, d: 0.01}
   r_steer_position_controller:
     type: effort_controllers/JointPositionController
     joint: r_steer
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    pid: {p: 2000.0, i: 0.01, d: 10.0}
   l_steer_position_controller:
     type: effort_controllers/JointPositionController
     joint: l_steer
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    pid: {p: 2000.0, i: 0.01, d: 10.0}
