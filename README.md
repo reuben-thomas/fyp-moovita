@@ -18,7 +18,7 @@ This project covers the development of an autonomous vehicle platform in a simul
 	 
 2. [Python 2.7](https://www.python.org/download/releases/2.7/)
    - [pip](https://pypi.org/project/pip/)
-   - [NumPy](https://pypi.org/project/numpy/)
+   - [NumPy](https://pypi.org/project/numpy/) (Not required if you do not plan to use circle_road_gen.py)
   
 3. [Gazebo 7.1](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
    - [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
