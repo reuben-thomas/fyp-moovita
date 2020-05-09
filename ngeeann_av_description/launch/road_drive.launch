@@ -3,16 +3,16 @@
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
   	<arg name="world_name" value="$(find ngeeann_av_description)/worlds/road.world"/>
-    <arg name="paused" value="true"/>
+    <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
     <arg name="headless" value="false"/>
     <arg name="debug" value="false"/>
   </include>
+  
+  <include file="$(find ngeeann_av_description)/launch/controller.launch"/>
 
   <!-- Spawn a robot into Gazebo -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 101.835 -z 0.469362 -model ngeeann_av" />
-
-
 
 </launch>
