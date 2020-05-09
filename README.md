@@ -110,3 +110,19 @@ circle_road_gen.py is a custom script which will generate the <point> coordinate
    
 2. Launch 
    - Type `roslaunch ngeeann_av_description display.launch`
+
+## Running Gazebo parallel with Rviz
+1. Go to your catkin workspace
+   - Launch your terminal
+   - Type `cd catkin_ws`
+   
+2. Launch 
+   - Type `roslaunch ngeeann_av_description road_display.launch`
+   
+   ## Running Gazebo parallel with ros_control
+1. Go to your catkin workspace
+   - Launch your terminal
+   - Type `cd catkin_ws`
+   
+2. Launch 
+   - Type `roslaunch ngeeann_av_description road_drive.launch`
