@@ -1,8 +1,5 @@
 <launch>
 
-
-
-
 <rosparam file="$(find ngeeann_av_description)/config/controller.yaml" command="load"/>
 
 <!--
@@ -19,8 +16,6 @@
 	r_steer_position_controller 
 	l_steer_position_controller 
 	joint_state_controller "/>
-
-
 
 <node name="robot_state_publisher" output="screen" pkg="robot_state_publisher" respawn="false" type="robot_state_publisher">
   <remap from="/joint_states" to="/ngeeann_av/joint_states"/>

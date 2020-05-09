@@ -1,7 +1,6 @@
 <launch>
   <param command="$(find xacro)/xacro $(find ngeeann_av_description)/urdf/ngeeann_av.xacro" name="robot_description"/>
 
-  
   <!-- original launch -
   <node args="-param robot_description -urdf -model ngeeann_av" name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"/>
 ` -->
@@ -17,5 +16,4 @@
     <!-- new launch -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -z 0.469362 -model ngeeann_av" />
 
-  
 </launch>
