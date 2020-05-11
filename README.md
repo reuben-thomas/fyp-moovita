@@ -61,7 +61,7 @@ This project covers the development of an autonomous vehicle platform in a simul
     - `sudo apt-get install ros-kinetic-joint-state-publisher-gui`
   
 12. Install [ros_controller](http://wiki.ros.org/ros_control#Install)
-    - `sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers
+    - `sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers`
     
 13. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
     - `sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control`
