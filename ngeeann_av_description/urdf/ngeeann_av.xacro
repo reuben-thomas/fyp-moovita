@@ -6,7 +6,6 @@
 <xacro:include filename="$(find ngeeann_av_description)/urdf/ngeeann_av.gazebo" />
 <xacro:include filename="$(find ngeeann_av_description)/urdf/hokuyo.xacro" />
 <xacro:include filename="$(find ngeeann_av_description)/urdf/camera.xacro" />
-<xacro:property name="camera_link" value="0.05" />
 
 <link name="base_link">
   <inertial>
