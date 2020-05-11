@@ -7,8 +7,6 @@
 <xacro:include filename="$(find ngeeann_av_description)/urdf/hokuyo.xacro" />
 <xacro:include filename="$(find ngeeann_av_description)/urdf/camera.xacro" />
 
-<xacro:property name="camera_link" value="0.05" />
-
 <link name="base_link">
   <inertial>
     <origin rpy="0 0 0" xyz="1.0428176421109296e-06 0.07306931261625653 0.18163727113784936"/>
@@ -184,7 +182,7 @@
   <axis xyz="-1.0 0.0 0.0"/>
 </joint>
 
-<joint name="r_steer" type="revolute">
+<joint name="fr_steer" type="revolute">
   <origin rpy="0 0 0" xyz="0.825001 1.517363 -0.144363"/>
   <parent link="base_link"/>
   <child link="r_steer_1"/>
@@ -192,7 +190,23 @@
   <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
 </joint>
 
-<joint name="l_steer" type="revolute">
+<joint name="fl_steer" type="revolute">
+  <origin rpy="0 0 0" xyz="-0.824999 1.517363 -0.144363"/>
+  <parent link="base_link"/>
+  <child link="l_steer_1"/>
+  <axis xyz="-0.0 -0.0 1.0"/>
+  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
+</joint>
+
+<joint name="fr_steer" type="revolute">
+  <origin rpy="0 0 0" xyz="0.825001 1.517363 -0.144363"/>
+  <parent link="base_link"/>
+  <child link="r_steer_1"/>
+  <axis xyz="-0.0 -0.0 1.0"/>
+  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
+</joint>
+
+<joint name="fl_steer" type="revolute">
   <origin rpy="0 0 0" xyz="-0.824999 1.517363 -0.144363"/>
   <parent link="base_link"/>
   <child link="l_steer_1"/>
