@@ -6,12 +6,13 @@
 <xacro:include filename="$(find ngeeann_av_description)/urdf/ngeeann_av.gazebo" />
 <xacro:include filename="$(find ngeeann_av_description)/urdf/hokuyo.xacro" />
 <xacro:include filename="$(find ngeeann_av_description)/urdf/camera.xacro" />
+<xacro:property name="camera_link" value="0.05" />
 
 <link name="base_link">
   <inertial>
-    <origin rpy="0 0 0" xyz="1.0428176421109296e-06 0.07306931261625653 0.18163727113784936"/>
-    <mass value="1577.05203547754"/>
-    <inertia ixx="1997.85793" ixy="-3e-05" ixz="-1e-06" iyy="442.769208" iyz="62.520613" izz="2238.052394"/>
+    <origin rpy="0 0 0" xyz="1.04282e-06 0.07307 0.1816"/>
+    <mass value="1580"/>
+    <inertia ixx="1997.8579" ixy="-3e-05" ixz="-1e-06" iyy="442.7692" iyz="62.5206" izz="2238.0524"/>
   </inertial>
   <visual>
     <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -30,19 +31,19 @@
 
 <link name="br_1">
   <inertial>
-    <origin rpy="0 0 0" xyz="-0.03773558708170954 1.5929496499644813e-07 -1.5929501642752975e-07"/>
-    <mass value="24.339605554758485"/>
+    <origin rpy="0 0 0" xyz="-0.0377 1.5929e-07 -1.5929e-07"/>
+    <mass value="24.5"/>
     <inertia ixx="1.845139" ixy="-0.0" ixz="-0.0" iyy="1.049606" iyz="0.0" izz="1.049606"/>
   </inertial>
   <visual>
-    <origin rpy="0 0 0" xyz="-0.875001 1.013637 0.144363"/>
+    <origin rpy="0 0 0" xyz="-0.8750 1.0136 0.1444"/>
     <geometry>
       <mesh filename="package://ngeeann_av_description/meshes/br_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="darkgrey"/>
   </visual>
   <collision>
-    <origin rpy="0 0 0" xyz="-0.875001 1.013637 0.144363"/>
+    <origin rpy="0 0 0" xyz="-0.8750 1.0136 0.1444"/>
     <geometry>
       <mesh filename="package://ngeeann_av_description/meshes/br_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -51,19 +52,19 @@
 
 <link name="bl_1">
   <inertial>
-    <origin rpy="0 0 0" xyz="0.03773572073363374 1.5929503027756198e-07 -1.5929501642752975e-07"/>
-    <mass value="24.339605554758485"/>
-    <inertia ixx="1.845139" ixy="-0.0" ixz="0.0" iyy="1.049606" iyz="0.0" izz="1.049606"/>
+    <origin rpy="0 0 0" xyz="-0.0377 1.5929e-07 -1.5929e-07"/>
+    <mass value="24.5"/>
+    <inertia ixx="1.845139" ixy="-0.0" ixz="-0.0" iyy="1.049606" iyz="0.0" izz="1.049606"/>
   </inertial>
   <visual>
-    <origin rpy="0 0 0" xyz="0.874999 1.013637 0.144363"/>
+    <origin rpy="0 0 0" xyz="0.8750 1.0136 0.1444"/>
     <geometry>
       <mesh filename="package://ngeeann_av_description/meshes/bl_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="darkgrey"/>
   </visual>
   <collision>
-    <origin rpy="0 0 0" xyz="0.874999 1.013637 0.144363"/>
+    <origin rpy="0 0 0" xyz="0.8750 1.0136 0.1444"/>
     <geometry>
       <mesh filename="package://ngeeann_av_description/meshes/bl_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -72,19 +73,19 @@
 
 <link name="fr_1">
   <inertial>
-    <origin rpy="0 0 0" xyz="-0.03773558708161029 1.5929496499644813e-07 -1.5929500610245562e-07"/>
-    <mass value="24.339605554758485"/>
+    <origin rpy="0 0 0" xyz="-0.0377 1.5929e-07 -1.5929e-07"/>
+    <mass value="24.5"/>
     <inertia ixx="1.845139" ixy="-0.0" ixz="-0.0" iyy="1.049606" iyz="0.0" izz="1.049606"/>
   </inertial>
   <visual>
-    <origin rpy="0 0 0" xyz="-0.875001 -1.517363 0.144363"/>
+    <origin rpy="0 0 0" xyz="-0.8750 -1.5174 0.1444"/>
     <geometry>
       <mesh filename="package://ngeeann_av_description/meshes/fr_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="darkgrey"/>
   </visual>
   <collision>
-    <origin rpy="0 0 0" xyz="-0.875001 -1.517363 0.144363"/>
+    <origin rpy="0 0 0" xyz="-0.8750 -1.5174 0.1444"/>
     <geometry>
       <mesh filename="package://ngeeann_av_description/meshes/fr_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -93,19 +94,19 @@
 
 <link name="fl_1">
   <inertial>
-    <origin rpy="0 0 0" xyz="0.037735720733733547 1.5929503005551737e-07 -1.5929500610245562e-07"/>
-    <mass value="24.339605554758485"/>
-    <inertia ixx="1.845139" ixy="-0.0" ixz="0.0" iyy="1.049606" iyz="0.0" izz="1.049606"/>
+    <origin rpy="0 0 0" xyz="-0.0377 1.5929e-07 -1.5929e-07"/>
+    <mass value="24.5"/>
+    <inertia ixx="1.845139" ixy="-0.0" ixz="-0.0" iyy="1.049606" iyz="0.0" izz="1.049606"/>
   </inertial>
   <visual>
-    <origin rpy="0 0 0" xyz="0.874999 -1.517363 0.144363"/>
+    <origin rpy="0 0 0" xyz="0.8750 -1.5174 0.1444"/>
     <geometry>
       <mesh filename="package://ngeeann_av_description/meshes/fl_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="darkgrey"/>
   </visual>
   <collision>
-    <origin rpy="0 0 0" xyz="0.874999 -1.517363 0.144363"/>
+    <origin rpy="0 0 0" xyz="0.8750 -1.5174 0.1444"/>
     <geometry>
       <mesh filename="package://ngeeann_av_description/meshes/fl_1.stl" scale="0.001 0.001 0.001"/>
     </geometry>
@@ -114,55 +115,29 @@
 
 <link name="r_steer_1">
   <inertial>
-    <origin rpy="0 0 0" xyz="0.0033805898024475978 1.5929497432232154e-07 0.021619317728612572"/>
-    <mass value="0.2193706942019361"/>
-    <inertia ixx="0.000163" ixy="-0.0" ixz="3e-06" iyy="0.000202" iyz="0.0" izz="0.000288"/>
+    <origin rpy="0 0 0" xyz="0.003381 1.5929e-07 0.02162"/>
+    <mass value="1"/>
+    <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
   </inertial>
-  <visual>
-    <origin rpy="0 0 0" xyz="-0.825001 -1.517363 0.144363"/>
-    <geometry>
-      <mesh filename="package://ngeeann_av_description/meshes/r_steer_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-    <material name="darkgrey"/>
-  </visual>
-  <collision>
-    <origin rpy="0 0 0" xyz="-0.825001 -1.517363 0.144363"/>
-    <geometry>
-      <mesh filename="package://ngeeann_av_description/meshes/r_steer_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-  </collision>
 </link>
 
 <link name="l_steer_1">
   <inertial>
-    <origin rpy="0 0 0" xyz="-0.0033804561503246733 1.5929503982548e-07 0.021619317728612572"/>
-    <mass value="0.2193706942019361"/>
-    <inertia ixx="0.000163" ixy="-0.0" ixz="-3e-06" iyy="0.000202" iyz="0.0" izz="0.000288"/>
+    <origin rpy="0 0 0" xyz="0.003381 1.5929e-07 0.02162"/>
+    <mass value="1"/>
+    <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
   </inertial>
-  <visual>
-    <origin rpy="0 0 0" xyz="0.824999 -1.517363 0.144363"/>
-    <geometry>
-      <mesh filename="package://ngeeann_av_description/meshes/l_steer_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-    <material name="darkgrey"/>
-  </visual>
-  <collision>
-    <origin rpy="0 0 0" xyz="0.824999 -1.517363 0.144363"/>
-    <geometry>
-      <mesh filename="package://ngeeann_av_description/meshes/l_steer_1.stl" scale="0.001 0.001 0.001"/>
-    </geometry>
-  </collision>
 </link>
 
 <joint name="br_axle" type="continuous">
-  <origin rpy="0 0 0" xyz="0.875001 -1.013637 -0.144363"/>
+  <origin rpy="0 0 0" xyz="0.8750 -1.013637 -0.144363"/>
   <parent link="base_link"/>
   <child link="br_1"/>
-  <axis xyz="1.0 -0.0 -0.0"/>
+  <axis xyz="-1.0 0.0 0.0"/>
 </joint>
 
 <joint name="bl_axle" type="continuous">
-  <origin rpy="0 0 0" xyz="-0.874999 -1.013637 -0.144363"/>
+  <origin rpy="0 0 0" xyz="-0.8750 -1.013637 -0.144363"/>
   <parent link="base_link"/>
   <child link="bl_1"/>
   <axis xyz="-1.0 0.0 0.0"/>
@@ -172,7 +147,7 @@
   <origin rpy="0 0 0" xyz="0.05 0.0 0.0"/>
   <parent link="r_steer_1"/>
   <child link="fr_1"/>
-  <axis xyz="1.0 -0.0 -0.0"/>
+  <axis xyz="-1.0 0.0 0.0"/>
 </joint>
 
 <joint name="fl_axle" type="continuous">
@@ -182,35 +157,21 @@
   <axis xyz="-1.0 0.0 0.0"/>
 </joint>
 
-<joint name="fr_steer" type="revolute">
-  <origin rpy="0 0 0" xyz="0.825001 1.517363 -0.144363"/>
+<joint name="r_steer" type="revolute">
+  <origin rpy="0 0 0" xyz="0.8250 1.517363 -0.144363"/>
   <parent link="base_link"/>
   <child link="r_steer_1"/>
-  <axis xyz="-0.0 -0.0 1.0"/>
+  <axis xyz="0.0 0.0 1.0"/>
+  <dynamics damping="0.7" friction="0.7"/>
   <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
 </joint>
 
-<joint name="fl_steer" type="revolute">
-  <origin rpy="0 0 0" xyz="-0.824999 1.517363 -0.144363"/>
+<joint name="l_steer" type="revolute">
+  <origin rpy="0 0 0" xyz="-0.8250 1.517363 -0.144363"/>
   <parent link="base_link"/>
   <child link="l_steer_1"/>
-  <axis xyz="-0.0 -0.0 1.0"/>
-  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
-</joint>
-
-<joint name="fr_steer" type="revolute">
-  <origin rpy="0 0 0" xyz="0.825001 1.517363 -0.144363"/>
-  <parent link="base_link"/>
-  <child link="r_steer_1"/>
-  <axis xyz="-0.0 -0.0 1.0"/>
-  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
-</joint>
-
-<joint name="fl_steer" type="revolute">
-  <origin rpy="0 0 0" xyz="-0.824999 1.517363 -0.144363"/>
-  <parent link="base_link"/>
-  <child link="l_steer_1"/>
-  <axis xyz="-0.0 -0.0 1.0"/>
+  <axis xyz="0.0 0.0 1.0"/>
+  <dynamics damping="0.7" friction="0.7"/>
   <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
 </joint>
 
