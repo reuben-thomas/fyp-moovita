@@ -58,7 +58,7 @@ This project covers the development of an autonomous vehicle platform in a simul
     - `sudo apt-get install joint-state-publisher`
   
 11. Install joint_state_publisher_gui
-    - `sudo apt-get install joint-state-publisher-gui`
+    - `sudo apt-get install ros-kinetic-joint-state-publisher-gui`
   
 12. Install [ros_controller](http://wiki.ros.org/ros_control#Install)
     - `sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers
