@@ -7,7 +7,6 @@ angle = input("Angle in radians: ")
 
 print("\nRadius: ", r, "\nAngle: ", angle)
 
-
 theta = 0
 
 for n in np.arange(0, 2*math.pi, angle):
