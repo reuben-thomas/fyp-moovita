@@ -3,12 +3,8 @@
 <launch>
   <arg name="cmd_timeout" default="0.5"/>
 
-<group ns="$(arg /ngeeann_av)">
+<group ns= "/ngeeann_av" >
   <include file="$(find ngeeann_av_control)/launch/road_drive.launch"/>
-
-    <!-- Load the joint controllers. One of these publishes the joint states
-         to joint_states. -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" args="$(find ngeeann_av_control)/config/controller.yaml"/>
 
     <!-- Control the steering, axle, and shock absorber joints. -->
     <node name="ackermann_controller" pkg="ngeeann_av_control" type="ackermann_controller.py">
