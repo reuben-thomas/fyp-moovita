@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="namespace"   default="ngeeann_av"/>
+  <arg name="cmd_timeout" default="0.5"/>
+
+  <!-- load robot description -->
+  <include file="$(find ackermann_vehicle_description)/launch/ackermann_vehicle.launch">
+    <arg name="namespace" value="$(arg namespace)"/>
+  </include>
+
+  <group ns="$(arg namespace)">
+
+    <!-- Create the world. -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  	<arg name="world_name" value="$(find ngeeann_av_description)/worlds/road.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+    <!-- Spawn the vehicle. -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 101.835 -z 0.469362 -model ngeeann_av" />
+
+
+    <!-- Load the joint controllers. One of these publishes the joint states
+         to joint_states. -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner"
+          args="$(find ngeeann_av_control)/config/controller.yaml"/>
+
+    <!-- Control the steering and axle -->
+    <node name="ackermann_controller" pkg="ackermann_vehicle_gazebo"
+          type="ackermann_controller.py">
+      <param name="cmd_timeout" value="$(arg cmd_timeout)"/>
+      <rosparam file="$(find ngeeann_av_control)/config/ackermann_params.yaml" command="load"/>
+    </node>
+
+  </group>
+
+</launch>
