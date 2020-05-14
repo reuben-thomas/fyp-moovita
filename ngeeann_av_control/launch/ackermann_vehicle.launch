@@ -3,16 +3,14 @@
 <launch>
   <arg name="cmd_timeout" default="0.5"/>
 
-  <include file="$(find ngeeann_av_control)/launch/road_drive.launch">
+  <include file="$(find ngeeann_av_control)/launch/road_drive.launch"/>
 
     <!-- Load the joint controllers. One of these publishes the joint states
          to joint_states. -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner"
-          args="$(find ngeeann_av_control)/config/controller.yaml"/>
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" args="$(find ngeeann_av_control)/config/controller.yaml"/>
 
     <!-- Control the steering, axle, and shock absorber joints. -->
-    <node name="ackermann_controller" pkg="ackermann_vehicle_gazebo"
-          type="ackermann_controller.py">
+    <node name="ackermann_controller" pkg="ackermann_vehicle_gazebo" type="ackermann_controller.py">
       <param name="cmd_timeout" value="$(arg cmd_timeout)"/>
       <rosparam file="$(find ngeeann_av_control)/config/ackermann_params.yaml" command="load"/>
     </node>
