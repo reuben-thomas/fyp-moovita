@@ -3,6 +3,7 @@
 <launch>
   <arg name="cmd_timeout" default="0.5"/>
 
+<group ns="$(arg /ngeeann_av)">
   <include file="$(find ngeeann_av_control)/launch/road_drive.launch"/>
 
     <!-- Load the joint controllers. One of these publishes the joint states
@@ -14,5 +15,5 @@
       <param name="cmd_timeout" value="$(arg cmd_timeout)"/>
       <rosparam file="$(find ngeeann_av_control)/config/ackermann_params.yaml" command="load"/>
     </node>
-
+</group>
 </launch>
