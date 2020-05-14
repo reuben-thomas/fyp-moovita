@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <!-- load robot description -->
+  <include file="$(find ackermann_vehicle_description)/launch/ackermann_vehicle.launch">
+    <arg name="namespace" value="$(arg namespace)"/>
+  </include>
+
+    <!-- Create the world. -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  	<arg name="world_name" value="$(find ngeeann_av_description)/worlds/road.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+    <!-- Spawn the vehicle. -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 101.835 -z 0.469362 -model ngeeann_av" />
+
+    <!-- Load the joint controllers. One of these publishes the joint states
+         to joint_states. -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner"
+          args="$(find ackermann_vehicle_gazebo)/config/em_3905_joint_ctrlr_params.yaml"/>
+
+    <!-- Control the steering, axle, and shock absorber joints. -->
+    <node name="ackermann_controller" pkg="ackermann_vehicle_gazebo"
+          type="ackermann_controller.py">
+      <param name="cmd_timeout" value="$(arg cmd_timeout)"/>
+      <rosparam file="$(find ackermann_vehicle_gazebo)/config/em_3905_ackermann_ctrlr_params.yaml" command="load"/>
+    </node>
+
+    <!-- launch stereo image proc pipeline for rectification -->
+    <group if="$(arg rectify)">
+      <node name="stereo_image_proc" pkg="stereo_image_proc" type="stereo_image_proc" ns="stereo_camera" />
+      <node name="stereo_view" pkg="image_view" type="stereo_view" output="screen"
+            args="stereo:=stereo_camera image:=/image_rect_color" if="$(arg stereo_view)"/>
+    </group>
+
+    <!-- launch camera calibrator if checkerboard world is selected -->
+    <include if="$(eval world=='checkerboard')" file="$(find ackermann_vehicle_gazebo)/launch/stereo_camera_calibration.launch" />
+
+  </group>
+
+</launch>
