@@ -10,7 +10,7 @@
     <arg name="debug" value="false"/>
   </include>
   
-  <include file="$(find ngeeann_av_control)/launch/controller.launch"/>
+  <!-- <include file="$(find ngeeann_av_control)/launch/controller.launch"/> -->
 
   <!-- Spawn a robot into Gazebo -->
   <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 101.835 -z 0.469362 -model ngeeann_av" />
