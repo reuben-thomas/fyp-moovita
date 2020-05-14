@@ -1,10 +1,11 @@
-"""
-ackermann_controller.py
+#!/usr/bin/env python
+
+"""ackermann_controller
 
 Control the wheels of a vehicle with Ackermann steering.
 
 Subscribed Topics:
-    ackermann_cmd (ackermann_msgs/AckermannDriveStamped)
+    ackermann_cmd (ackermann_msgs/AckermannDrive)
         Ackermann command. It contains the vehicle's desired speed and steering
         angle.
 
@@ -21,6 +22,9 @@ Published Topics:
         Command for the left rear axle controller.
     <right rear axle controller name>/command (std_msgs/Float64)
         Command for the right rear axle controller.
+    <shock absorber controller name>/command (std_msgs/Float64)
+        One of these topics exists for each shock absorber. They are latched
+        topics.
 
 Services Called:
     controller_manager/list_controllers (controller_manager_msgs/
@@ -56,25 +60,28 @@ Parameters:
         that axle will not have a controller. This allows the control of
         front-wheel, rear-wheel, and four-wheel drive vehicles.
 
-    ~left_front_wheel/diameter (float, default: 1.0)
+    ~left_front_wheel/diameter (double, default: 1.0)
     ~right_front_wheel/diameter
     ~left_rear_wheel/diameter
     ~right_rear_wheel/diameter
         Wheel diameters. Each diameter must be greater than zero. Unit: meter.
 
+    ~shock_absorbers (sequence of mappings, default: empty)
+        Zero or more shock absorbers.
+
         Key-Value Pairs:
 
         controller_name (string)
             Controller name.
-        equilibrium_position (float, default: 0.0)
+        equilibrium_position (double, default: 0.0)
             Equilibrium position. Unit: meter.
 
-    ~cmd_timeout (float, default: 0.5)
+    ~cmd_timeout (double, default: 0.5)
         If ~cmd_timeout is greater than zero and this node does not receive a
         command for more than ~cmd_timeout seconds, vehicle motion is paused
         until a command is received. If ~cmd_timeout is less than or equal to
         zero, the command timeout is disabled.
-    ~publishing_frequency (float, default: 30.0)
+    ~publishing_frequency (double, default: 30.0)
         Joint command publishing frequency. It must be greater than zero.
         Unit: hertz.
 
@@ -89,7 +96,7 @@ Required tf Transforms:
         Specifies the position of the left rear wheel in the right rear
         wheel's frame.
 
-Copyright (c) 2013 Wunderkammer Laboratory
+Copyright (c) 2013-2015 Wunderkammer Laboratory
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -104,8 +111,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-#!/usr/bin/env python
-
 import math
 import numpy
 import threading
@@ -115,7 +120,7 @@ from math import pi
 import rospy
 import tf
 
-from ackermann_msgs.msg import AckermannDriveStamped
+from ackermann_msgs.msg import AckermannDrive
 from std_msgs.msg import Float64
 from controller_manager_msgs.srv import ListControllers
 
@@ -137,20 +142,50 @@ class _AckermannCtrlr(object):
         # Wheels
         (left_steer_link_name, left_steer_ctrlr_name,
          left_front_axle_ctrlr_name, self._left_front_inv_circ) = \
-         self._get_front_wheel_params("left")
+                self._get_front_wheel_params("left")
+
         (right_steer_link_name, right_steer_ctrlr_name,
          right_front_axle_ctrlr_name, self._right_front_inv_circ) = \
-         self._get_front_wheel_params("right")
+                self._get_front_wheel_params("right")
+
         (left_rear_link_name, left_rear_axle_ctrlr_name,
          self._left_rear_inv_circ) = \
-         self._get_rear_wheel_params("left")
+                self._get_rear_wheel_params("left")
+
         (self._right_rear_link_name, right_rear_axle_ctrlr_name,
          self._right_rear_inv_circ) = \
-         self._get_rear_wheel_params("right")
+                self._get_rear_wheel_params("right")
 
         list_ctrlrs = rospy.ServiceProxy("controller_manager/list_controllers",
                                          ListControllers)
         list_ctrlrs.wait_for_service()
+
+        # Shock absorbers
+        shock_param_list = rospy.get_param("~shock_absorbers", [])
+        self._shock_pubs = []
+        try:
+            for shock_params in shock_param_list:
+                try:
+                    ctrlr_name = shock_params["controller_name"]
+                    try:
+                        eq_pos = shock_params["equilibrium_position"]
+                    except:
+                        eq_pos = self._DEF_EQ_POS
+                    eq_pos = float(eq_pos)
+                except:
+                    rospy.logwarn("An invalid parameter was specified for a "
+                                  "shock absorber. The shock absorber will "
+                                  "not be used.")
+                    continue
+
+                pub = rospy.Publisher(ctrlr_name + "/command", Float64,
+                                      latch=True, queue_size=1)
+                _wait_for_ctrlr(list_ctrlrs, ctrlr_name)
+                pub.publish(eq_pos)
+                self._shock_pubs.append(pub)
+        except:
+            rospy.logwarn("The specified list of shock absorbers is invalid. "
+                          "No shock absorbers will be used.")
 
         # Command timeout
         try:
@@ -178,13 +213,12 @@ class _AckermannCtrlr(object):
         self._last_cmd_time = rospy.get_time()
 
         # _ackermann_cmd_lock is used to control access to _steer_ang,
-        # _steer_ang_vel, _speed, _accel, and _jerk.
+        # _steer_ang_vel, _speed, and _accel.
         self._ackermann_cmd_lock = threading.Lock()
         self._steer_ang = 0.0      # Steering angle
         self._steer_ang_vel = 0.0  # Steering angle velocity
         self._speed = 0.0
         self._accel = 0.0          # Acceleration
-        self._jerk = 0.0
 
         self._last_steer_ang = 0.0  # Last steering angle
         self._theta_left = 0.0      # Left steering joint angle
@@ -229,7 +263,7 @@ class _AckermannCtrlr(object):
             _create_axle_cmd_pub(list_ctrlrs, right_rear_axle_ctrlr_name)
 
         self._ackermann_cmd_sub = \
-            rospy.Subscriber("ackermann_cmd", AckermannDriveStamped,
+            rospy.Subscriber("ackermann_cmd", AckermannDrive,
                              self.ackermann_cmd_cb, queue_size=1)
 
     def spin(self):
@@ -248,19 +282,17 @@ class _AckermannCtrlr(object):
                 # vehicle.
                 steer_ang_changed, center_y = \
                     self._ctrl_steering(self._last_steer_ang, 0.0, 0.001)
-                self._ctrl_axles(0.0, 0.0, 0.0, 0.001, steer_ang_changed,
-                                 center_y)
+                self._ctrl_axles(0.0, 0.0, 0.0, steer_ang_changed, center_y)
             elif delta_t > 0.0:
                 with self._ackermann_cmd_lock:
                     steer_ang = self._steer_ang
                     steer_ang_vel = self._steer_ang_vel
                     speed = self._speed
                     accel = self._accel
-                    jerk = self._jerk
                 steer_ang_changed, center_y = \
                     self._ctrl_steering(steer_ang, steer_ang_vel, delta_t)
-                self._ctrl_axles(speed, accel, jerk, delta_t,
-                                 steer_ang_changed, center_y)
+                self._ctrl_axles(speed, accel, delta_t, steer_ang_changed,
+                                 center_y)
 
             # Publish the steering and axle joint commands.
             self._left_steer_cmd_pub.publish(self._theta_left)
@@ -281,16 +313,15 @@ class _AckermannCtrlr(object):
         """Ackermann driving command callback
 
         :Parameters:
-          ackermann_cmd : ackermann_msgs.msg.AckermannDriveStamped
+          ackermann_cmd : ackermann_msgs.msg.AckermannDrive
             Ackermann driving command.
         """
         self._last_cmd_time = rospy.get_time()
         with self._ackermann_cmd_lock:
-            self._steer_ang = ackermann_cmd.drive.steering_angle
-            self._steer_ang_vel = ackermann_cmd.drive.steering_angle_velocity
-            self._speed = ackermann_cmd.drive.speed
-            self._accel = ackermann_cmd.drive.acceleration
-            self._jerk = ackermann_cmd.drive.jerk
+            self._steer_ang = ackermann_cmd.steering_angle
+            self._steer_ang_vel = ackermann_cmd.steering_angle_velocity
+            self._speed = ackermann_cmd.speed
+            self._accel = ackermann_cmd.acceleration
 
     def _get_front_wheel_params(self, side):
         # Get front wheel parameters. Return a tuple containing the steering
@@ -341,7 +372,7 @@ class _AckermannCtrlr(object):
         while True:
             try:
                 trans, not_used = \
-                    tfl.lookupTransform(self._right_rear_link_name, link, 
+                    tfl.lookupTransform(self._right_rear_link_name, link,
                                         rospy.Time(0))
                 return numpy.array(trans)
             except:
@@ -375,27 +406,16 @@ class _AckermannCtrlr(object):
 
         return steer_ang_changed, center_y
 
-    def _ctrl_axles(self, speed, accel_limit, jerk_limit, delta_t,
-                    steer_ang_changed, center_y):
+    def _ctrl_axles(self, speed, accel_limit, delta_t, steer_ang_changed,
+                    center_y):
         # Control the axle joints.
 
         # Compute veh_speed, the vehicle's desired speed.
         if accel_limit > 0.0:
             # Limit the vehicle's acceleration.
-
-            if jerk_limit > 0.0:
-                if self._last_accel_limit > 0.0:
-                    jerk = (accel_limit - self._last_accel_limit) / delta_t
-                    jerk = max(-jerk_limit, min(jerk, jerk_limit))
-                    accel_limit_2 = self._last_accel_limit + jerk * delta_t
-                else:
-                    accel_limit_2 = accel_limit
-            else:
-                accel_limit_2 = accel_limit
-            self._last_accel_limit = accel_limit_2
-
+            self._last_accel_limit = accel_limit
             accel = (speed - self._last_speed) / delta_t
-            accel = max(-accel_limit_2, min(accel, accel_limit_2))
+            accel = max(-accel_limit, min(accel, accel_limit))
             veh_speed = self._last_speed + accel * delta_t
         else:
             self._last_accel_limit = accel_limit
@@ -452,7 +472,7 @@ def _create_axle_cmd_pub(list_ctrlrs, axle_ctrlr_name):
 def _create_cmd_pub(list_ctrlrs, ctrlr_name):
     # Create a command publisher.
     _wait_for_ctrlr(list_ctrlrs, ctrlr_name)
-    return rospy.Publisher(ctrlr_name + "/command", Float64, queue_size=10)
+    return rospy.Publisher(ctrlr_name + "/command", Float64, queue_size=1)
 
 
 def _get_steer_ang(phi):
