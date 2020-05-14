@@ -161,8 +161,8 @@
   <parent link="base_link"/>
   <child link="r_steer_1"/>
   <axis xyz="0.0 0.0 1.0"/>
-  <dynamics damping="0.7" friction="0.7"/>
-  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
+  <dynamics damping="0.01" friction="0.01"/>
+  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="100"/>
 </joint>
 
 <joint name="l_steer" type="revolute">
@@ -170,8 +170,8 @@
   <parent link="base_link"/>
   <child link="l_steer_1"/>
   <axis xyz="0.0 0.0 1.0"/>
-  <dynamics damping="0.7" friction="0.7"/>
-  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
+  <dynamics damping="0.01" friction="0.01"/>
+  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="100"/>
 </joint>
 
 </robot>
