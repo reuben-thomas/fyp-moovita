@@ -12,12 +12,12 @@ right_front_wheel:
 
 left_rear_wheel:
   link_name: bl_1
-  axle_controller_name: fr_axle_position_controller
+  axle_controller_name: bl_axle_position_controller
   diameter: 0.650
 
 right_rear_wheel:
   link_name: br_1
-  axle_controller_name: fr_axle_position_controller
+  axle_controller_name: br_axle_position_controller
   diameter: 0.650
 
 # The equilibrium position of each shock absorber is wheel_travel / 2.
