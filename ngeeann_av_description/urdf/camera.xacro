@@ -6,7 +6,7 @@
   <joint name="camera_joint" type="fixed">
     <axis xyz="0 0 0" />
     <origin xyz="0 2.45 0.07" rpy="0 0 1.5708"/>
-    <parent link="base_link"/>
+    <parent link="chassis_link"/>
     <child link="camera_link"/>
   </joint>
   

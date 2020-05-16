@@ -48,7 +48,7 @@ limitations under the License.
     <!-- Create the world. -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
       <arg name="world_name" value="$(find ngeeann_av_description)/worlds/road.world"/>
-      <arg name="paused" value="true"/>
+      <arg name="paused" value="false"/>
       <arg name="use_sim_time" value="true"/>
       <arg name="gui" value="true"/>
       <arg name="headless" value="false"/>
@@ -64,7 +64,7 @@ limitations under the License.
 
     <!-- Load the joint controllers. One of these publishes the joint states
          to joint_states. -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner"
+  <node name="controller_spawner" pkg="controller_manager" type="spawner"
           args="$(find ngeeann_av_control)/config/controller.yaml"/>
 
     <!-- Control the steering, axle, and shock absorber joints. -->
