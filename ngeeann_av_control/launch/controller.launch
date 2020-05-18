@@ -1,6 +1,6 @@
 <launch>
 
-<rosparam file="$(find ngeeann_av_control)/config/controller.yaml" command="load"/>
+<rosparam file="$(find ngeeann_av_control)/config/indiv_controller.yaml" command="load"/>
 
 <!--
 <node name="controller_spawner" ns="/ngeeann_av" output="screen" pkg="controller_manager" respawn="false" type="spawner" args="br_axle_position_controller bl_axle_position_controller fr_axle_position_controller fl_axle_position_controller r_steer_position_controller l_steer_position_controller joint_state_controller "/>
