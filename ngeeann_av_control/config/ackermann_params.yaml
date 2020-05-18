@@ -19,6 +19,3 @@ right_rear_wheel:
   link_name: br_1
   axle_controller_name: br_axle_position_controller
   diameter: 0.650
-
-# The equilibrium position of each shock absorber is wheel_travel / 2.
-# wheel_travel, defined in em_3905.urdf.xacro, is 0.084 meters.
