@@ -29,8 +29,7 @@ limitations under the License.
 
     <!-- Read joint positions from joint_states, then publish the vehicle's
          state to tf. -->
-    <node name="vehicle_state_publisher" pkg="robot_state_publisher"
-          type="robot_state_publisher">
+    <node name="vehicle_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
       <param name="publish_frequency" value="30.0"/>
     </node>
   </group>
