@@ -67,6 +67,8 @@ limitations under the License.
   <node name="controller_spawner" pkg="controller_manager" type="spawner"
           args="$(find ngeeann_av_control)/config/controller.yaml"/>
 
+
+
     <!-- Control the steering, axle, and shock absorber joints. -->
     <node name="ackermann_controller" pkg="ngeeann_av_control"
           type="ackermann_controller.py">
@@ -74,4 +76,7 @@ limitations under the License.
       <rosparam file="$(find ngeeann_av_control)/config/ackermann_params.yaml" command="load"/>
     </node>
   </group>
+
+  <include file="$(find ngeeann_av_description)/launch/display.launch"/>
+
 </launch>
