@@ -47,7 +47,7 @@ limitations under the License.
   <group ns="/ngeeann_av">
     <!-- Create the world. -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-      <arg name="world_name" value="$(find ngeeann_av_description)/worlds/road.world"/>
+      <arg name="world_name" value="$(find ngeeann_av_description)/worlds/populated_road.world"/>
       <arg name="paused" value="false"/>
       <arg name="use_sim_time" value="true"/>
       <arg name="gui" value="true"/>
