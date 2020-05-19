@@ -2,8 +2,6 @@ from __future__ import print_function
 import math
 import numpy as np
 
-##I am leaving this comment here
-
 r = input("Radius in metres: ")
 angle = input("Angle in radians: ")
 
