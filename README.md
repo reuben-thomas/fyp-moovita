@@ -28,42 +28,42 @@ This project covers the development of an autonomous vehicle platform in a simul
 ## Installation
 1. Install [Ubuntu 16.04.6 LTS (Xenial Xerus)](http://releases.ubuntu.com/16.04/)
 
-2. Update package list
-   - `sudo apt-get update`
-  
-3. Install [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
+2. Install [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
    - Follow instructions
    - Install everything else on the page
+   
+3. Install [NumPy](https://pypi.org/project/numpy/)
+   - `pip install NumPy`
+   
+### If you have none of the required packages
+1. Change directory to your cloned path
+
+2. Type `./requirements` to install the required packages
+
+### If you already have one of the required packages
+1. Update package list
+   - `sudo apt-get update`
  
-4. Install [pip](https://pypi.org/project/pip/)
-   - `sudo apt install python-pip`
- 
-5. Install [Gazebo 7.1](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
+2. Install [Gazebo 7.1](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
    - `sudo apt-get install gazebo7`
    - `sudo apt-get install libgazebo7-dev`
   
-6. Install [Git](https://git-scm.com/download/linux)
+3. Install [Git](https://git-scm.com/download/linux)
    - `sudo apt-get install git`
-
-7. Install [NumPy](https://pypi.org/project/numpy/)
-   - `pip install NumPy`
   
-8. Install [map_server](http://wiki.ros.org/map_server)
-   - `sudo apt-get install ros-kinetic-map-server`
-  
-9. Install [fake_localization](http://wiki.ros.org/fake_localization)
+4. Install [fake_localization](http://wiki.ros.org/fake_localization)
    - `sudo apt-get install ros-kinetic-fake-localization`
   
-10. Install [joint_state_publisher](http://wiki.ros.org/joint_state_publisher)
+5. Install [joint_state_publisher](http://wiki.ros.org/joint_state_publisher)
     - `sudo apt-get install joint-state-publisher`
   
-11. Install joint_state_publisher_gui
+6. Install joint_state_publisher_gui
     - `sudo apt-get install ros-kinetic-joint-state-publisher-gui`
   
-12. Install [ros_controller](http://wiki.ros.org/ros_control#Install)
+7. Install [ros_controller](http://wiki.ros.org/ros_control#Install)
     - `sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers`
     
-13. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
+8. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
     - `sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control`
     
 ## Usage
