@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 
 <!-- ackermann_vehicle.launch
-This launch file launches nodes used by both RViz and Gazebo when visualizing a vehicle with
-Ackermann steering.
+This launch file launches nodes used by both RViz and Gazebo when visualizing a vehicle with Ackermann steering.
 -->
 
 <launch>
