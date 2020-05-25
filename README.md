@@ -104,19 +104,19 @@ circle_road_gen.py is a custom script which will generate the <point> coordinate
 
 ## Launch Files
 - gazebo.launch
-  - Used for debugging. Launch file launches Gazebo with an empty world and spawns the ngeeann_av at the centre.
+Used for debugging. Launch file launches Gazebo with an empty world and spawns the ngeeann_av at the centre.
 
 - road.launch
-  - A foundational launch file for future launch files. Launches the road.world file into Gazebo and spawns the ngeeann_av onto the road.
+A foundational launch file for future launch files. Launches the road.world file into Gazebo and spawns the ngeeann_av onto the road.
 
 - display.launch
-  - A foundational launch file for future launch files. Launches RViz with the ngeeann_av at the centre.
+A foundational launch file for future launch files. Launches RViz with the ngeeann_av at the centre.
 
 - controller.launch
-  - A foundational launch file for future launch files. Launches the axle and steer controllers. Currently not in used.
+A foundational launch file for future launch files. Launches the axle and steer controllers. Currently not in used.
 
 - ackermann_vehicle.launch
-  - Launches the populated_road.world file into Gazebo and spawns the ngeeann_av onto the road. It also launches ackermann_controller.launch, RViz, the controller spawner and ackermann controller
+Launches the populated_road.world file into Gazebo and spawns the ngeeann_av onto the road. It also launches ackermann_controller.launch, RViz, the controller spawner and ackermann controller
 
 - ackerman_controller.launch
   - Launches nodes used by both RViz and Gazebo when visualizing a vehicle with Ackermann steering.
