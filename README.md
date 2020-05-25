@@ -25,6 +25,8 @@ This project covers the development of an autonomous vehicle platform in a simul
 
 4. [Git](https://git-scm.com/download/linux)
 
+5. [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
+
 ## Installation
 1. Install [Ubuntu 16.04.6 LTS (Xenial Xerus)](http://releases.ubuntu.com/16.04/)
 
@@ -37,6 +39,8 @@ This project covers the development of an autonomous vehicle platform in a simul
    
 ### If you have none of the required packages
 1. Change directory to your cloned path
+   - Go to your terminal
+   - Type `cd catkin_ws/src/fyp-moovita
 
 2. Type `./requirements` to install the required packages
 
@@ -65,6 +69,9 @@ This project covers the development of an autonomous vehicle platform in a simul
     
 8. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
     - `sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control`
+   
+9. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
+   - `git clone https://github.com/ros-drivers/ackermann_msgs.git`
     
 ## Usage
 1. Create catkin workspace
