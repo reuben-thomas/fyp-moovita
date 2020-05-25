@@ -1,3 +1,9 @@
+<?xml version="1.0"?>
+
+<!-- display.launch
+This launch file launches RViz with the ngeeann_av at the centre.
+-->
+
 <launch>
   <arg default="$(find ngeeann_av_description)/urdf/ngeeann_av.xacro" name="model"/>
   <arg default="true" name="gui"/>

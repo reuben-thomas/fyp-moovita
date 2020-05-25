@@ -1,5 +1,18 @@
+<?xml version="1.0"?>
+
+<!-- road.launch
+This launch file launches the road.world file into Gazebo and spawns the ngeeann_av onto the road.
+-->
+
 <launch>
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find ngeeann_av_description)/urdf/ngeeann_av.xacro"/>  
+
+  <arg name="x" default="101.835"/>
+  <arg name="y" default="0.0"/>
+  <arg name="z" default="0.0"/>
+  <arg name="roll" default="0.0"/>
+  <arg name="pitch" default="0.0"/>
+  <arg name="yaw" default="0.0"/>
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
   	<arg name="world_name" value="$(find ngeeann_av_description)/worlds/road.world"/>
@@ -11,8 +24,7 @@
   </include>
 
   <!-- Spawn a robot into Gazebo -->
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x 101.835 -model ngeeann_av" />
-
-
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x $(arg x) -y $(arg y) -z $(arg z)
+                -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -model ngeeann_av" />
 
 </launch>

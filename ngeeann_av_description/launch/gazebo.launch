@@ -1,9 +1,11 @@
+<?xml version="1.0"?>
+
+<!-- gazebo.launch
+This launch file launches Gazebo with an empty world and spawns the ngeeann_av at the centre.
+-->
+
 <launch>
   <param command="$(find xacro)/xacro $(find ngeeann_av_description)/urdf/ngeeann_av.xacro" name="robot_description"/>
-
-  <!-- original launch -
-  <node args="-param robot_description -urdf -model ngeeann_av" name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"/>
-` -->
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="paused" value="true"/>
