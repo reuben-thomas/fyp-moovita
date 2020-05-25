@@ -119,3 +119,12 @@ A foundational launch file for future launch files. Launches the road.world file
 
 ### display.launch
 A foundational launch file for future launch files. Launches RViz with the ngeeann_av at the centre.
+
+### controller.launch
+A foundational launch file for future launch files. Launches the axle and steer controllers. Currently not in used.
+
+### ackermann_vehicle.launch
+Launches the populated_road.world file into Gazebo and spawns the ngeeann_av onto the road. It also launches ackermann_controller.launch, RViz, the controller spawner and ackermann controller
+
+### ackerman_controller.launch
+Launches nodes used by both RViz and Gazebo when visualizing a vehicle with Ackermann steering.
