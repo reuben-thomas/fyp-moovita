@@ -101,14 +101,6 @@ circle_road_gen.py is a custom script which will generate the <point> coordinate
    - Input your desired radius in metres
    - Input your desired smoothness in radians (lower value is smoother)
    - Copy and paste result into your world file
-   
-## Launch Example
-1. Go to your catkin workspace
-   - Launch your terminal
-   - Type `cd catkin_ws`
-   
-2. Launch 
-   - Type `roslaunch ngeeann_av_description road.launch`
 
 ## Launch Files
 ### gazebo.launch
@@ -128,3 +120,11 @@ Launches the populated_road.world file into Gazebo and spawns the ngeeann_av ont
 
 ### ackerman_controller.launch
 Launches nodes used by both RViz and Gazebo when visualizing a vehicle with Ackermann steering.
+
+## Launch Example
+1. Go to your catkin workspace
+   - Launch your terminal
+   - Type `cd catkin_ws`
+   
+2. Launch 
+   - Type `roslaunch ngeeann_av_description road.launch`
