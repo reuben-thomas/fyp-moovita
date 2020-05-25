@@ -4,7 +4,7 @@
 	<joint name="hokuyo_joint" type="fixed">
 		<axis xyz="0 1 0" />
 		<origin xyz="0 2.34 0.24" rpy="0 0 1.5708"/>
-		<parent link="base_link"/>
+		<parent link="chassis_link"/>
 		<child link="hokuyo_link"/>
 	</joint>
 
@@ -60,8 +60,8 @@
 		    </noise>
 		  </ray>
 		  <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
-		    <topicName>/ngeeann_av/laser/scan</topicName>
-		    <frameName>hokuyo_link</frameName>
+		    <topicName>/laser/scan</topicName>
+		    <frameName>/hokuyo_link</frameName>
 		  </plugin>
 		</sensor>
 	</gazebo>

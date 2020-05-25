@@ -7,7 +7,15 @@
 <xacro:include filename="$(find ngeeann_av_description)/urdf/hokuyo.xacro" />
 <xacro:include filename="$(find ngeeann_av_description)/urdf/camera.xacro" />
 
-<link name="base_link">
+<link name="base_link"/>
+
+<joint name="base_link_joint" type="fixed">
+  <origin xyz="0 0 0.46936" rpy="0 0 0" />
+  <parent link="base_link"/>
+  <child link="chassis_link"/>
+</joint>
+
+<link name="chassis_link">
   <inertial>
     <origin rpy="0 0 0" xyz="1.04282e-06 0.07307 0.1816"/>
     <mass value="1580"/>
@@ -16,14 +24,14 @@
   <visual>
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <geometry>
-      <mesh filename="package://ngeeann_av_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+      <mesh filename="package://ngeeann_av_description/meshes/chassis_link.stl" scale="0.001 0.001 0.001"/>
     </geometry>
     <material name="silver"/>
   </visual>
   <collision>
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <geometry>
-      <mesh filename="package://ngeeann_av_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+      <mesh filename="package://ngeeann_av_description/meshes/chassis_link.stl" scale="0.001 0.001 0.001"/>
     </geometry>
   </collision>
 </link>
@@ -130,14 +138,14 @@
 
 <joint name="br_axle" type="continuous">
   <origin rpy="0 0 0" xyz="0.8750 -1.013637 -0.144363"/>
-  <parent link="base_link"/>
+  <parent link="chassis_link"/>
   <child link="br_1"/>
   <axis xyz="-1.0 0.0 0.0"/>
 </joint>
 
 <joint name="bl_axle" type="continuous">
   <origin rpy="0 0 0" xyz="-0.8750 -1.013637 -0.144363"/>
-  <parent link="base_link"/>
+  <parent link="chassis_link"/>
   <child link="bl_1"/>
   <axis xyz="-1.0 0.0 0.0"/>
 </joint>
@@ -158,20 +166,20 @@
 
 <joint name="r_steer" type="revolute">
   <origin rpy="0 0 0" xyz="0.8250 1.517363 -0.144363"/>
-  <parent link="base_link"/>
+  <parent link="chassis_link"/>
   <child link="r_steer_1"/>
   <axis xyz="0.0 0.0 1.0"/>
-  <dynamics damping="0.7" friction="0.7"/>
-  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
+  <dynamics damping="0.01" friction="0.01"/>
+  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="100"/>
 </joint>
 
 <joint name="l_steer" type="revolute">
   <origin rpy="0 0 0" xyz="-0.8250 1.517363 -0.144363"/>
-  <parent link="base_link"/>
+  <parent link="chassis_link"/>
   <child link="l_steer_1"/>
   <axis xyz="0.0 0.0 1.0"/>
-  <dynamics damping="0.7" friction="0.7"/>
-  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="5"/>
+  <dynamics damping="0.01" friction="0.01"/>
+  <limit effort="1000.0" lower="-0.95" upper="0.95" velocity="100"/>
 </joint>
 
 </robot>

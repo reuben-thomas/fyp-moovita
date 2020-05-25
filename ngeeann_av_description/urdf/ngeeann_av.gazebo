@@ -9,10 +9,7 @@
 </gazebo>  -->
 
 <gazebo>
-  <!--<static>false</static>-->
   <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-    <robotNamespace>/ngeeann_av</robotNamespace>
-    <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
     <legacyModeNS>true</legacyModeNS>
   </plugin>
 </gazebo>

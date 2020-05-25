@@ -14,6 +14,6 @@
   </include>
 
     <!-- new launch -->
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -z 0.469362 -model ngeeann_av" />
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model ngeeann_av" />
 
 </launch>
