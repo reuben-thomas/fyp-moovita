@@ -37,8 +37,11 @@ This project covers the development of an autonomous vehicle platform in a simul
 1. Change directory to your cloned path
    - Go to your terminal
    - Type `cd catkin_ws/src/fyp-moovita`
+  
+2. Make the requirements.sh file an executable
+   - Type `chmod +x requirements.sh`
 
-2. Type `./requirements` to install the required packages
+3. Type `./requirements.sh` to install the required packages
 
 ### If you already have one of the required packages
 1. Update package list
