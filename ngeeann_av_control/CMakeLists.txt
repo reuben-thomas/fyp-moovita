@@ -164,6 +164,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   nodes/ackermann_controller.py
+  nodes/teleop_py.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
