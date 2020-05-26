@@ -137,8 +137,6 @@ class _AckermannCtrlr(object):
 
         rospy.init_node("ackermann_controller")
 
-        # Parameters
-
         # Wheels
         (left_steer_link_name, left_steer_ctrlr_name,
          left_front_axle_ctrlr_name, self._left_front_inv_circ) = \
