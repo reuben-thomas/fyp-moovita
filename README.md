@@ -10,7 +10,6 @@ This project covers the development of an autonomous vehicle platform in a simul
 
 ### Software
 1. [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
-   - [map_server](http://wiki.ros.org/map_server)
    - [fake_localization](http://wiki.ros.org/fake_localization)
    - [joint_state_publisher](http://wiki.ros.org/joint_state_publisher)
    - joint_state_publisher_gui
