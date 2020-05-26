@@ -114,7 +114,7 @@ if __name__=="__main__":
 
             drive = AckermannDrive()
             drive.steering_angle = y*0.3
-            drive.steering_angle_velocity = 0.15
+            drive.steering_angle_velocity = 0.0
             drive.speed = x*15.0
             drive.acceleration = 3.0
             pub.publish(drive)
