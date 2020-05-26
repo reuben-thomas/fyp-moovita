@@ -19,6 +19,7 @@ sudo apt-get install joint-state-publisher
 sudo apt-get install ros-kinetic-joint-state-publisher-gui
 sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers
 sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control
+sudo apt-get install python-rospy
 
 # pip installs
 pip install numpy
