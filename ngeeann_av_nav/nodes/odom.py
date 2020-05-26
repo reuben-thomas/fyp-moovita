@@ -9,8 +9,8 @@ rospy.init_node('odom_pub')
 
 odom_pub = rospy.Publisher('/odom', Odometry)
 
-rospy.wait_for_service('/gazebo/get_model_state') # Wait for service to start
-get_model_srv = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') # Wait for service to start
+get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
 
 # Empty odometry message
 odom = Odometry()
@@ -24,7 +24,7 @@ model.model_name = 'ngeeann_av'
 
 r = rospy.Rate(2)
 
-while not ropsy.is_shutdown():
+while not rospy.is_shutdown():
     result = get_model_srv(model)
     odom.pose.pose = result.pose
     odom.twist.twist = result.twist
