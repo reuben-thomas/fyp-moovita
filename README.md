@@ -99,7 +99,7 @@ circle_road_gen.py is a custom script which will generate the <point> coordinate
 
 2. Run the script
    - Open your terminal
-   - Type `Python circle_road_gen.py`
+   - Type `python circle_road_gen.py`
    - Input your desired radius in metres
    - Input your desired smoothness in radians (lower value is smoother)
    - Copy and paste result into your world file
