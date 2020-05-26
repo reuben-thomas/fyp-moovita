@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(ngeeann_av_control)
+project(ngeeann_av_nav)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -7,14 +7,13 @@ project(ngeeann_av_control)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-
-
 find_package(catkin REQUIRED COMPONENTS
-  controller_manager
-  joint_state_controller
-  robot_state_publisher
+  ngeeann_av_control
+  ngeeann_av_description
+  roscpp
+  rospy
+  tf
 )
-
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -107,8 +106,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES ngeeann_av_control
-#  CATKIN_DEPENDS controller_manager joint_state_controller robot_state_publisher
+#  LIBRARIES ngeeann_av_nav
+#  CATKIN_DEPENDS ngeeann_av_control ngeeann_av_description roscpp rospy tf
 #  DEPENDS system_lib
 )
 
@@ -125,7 +124,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/ngeeann_av_control.cpp
+#   src/${PROJECT_NAME}/ngeeann_av_nav.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -136,7 +135,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/ngeeann_av_control_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/ngeeann_av_nav_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -167,6 +166,7 @@ catkin_install_python(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
 # install(TARGETS ${PROJECT_NAME}_node
@@ -181,13 +181,12 @@ catkin_install_python(PROGRAMS
 #   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 # )
 
-#install(DIRECTORY config launch
-#       DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
 ## Mark cpp header files for installation
-install(DIRECTORY config launch
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE
+# )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -201,7 +200,7 @@ install(DIRECTORY config launch
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_ngeeann_av_control.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ngeeann_av_nav.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
