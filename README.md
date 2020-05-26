@@ -31,9 +31,9 @@ This project covers the development of an autonomous vehicle platform in a simul
 1. Install [Ubuntu 16.04.6 LTS (Xenial Xerus)](http://releases.ubuntu.com/16.04/)
 
 2. Install [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
-   - Follow instructions
-   - Install everything else on the page
-   
+   - Type `chmod +x ros-kinetic-desktop-full-install.sh`
+   - Type `./ros-kinetic-desktop-full-install.sh` to install Desktop-Full ROS Kinetic
+
 ### If you have none of the required packages
 1. Change directory to your cloned path
    - Go to your terminal
