@@ -34,7 +34,7 @@ This project covers the development of an autonomous vehicle platform in a simul
    - Type `chmod +x ros-kinetic-desktop-full-install.sh`
    - Type `./ros-kinetic-desktop-full-install.sh` to install Desktop-Full ROS Kinetic
 
-### If you have none of the required packages
+### Automatic Install
 1. Change directory to your cloned path
    - Go to your terminal
    - Type `cd catkin_ws/src/fyp-moovita`
@@ -44,7 +44,7 @@ This project covers the development of an autonomous vehicle platform in a simul
 
 3. Type `./requirements.sh` to install the required packages
 
-### If you already have one of the required packages
+### Manual Install
 1. Update package list
    - `sudo apt-get update`
  
