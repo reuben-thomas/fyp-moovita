@@ -130,4 +130,6 @@ Launches nodes used by both RViz and Gazebo when visualizing a vehicle with Acke
    
 ## ackermann_vehicle.launch
 ### ROS Commands
-`rostopic pub /ngeeann_av/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0.0, steering_angle_velocity: 0.0, speed: 5, acceleration: 0.0, jerk: 0.0}" -r 10`
+```
+rostopic pub /ngeeann_av/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0.0, steering_angle_velocity: 0.0, speed: 5, acceleration: 0.0, jerk: 0.0}" -r 10
+```
