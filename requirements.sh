@@ -20,8 +20,9 @@ sudo apt-get install ros-kinetic-joint-state-publisher-gui
 sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers
 sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control
 
-# git clones
-git clone https://github.com/ros-drivers/ackermann_msgs.git
-
 # pip installs
 pip install numpy
+
+# git clones
+cd ..
+git clone https://github.com/ros-drivers/ackermann_msgs.git
