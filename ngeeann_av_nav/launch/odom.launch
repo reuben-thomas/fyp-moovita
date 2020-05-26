@@ -1,0 +1,4 @@
+<launch>
+    <node name = "odom_pub" pkg = "ngeeann_av_nav" type = "odom.py" output = "screen" />
+    <include file="$(find ngeeann_av_description)/launch/road.launch"/>
+</launch>
