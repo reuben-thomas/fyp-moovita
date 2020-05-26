@@ -33,9 +33,6 @@ This project covers the development of an autonomous vehicle platform in a simul
    - Follow instructions
    - Install everything else on the page
    
-3. Install [NumPy](https://pypi.org/project/numpy/)
-   - `pip install NumPy`
-   
 ### If you have none of the required packages
 1. Change directory to your cloned path
    - Go to your terminal
@@ -71,6 +68,9 @@ This project covers the development of an autonomous vehicle platform in a simul
    
 9. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
    - `git clone https://github.com/ros-drivers/ackermann_msgs.git`
+   
+10. Install [NumPy](https://pypi.org/project/numpy/)
+   - `pip install NumPy`
     
 ## Usage
 1. Create catkin workspace
