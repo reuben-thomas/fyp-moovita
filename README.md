@@ -36,7 +36,7 @@ This project covers the development of an autonomous vehicle platform in a simul
 ### If you have none of the required packages
 1. Change directory to your cloned path
    - Go to your terminal
-   - Type `cd catkin_ws/src/fyp-moovita
+   - Type `cd catkin_ws/src/fyp-moovita`
 
 2. Type `./requirements` to install the required packages
 
