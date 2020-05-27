@@ -22,7 +22,7 @@
     <inertia ixx="1997.8579" ixy="-3e-05" ixz="-1e-06" iyy="442.7692" iyz="62.5206" izz="2238.0524"/>
   </inertial>
   <visual>
-    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <origin rpy="1.5708 0 3.14159" xyz="0 0.04 -0.05"/>
     <geometry>
       <mesh filename="package://ngeeann_av_description/meshes/chassis_link.stl" scale="0.001 0.001 0.001"/>
     </geometry>
