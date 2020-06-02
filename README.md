@@ -123,7 +123,7 @@ circle_wp_gen.py is a custom script which uses the NumPy and pandas library to c
 ### Point mode
 The user is able to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on how many points the user has set. More points means a smoother waypoint
 
-## Angle mode
+### Angle mode
 The user is unable to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on the radian value the user has set. Lower values means a smoother waypoint.
 
 ### Usage
