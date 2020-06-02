@@ -136,7 +136,7 @@ if __name__=="__main__":
 
             di, target_idx = stanley_control(state, cx, cy, cyaw, target_idx)
 
-            set_vehicle_command(di, 0.5)
+            set_vehicle_command(target_vel, di)
             r.sleep()
         except rospy.ServiceException as e:
             rospy.loginfo("Navigation node failed:  {0}".format(e))
