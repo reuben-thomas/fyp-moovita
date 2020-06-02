@@ -113,7 +113,7 @@ circle_road_gen.py is a custom script which uses the NumPy library to calculate 
 3. Run the script
    - Type `python circle_road_gen.py`
    - Input your desired radius in metres
-   - Input your desired smoothness in radians (lower value is smoother)
+   - Input your desired smoothness in degrees (lower value is smoother)
    - Copy and paste result into your world file
   
 ## circle_wp_gen.py
@@ -124,7 +124,7 @@ circle_wp_gen.py is a custom script which uses the NumPy and pandas library to c
 The user is able to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on how many points the user has set. More points means a smoother waypoint
 
 ### Angle mode
-The user is unable to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on the radian value the user has set. Lower value means a smoother waypoint.
+The user is unable to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on the degree value the user has set. Lower value means a smoother waypoint.
 
 ### Usage
 1. Download the circle_wp_gen.py script if you have not cloned this repository.
@@ -137,7 +137,7 @@ The user is unable to choose how many waypoints to generate, and the smoothness 
    - Type `python circle_wp_gen.py`
    - Choose your desired smoothness mode
    - Input your desired radius in metres
-   - Input your desired smoothness in number of points (if you chose Point mode) or radians (if you chose Angle mode)
+   - Input your desired smoothness in number of points (if you chose Point mode) or degrees (if you chose Angle mode)
 
 ## Launch Files
 ### gazebo.launch
