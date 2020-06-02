@@ -20,8 +20,8 @@ def main():
 
 def point_mode():
 	try:
-		r = input("Radius in metres (103.67): ")
-		points = input("Number of points: ")
+		r = float(input("Radius in metres (103.67): "))
+		points = int(input("Number of points: "))
 	
 	except:
 		print("Invalid input.")
@@ -57,8 +57,8 @@ def point_mode():
 
 def angle_mode():
 	try:
-		r = input("Radius in metres (103.67): ")
-		degrees = input("Angle in degrees: ")
+		r = float(input("Radius in metres (103.67): "))
+		degrees = float(input("Angle in degrees: "))
 
 	except:
 		print("Invalid input.")
