@@ -14,8 +14,16 @@
   </plugin>
 </gazebo>
 
-<gazebo reference="base_link">
-  <material>Gazebo/White</material>
+<gazebo reference="chassis_link">
+  <material>Gazebo/OrangeTransparent</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+  <gravity>true</gravity>
+</gazebo>
+
+<gazebo reference="spoiler_link">
+  <material>Gazebo/DarkGrey</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
   <selfCollide>true</selfCollide>
