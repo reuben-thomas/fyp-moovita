@@ -18,7 +18,8 @@ This project covers the development of an autonomous vehicle platform in a simul
 2. [Python 2.7](https://www.python.org/download/releases/2.7/)
    - [pip](https://pypi.org/project/pip/)
    - [rospy](http://wiki.ros.org/rospy)
-   - [NumPy](https://pypi.org/project/numpy/) (Not required if you do not plan to use circle_road_gen.py)
+   - [NumPy](https://pypi.org/project/numpy/)
+   - [pandas](https://pandas.pydata.org/getting_started.html)
   
 3. [Gazebo 7.1](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
    - [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
@@ -69,15 +70,19 @@ This project covers the development of an autonomous vehicle platform in a simul
     
 8. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
     - `sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control`
+    
+9. Install [rospy](http://wiki.ros.org/rospy)
+    - `sudo apt-get install python-rospy`
    
-9. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
+10. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
    - `git clone https://github.com/ros-drivers/ackermann_msgs.git`
    
-10. Install [NumPy](https://pypi.org/project/numpy/)
+11. Install [NumPy](https://pypi.org/project/numpy/)
     - `pip install NumPy`
     
-11. Install [rospy](http://wiki.ros.org/rospy)
-    - `sudo apt-get install python-rospy`
+12. Install [pandas](https://pandas.pydata.org/getting_started.html)
+    - `pip install pandas`
+    
     
 ## Usage
 1. Create catkin workspace
@@ -96,17 +101,43 @@ This project covers the development of an autonomous vehicle platform in a simul
    
 ## circle_road_gen.py 
 ### Description
-circle_road_gen.py is a custom script which will generate the <point> coordinates of a circle for Gazebo's world file. This is primarily used to create a circular road of a certain radius and smoothness. The radius of the circle is calculated from the centre of the circle to the middle of the road (using Gazebo's SDF tag).
+circle_road_gen.py is a custom script which uses the NumPy library to calculate and generate the three-dimensional <point> coordinates of a circle for Gazebo's world file. This is primarily used to create a circular road of a certain radius and smoothness. The radius of the circle is calculated from the centre of the circle to the middle of the road (using Gazebo's SDF tag).
 
 ### Usage
-1. Download the circle_road_gen.py script
+1. Download the circle_road_gen.py script if you have not cloned this repository
 
-2. Run the script
+2. Go to the script's directory
    - Open your terminal
+   - Type `cd scripts`
+
+3. Run the script
    - Type `python circle_road_gen.py`
    - Input your desired radius in metres
    - Input your desired smoothness in radians (lower value is smoother)
    - Copy and paste result into your world file
+  
+## circle_wp_gen.py
+### Description
+circle_wp_gen.py is a custom script which uses the NumPy and pandas library to calculate and generate a csv file that contains two-dimensional coordinates; x-axis and y-axis in their respective columns. This is primarily used to generate waypoints on a circular road of a certain radius and smoothness. The user is given two different smoothness modes; Point mode and Angle mode. The radius of the circle is calculated from the centre of gazebo world.
+
+### Point mode
+The user is able to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on how many points the user has set. More points means a smoother waypoint
+
+## Angle mode
+The user is unable to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on the radian value the user has set. Lower values means a smoother waypoint.
+
+### Usage
+1. Download the circle_wp_gen.py script if you have not cloned this repository.
+
+2. Go to the script's directory
+   - Open your terminal
+   - Type `cd scripts`
+   
+3. Run the script
+   - Type `python circle_wp_gen.py`
+   - Choose your desired smoothness mode
+   - Input your desired radius in metres
+   - Input your desired smoothness in number of points (if you chose Point mode) or radians (if you chose Angle mode)
 
 ## Launch Files
 ### gazebo.launch
