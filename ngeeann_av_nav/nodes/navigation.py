@@ -5,6 +5,7 @@ from gazebo_msgs.srv import GetModelState
 from geometry_msgs.msg import Twist
 from ackermann_msgs.msg import AckermannDrive
 import matplotlib.pyplot as plt
+import cubic_spline_planner
 
 
 
@@ -13,15 +14,13 @@ rospy.init_node('navigation')
 rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
 get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
 navigation = rospy.Publisher('/ngeeann_av/ackermann_cmd',AckermannDrive, queue_size=1) 
-r = rospy.Rate(30) #Set update rate, default to 30
 
 
 
 
 #gets and prints model state
-def get_vehicle_state ():
-    state = get_model_srv('ngeeann_av', 'ground')
-    """print 'Status.success', state.success
+def show_vehicle_state ():
+    print 'Status.success', state.success
     print('\n\nPOSITION:')
     print('x: ' + str(state.pose.position.x))
     print('y: ' + str(state.pose.position.y))
@@ -29,8 +28,8 @@ def get_vehicle_state ():
     print('ORIENTATION:')
     print('x: ' + str(state.pose.orientation.x))
     print('y: ' + str(state.pose.orientation.y))
-    print('z: ' + str(state.pose.orientation.z))"""
-
+    print('z: ' + str(state.pose.orientation.z))
+    print('w: ' + str(state.pose.orientation.w))
 
 
 #Sets vehicle command
@@ -43,30 +42,7 @@ def set_vehicle_command (velocity, steering_angle):
     navigation.publish(drive)
 
 
-
-
-
-
-def calc_spline_course(x, y, ds=0.1):
-    sp = Spline2D(x, y)
-    s = list(np.arange(0, sp.s[-1], ds))
-
-    rx, ry, ryaw, rk = [], [], [], []
-    for i_s in s:
-        ix, iy = sp.calc_position(i_s)
-        rx.append(ix)
-        ry.append(iy)
-        ryaw.append(sp.calc_yaw(i_s))
-        rk.append(sp.calc_curvature(i_s))
-
-    return rx, ry, ryaw, rk, s
-
-
-
-
-
-
-def normalize_angle(angle):
+def normalize_angle(angle):                 #CLEARED
     """
     Normalize an angle to [-pi, pi].
     :param angle: (float)
@@ -81,11 +57,7 @@ def normalize_angle(angle):
     return angle
 
 
-
-
-
-
-def calc_target_index(state, cx, cy):
+def calc_target_index(state, cx, cy):      
     """
     Compute index in the trajectory list of the target.
     :param state: (State object)
@@ -110,10 +82,6 @@ def calc_target_index(state, cx, cy):
     error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
     return target_idx, error_front_axle
-
-
-
-
 
 
 def stanley_control(state, cx, cy, cyaw, last_target_idx):
@@ -143,20 +111,23 @@ def stanley_control(state, cx, cy, cyaw, last_target_idx):
 
 
 
-#
+
+
 if __name__=="__main__":
     #  target course
     ax = [100.0, 90.0, 70.0, 40.0, 0.0]
     ay = [0.0, 20.0, 40.0, 60.0, 80.0]
 
-    cx, cy, cyaw, ck, s = calc_spline_course(ax, ay, ds=0.1)
-    
+    #cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
 
+    r = rospy.Rate(30) #Set update rate, default to 30
+    
+    state = get_model_srv('ngeeann_av', 'ground')
 
     while not rospy.is_shutdown():
         try:
-            get_vehicle_state()
-            set_vehicle_command(2.0, 0.0)
+            show_vehicle_state()
+            set_vehicle_command(2.0, 0.5)
             r.sleep()
         except rospy.ServiceException as e:
             rospy.loginfo("Navigation node failed:  {0}".format(e))
