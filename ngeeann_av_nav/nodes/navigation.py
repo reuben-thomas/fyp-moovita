@@ -12,7 +12,7 @@ import numpy as np
 target_vel = 2.0 # target velocity
 k = 0.5 # control gain
 dt = 0.1 # [s] time difference
-max_steer = np.radians(30.0)  # [rad] max steering angle
+max_steer = np.radians(0.95)  # [rad] max steering angle
 
 rospy.init_node('navigation')
 rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
