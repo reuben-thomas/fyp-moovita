@@ -15,16 +15,16 @@ def main():
 	elif mode == "a":
 		angle_mode()
 	else:
-		print("Wrong command")
+		print("Invalid input.")
 		main()
 
 def point_mode():
 	try:
-		r = input("Radius in metres (101.6): ")
+		r = input("Radius in metres (103.67): ")
 		points = input("Number of points: ")
 	
 	except:
-		print("Wrong command.")
+		print("Invalid input.")
 		point_mode()
 
 	print("\nRadius: ", r, "\nPoints: ", points)
@@ -57,15 +57,16 @@ def point_mode():
 
 def angle_mode():
 	try:
-		r = input("Radius in metres (101.6): ")
-		angle = input("Angle in radians: ")
+		r = input("Radius in metres (103.67): ")
+		degrees = input("Angle in degrees: ")
 
 	except:
-		print("Wrong command.")
+		print("Invalid input.")
 		angle_mode()	
 
-	print("\nRadius: ", r, "\nAngle: ", angle)
+	print("\nRadius: ", r, "\nAngle: ", degrees)
 
+	angle = np.radians(degrees)
 	theta = 0
 
 	X = []
