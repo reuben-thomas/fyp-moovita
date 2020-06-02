@@ -20,7 +20,7 @@ def main():
 
 def point_mode():
 	try:
-		r = input("Radius in metres: ")
+		r = input("Radius in metres (101.6): ")
 		points = input("Number of points: ")
 	
 	except:
@@ -53,11 +53,11 @@ def point_mode():
 
 	axis = {'X-axis': X, 'Y-axis': Y}
 	df = pd.DataFrame(axis, columns= ['X-axis', 'Y-axis'])
-	df.to_csv("waypoints.csv", index = False, header = False)
+	df.to_csv("waypoints.csv", index = False)
 
 def angle_mode():
 	try:
-		r = input("Radius in metres: ")
+		r = input("Radius in metres (101.6): ")
 		angle = input("Angle in radians: ")
 
 	except:
@@ -87,7 +87,7 @@ def angle_mode():
 
 	axis = {'X-axis': X, 'Y-axis': Y}
 	df = pd.DataFrame(axis, columns= ['X-axis', 'Y-axis'])
-	df.to_csv("waypoints.csv", index = False, header = False)
+	df.to_csv("waypoints.csv", index = False)
 
 if __name__ == "__main__":
 	main()

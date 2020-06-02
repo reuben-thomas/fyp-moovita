@@ -1,8 +1,8 @@
 from __future__ import print_function
 import numpy as np
 
-r = input("Radius in metres: ")
-angle = input("Angle in radians: ")
+r = input("Radius in metres (101.6): ")
+angle = input("Angle in radians (0.0174533): ")
 
 print("\nRadius: ", r, "\nAngle: ", angle)
 
