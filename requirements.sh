@@ -23,6 +23,7 @@ sudo apt-get install python-rospy
 
 # pip installs
 pip install numpy
+pip install pandas
 
 # git clones
 cd ..
