@@ -2,9 +2,14 @@ from __future__ import print_function
 import numpy as np
 
 def main():
-	r = input("Radius in metres (103.67): ")
-	degrees = input("Angle in degrees (1): ")
-
+	try:
+		r = input("Radius in metres (103.67): ")
+		degrees = input("Angle in degrees (1): ")
+		
+	except:
+		print("Invalid input.")
+		main()
+		
 	print("\nRadius: ", r, "\nAngle: ", degrees)
 
 	angle = np.radians(degrees)
