@@ -3,8 +3,8 @@ import numpy as np
 
 def main():
 	try:
-		r = input("Radius in metres (103.67): ")
-		degrees = input("Angle in degrees (1): ")
+		r = float(input("Radius in metres (103.67): "))
+		degrees = float(input("Angle in degrees (1): "))
 		
 	except:
 		print("Invalid input.")
