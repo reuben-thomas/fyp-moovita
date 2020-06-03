@@ -9,7 +9,7 @@ import cubic_spline_planner
 import numpy as np
 
 
-target_vel = 1.0 # target velocitys
+target_vel = 5.0 # target velocitys
 k = 1.0 # control gain
 max_steer = 0.95  # [rad] max steering angle
 
@@ -52,7 +52,7 @@ def show_vehicle_status():
 def set_vehicle_command (velocity, steering_angle):
     drive = AckermannDrive()
     drive.speed = velocity
-    drive.acceleration = 0.5
+    drive.acceleration = 1.0
     drive.steering_angle = steering_angle
     drive.steering_angle_velocity = 0.0
     navigation.publish(drive)
@@ -79,11 +79,11 @@ def stanley_control(cx, cy, cyaw, last_target_idx):
 
 
     # theta_e corrects the heading error
-    theta_e = normalize_angle(cyaw[current_target_idx] - (yaw))
-    print('Heading error = ' + str(cyaw[current_target_idx]) + ' + ' + str(yaw) + ' = ' + str(theta_e))
+    theta_e = normalize_angle((cyaw[current_target_idx]-1.5708) - yaw)
+    print('Heading error = ' + str(cyaw[current_target_idx]) + ' - ' + str(yaw) + ' = ' + str(theta_e))
 
     # theta_d corrects the cross track error
-    theta_d = np.arctan2(k * error_front_axle, 2.0)
+    theta_d = np.arctan2(k * error_front_axle, target_vel)
     # Steering control
     delta = theta_e + theta_d
 
@@ -123,8 +123,8 @@ def calc_target_index(cx, cy):
     yaw = get_yaw_rad()
 
     # Calc front axle position
-    fx = state.pose.position.x + 1.483 * np.cos((yaw))
-    fy = state.pose.position.y + 1.483 * np.sin((yaw))
+    fx = state.pose.position.x + 1.483 * np.cos((yaw)+1.5708)
+    fy = state.pose.position.y + 1.483 * np.sin((yaw)+1.5708)
     print('front axle (fx, fy): (' + str(fx) + ', ' + str(fy) + ')')
 
     # Search nearest point index
@@ -134,7 +134,7 @@ def calc_target_index(cx, cy):
     target_idx = np.argmin(d)
 
     # Project RMS error onto front axle vector
-    front_axle_vec = [-np.cos((yaw)+ np.pi / 2), -np.sin((yaw)+ np.pi / 2)]
+    front_axle_vec = [-np.cos((yaw+1.5708)+ np.pi / 2), -np.sin((yaw+1.5708)+ np.pi / 2)]
     error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
     print('Target (x,y): (' + str(cx[target_idx]) + ', ' + str(cy[target_idx]) + ')')
@@ -146,8 +146,8 @@ r = rospy.Rate(30) #Set update rate, default to 30
 
 if __name__=="__main__":
     #  target course
-    ax = [101.835, 90.0, 70.0, 40.0, 0.0]
-    ay = [10.0, 30.0, 50.0, 70.0, 90.0]
+    ax = [100.0, 100.0, 96.0, 90.0, 0.0]
+    ay = [18.3, 31.0, 43.0, 47.0, 0.0]
 
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
     last_idx = len(cx) - 1
@@ -164,7 +164,7 @@ if __name__=="__main__":
 
             di, target_idx = stanley_control(cx, cy, cyaw, target_idx)
 
-            set_vehicle_command(target_vel, 0.5)
+            set_vehicle_command(target_vel, di)
             r.sleep()
         except rospy.ServiceException as e:
             rospy.loginfo("Navigation node failed:  {0}".format(e))
