@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import rospy
+import rospy, os, cubic_spline_planner
 from gazebo_msgs.srv import GetModelState
 from geometry_msgs.msg import Twist
 from ackermann_msgs.msg import AckermannDrive
 import matplotlib.pyplot as plt
-import cubic_spline_planner
+import pandas as pd
 import numpy as np
 
 
@@ -146,8 +146,16 @@ r = rospy.Rate(30) #Set update rate, default to 30
 
 if __name__=="__main__":
     #  target course
+    df = pd.read_csv(os.path.join(os.path.expanduser('~'), 'catkin_ws', 'src', 'fyp-moovita', 'scripts', 'waypoints.csv'))
+    ax = df['X-axis'].values.tolist()
+    ay = df['Y-axis'].values.tolist()
+    #ax[0] = 96.0
+    ay[0] = 2
+
+    '''
     ax = [100.0, 100.0, 96.0, 90.0, 0.0]
     ay = [18.3, 31.0, 43.0, 47.0, 0.0]
+    '''
 
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
     last_idx = len(cx) - 1
