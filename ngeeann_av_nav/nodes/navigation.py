@@ -149,8 +149,8 @@ if __name__=="__main__":
     df = pd.read_csv(os.path.join(os.path.expanduser('~'), 'catkin_ws', 'src', 'fyp-moovita', 'scripts', 'waypoints.csv'))
     ax = df['X-axis'].values.tolist()
     ay = df['Y-axis'].values.tolist()
-    #ax[0] = 96.0
-    ay[0] = 2
+    #ax[1] = 82
+    ay[1] = 47
 
     '''
     ax = [100.0, 100.0, 96.0, 90.0, 0.0]
