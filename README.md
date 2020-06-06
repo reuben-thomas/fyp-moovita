@@ -77,10 +77,15 @@ This project covers the development of an autonomous vehicle platform in a simul
 10. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
    - `git clone https://github.com/ros-drivers/ackermann_msgs.git`
    
-11. Install [NumPy](https://pypi.org/project/numpy/)
+11. Install [pip](https://pypi.org/project/pip/)
+    - `sudo apt-get install python-pip`
+   
+12. Install [NumPy](https://pypi.org/project/numpy/)
+    - `pip install --upgrade pip`
     - `pip install NumPy`
     
-12. Install [pandas](https://pandas.pydata.org/getting_started.html)
+13. Install [pandas](https://pandas.pydata.org/getting_started.html)
+    - `pip install --upgrade pip`
     - `pip install pandas`
     
     
