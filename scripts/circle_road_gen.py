@@ -25,5 +25,5 @@ def main():
 	print ('<point>', r, ' ', 0, ' ', 0, '</point>', sep = '')
 	print("\n This program has looped ", runs, " times.")
 
-if __name__ == __main__
+if __name__ == "__main__"
 	main()
