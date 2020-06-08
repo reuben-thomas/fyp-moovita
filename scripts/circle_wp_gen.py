@@ -54,6 +54,7 @@ def point_mode():
 	axis = {'X-axis': X, 'Y-axis': Y}
 	df = pd.DataFrame(axis, columns= ['X-axis', 'Y-axis'])
 	df.to_csv("waypoints.csv", index = False)
+	plot_waypoints(df)
 
 def angle_mode():
 	try:
@@ -89,6 +90,21 @@ def angle_mode():
 	axis = {'X-axis': X, 'Y-axis': Y}
 	df = pd.DataFrame(axis, columns= ['X-axis', 'Y-axis'])
 	df.to_csv("waypoints.csv", index = False)
+	plot_waypoints(df)
 
+def plot_waypoints(df):
+	figure(num=None, figsize=(10, 10), dpi=80, facecolor='w', edgecolor='k')
+	x = df['X-axis']
+	y = df['Y-axis']
+	img = plt.imread("road.png")
+	fig, pic = plt.subplots()
+	pic.imshow(img, extent=[-113.67, 113.67, -113.67, 113.67])
+	plt.xlabel("X-axis")
+	plt.ylabel("Y-axis")
+	plt.xlim(-110, 110)
+	plt.ylim(-110, 110)
+	plt.plot(x, y)
+	plt.show()
+	
 if __name__ == "__main__":
 	main()
