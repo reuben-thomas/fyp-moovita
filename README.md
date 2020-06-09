@@ -1,5 +1,6 @@
 # AUTONOMOUS VEHICLE CONTROL AND BEHAVIOUR
 ### Ngee Ann Polytechnic Engineering Science Final Year Project with MooVita
+![ngeeann_av](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/ngeeann_av_ultrawide.png?raw=true)
 
 # Abstract
 This project covers the development of an autonomous vehicle platform in a simulated environment using ROS and Gazebo implementing a think-sense-act cycle in navigating in a virtual world, avoiding static and moving objects.
@@ -10,7 +11,6 @@ This project covers the development of an autonomous vehicle platform in a simul
 
 ### Software
 1. [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
-   - [map_server](http://wiki.ros.org/map_server)
    - [fake_localization](http://wiki.ros.org/fake_localization)
    - [joint_state_publisher](http://wiki.ros.org/joint_state_publisher)
    - joint_state_publisher_gui
@@ -18,7 +18,9 @@ This project covers the development of an autonomous vehicle platform in a simul
 	 
 2. [Python 2.7](https://www.python.org/download/releases/2.7/)
    - [pip](https://pypi.org/project/pip/)
-   - [NumPy](https://pypi.org/project/numpy/) (Not required if you do not plan to use circle_road_gen.py)
+   - [rospy](http://wiki.ros.org/rospy)
+   - [NumPy](https://pypi.org/project/numpy/)
+   - [pandas](https://pandas.pydata.org/getting_started.html)
   
 3. [Gazebo 7.1](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
    - [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
@@ -31,25 +33,25 @@ This project covers the development of an autonomous vehicle platform in a simul
 1. Install [Ubuntu 16.04.6 LTS (Xenial Xerus)](http://releases.ubuntu.com/16.04/)
 
 2. Install [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
-   - Follow instructions
-   - Install everything else on the page
-   
-3. Install [NumPy](https://pypi.org/project/numpy/)
-   - `pip install NumPy`
-   
-### If you have none of the required packages
+   - Type `chmod +x ros-kinetic-desktop-full-install.sh`
+   - Type `./ros-kinetic-desktop-full-install.sh` to install Desktop-Full ROS Kinetic
+
+### Automatic Install
 1. Change directory to your cloned path
    - Go to your terminal
-   - Type `cd catkin_ws/src/fyp-moovita
+   - Type `cd catkin_ws/src/fyp-moovita`
+  
+2. Make the requirements.sh file an executable
+   - Type `chmod +x requirements.sh`
 
-2. Type `./requirements` to install the required packages
+3. Type `./requirements.sh` to install the required packages
 
-### If you already have one of the required packages
+### Manual Install
 1. Update package list
    - `sudo apt-get update`
  
 2. Install [Gazebo 7.1](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
-   - `sudo apt-get install gazebo7`
+   - `sudo apt-get install gazebo7 gazebo7-common`
    - `sudo apt-get install libgazebo7-dev`
   
 3. Install [Git](https://git-scm.com/download/linux)
@@ -69,13 +71,27 @@ This project covers the development of an autonomous vehicle platform in a simul
     
 8. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
     - `sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control`
+    
+9. Install [rospy](http://wiki.ros.org/rospy)
+    - `sudo apt-get install python-rospy`
    
-9. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
+10. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
    - `git clone https://github.com/ros-drivers/ackermann_msgs.git`
+   
+11. Install [pip](https://pypi.org/project/pip/)
+    - `sudo apt-get install python-pip`
+   
+12. Install [NumPy](https://pypi.org/project/numpy/)
+    - `pip install --upgrade pip`
+    - `pip install NumPy`
+    
+13. Install [pandas](https://pandas.pydata.org/getting_started.html)
+    - `pip install --upgrade pip`
+    - `pip install pandas`
     
 ## Usage
 1. Create catkin workspace
-   - Open Terminal
+   - Open your terminal
    - Type `cd`
    - Type `mkdir -p catkin_ws/src`
    - Type `cd catkin_ws`
@@ -90,17 +106,45 @@ This project covers the development of an autonomous vehicle platform in a simul
    
 ## circle_road_gen.py 
 ### Description
-circle_road_gen.py is a custom script which will generate the <point> coordinates of a circle for Gazebo's world file. This is primarily used to create a circular road of a certain radius and smoothness. The radius of the circle is calculated from the centre of the circle to the middle of the road (using Gazebo's SDF tag).
+circle_road_gen.py is a custom script which uses the NumPy library to calculate and generate the three-dimensional <point> coordinates of a circle for Gazebo's world file. This is primarily used to create a circular road of a certain radius and smoothness. The radius of the circle is calculated from the centre of the circle to the middle of the road (using Gazebo's SDF tag).
 
 ### Usage
-1. Download the circle_road_gen.py script
+1. Download the circle_road_gen.py script if you have not cloned this repository
 
-2. Run the script
+2. Go to the script's directory
    - Open your terminal
-   - Type `Python circle_road_gen.py`
+   - Type `cd scripts`
+
+3. Run the script
+   - Type `python circle_road_gen.py`
    - Input your desired radius in metres
-   - Input your desired smoothness in radians (lower value is smoother)
+   - Input your desired smoothness in degrees (lower value is smoother)
    - Copy and paste result into your world file
+  
+## circle_wp_gen.py
+### Description
+circle_wp_gen.py is a custom script which uses the NumPy and pandas library to calculate and generate a csv file that contains the two-dimensional coordinates; x-axis and y-axis in their respective columns. This is primarily used to generate waypoints on a circular road of a certain radius and smoothness. The user is given two different smoothness modes; Point mode and Angle mode. The radius of the circle is calculated from the centre of gazebo world.
+
+![circle_wp_gen](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/circle_wp_gen.png?raw=true)
+
+### Point mode
+The user is able to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on how many points the user has set. More points means a smoother waypoint
+
+### Angle mode
+The user is unable to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on the degree value the user has set. Lower value means a smoother waypoint.
+
+### Usage
+1. Download the circle_wp_gen.py script if you have not cloned this repository.
+
+2. Go to the script's directory
+   - Open your terminal
+   - Type `cd scripts`
+   
+3. Run the script
+   - Type `python circle_wp_gen.py`
+   - Choose your desired smoothness mode
+   - Input your desired radius in metres
+   - Input your desired smoothness in number of points (if you chose Point mode) or degrees (if you chose Angle mode)
 
 ## Launch Files
 ### gazebo.launch
@@ -116,7 +160,7 @@ A foundational launch file for future launch files. Launches RViz with the ngeea
 A foundational launch file for future launch files. Launches the axle and steer controllers. Currently not in used.
 
 ### ackermann_vehicle.launch
-Launches the populated_road.world file into Gazebo and spawns the ngeeann_av onto the road. It also launches ackermann_controller.launch, RViz, the controller spawner and ackermann controller
+Launches the populated_road.world file into Gazebo and spawns the ngeeann_av onto a populated road world. It also launches ackermann_controller.launch, RViz, the controller spawner and ackermann controller. If your Gazebo does not start, this is because you do not have the required Gazebo models in your models folder. To fix this, you may change the ackermann_vehicle.launch parameters to launch the unpopulated road variant, road.launch.
 
 ### ackerman_controller.launch
 Launches nodes used by both RViz and Gazebo when visualizing a vehicle with Ackermann steering.
@@ -128,3 +172,16 @@ Launches nodes used by both RViz and Gazebo when visualizing a vehicle with Acke
    
 2. Launch 
    - Type `roslaunch ngeeann_av_description road.launch`
+   
+## ackermann_vehicle.launch
+### ROS Commands
+```
+rostopic pub /ngeeann_av/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0.0, steering_angle_velocity: 0.0, speed: 5, acceleration: 0.0, jerk: 0.0}" -r 10
+```
+
+## navigation.py
+### Usage
+1. Launch ackermann_vehicle.launch
+   - `roslaunch ngeeann_av_control ackermann_vehicle.launch`
+2. Execute navigation.py
+   - `rosrun ngeeann_av_nav navigation.py`
