@@ -182,6 +182,7 @@ rostopic pub /ngeeann_av/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_
 ## navigation.py
 ### Usage
 1. Launch ackermann_vehicle.launch
-   - `roslaunch ngeeann_av_control ackermann_vehicle.launch`
+   - Launch your terminal
+   - Type `roslaunch ngeeann_av_control ackermann_vehicle.launch`
 2. Execute navigation.py
-   - `rosrun ngeeann_av_nav navigation.py`
+   - Type `rosrun ngeeann_av_nav navigation.py`
