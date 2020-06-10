@@ -98,7 +98,7 @@ This project covers the development of an autonomous vehicle platform in a simul
    
 2. Place ROS package into source folder
    - Type `nautilus ~/catkin_ws/src`
-   - Drag and drop ngeeann_av_description into folder
+   - Type `git clone https://github.com/reuben-thomas/fyp-moovita
    
 3. Setup ROS workspace
    - Type `source devel/setup.bash`
