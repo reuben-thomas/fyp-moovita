@@ -12,6 +12,7 @@ import numpy as np
 target_vel = 5.0 # target velocitys
 k = 1.0 # control gain
 max_steer = 0.95  # [rad] max steering angle
+halfpi = np.pi/2
 
 
 rospy.init_node('navigation')
@@ -79,7 +80,7 @@ def stanley_control(cx, cy, cyaw, last_target_idx):
 
 
     # theta_e corrects the heading error
-    theta_e = normalize_angle((cyaw[current_target_idx]-1.5708) - yaw)
+    theta_e = normalize_angle((cyaw[current_target_idx]-halfpi) - yaw)
     print('Heading error = ' + str(cyaw[current_target_idx]) + ' - ' + str(yaw) + ' = ' + str(theta_e))
 
     # theta_d corrects the cross track error
@@ -123,8 +124,8 @@ def calc_target_index(cx, cy):
     yaw = get_yaw_rad()
 
     # Calc front axle position
-    fx = state.pose.position.x + 1.483 * np.cos((yaw)+1.5708)
-    fy = state.pose.position.y + 1.483 * np.sin((yaw)+1.5708)
+    fx = state.pose.position.x + 1.483 * np.cos((yaw)+halfpi)
+    fy = state.pose.position.y + 1.483 * np.sin((yaw)+halfpi)
     print('front axle (fx, fy): (' + str(fx) + ', ' + str(fy) + ')')
 
     # Search nearest point index
@@ -134,7 +135,7 @@ def calc_target_index(cx, cy):
     target_idx = np.argmin(d)
 
     # Project RMS error onto front axle vector
-    front_axle_vec = [-np.cos((yaw+1.5708)+ np.pi / 2), -np.sin((yaw+1.5708)+ np.pi / 2)]
+    front_axle_vec = [-np.cos((yaw+halfpi)+ halfpi), -np.sin((yaw+halfpi)+ halfpi)]
     error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
     print('Target (x,y): (' + str(cx[target_idx]) + ', ' + str(cy[target_idx]) + ')')
