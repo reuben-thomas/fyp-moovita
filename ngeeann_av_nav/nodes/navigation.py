@@ -12,7 +12,7 @@ import numpy as np
 target_vel = 5.0 # target velocitys
 k = 1.0 # control gain
 max_steer = 0.95  # [rad] max steering angle
-halfpi = np.pi/2
+halfpi = np.pi / 2
 
 
 rospy.init_node('navigation')
