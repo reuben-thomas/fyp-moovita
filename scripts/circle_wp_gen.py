@@ -5,6 +5,8 @@ This is a waypoint generator for circular roads.
 from __future__ import print_function
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import figure
 
 def main():
 	mode = raw_input("Point or Angle mode (p/a): ")
