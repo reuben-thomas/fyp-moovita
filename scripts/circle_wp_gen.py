@@ -9,104 +9,124 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 
 def main():
-	mode = raw_input("Point or Angle mode (p/a): ")
+    mode = raw_input("Point or Angle mode (p/a): ")
 
-	# Point mode
-	if mode == "p":
-		point_mode()
-	elif mode == "a":
-		angle_mode()
-	else:
-		print("Invalid input.")
-		main()
+    # Point mode
+    if mode == "p":
+        point_mode()
+    elif mode == "a":
+        angle_mode()
+    else:
+        print("Invalid input.")
+        main()
 
 def point_mode():
-	try:
-		r = float(input("Radius in metres (103.67): "))
-		points = int(input("Number of points: "))
-	
-	except:
-		print("Invalid input.")
-		point_mode()
+    try:
+        path = raw_input("Path mode (inner/outer/custom): ")
+        if path == "inner":
+            r = 101.5
+        elif path == "outer":
+            r = 104.5
+        elif path == "custom":
+            r = float(input("Radius in metres (103.67): "))
+        else:
+            print("Invalid input.")
+            point_mode()
+        
+        points = int(input("Number of points: "))
+    
+    except:
+        print("Invalid input.")
+        point_mode()
 
-	print("\nRadius: ", r, "\nPoints: ", points)
+    print("\nRadius: ", r, "\nPoints: ", points)
 
-	theta = 0
+    theta = 0
 
-	X = []
-	Y = []
+    X = []
+    Y = []
 
-	angle = 2*np.pi/points
-	runs = 0
+    angle = 2*np.pi/points
+    runs = 0
 
-	for n in np.arange(0, 2*np.pi, angle):
-		x = r * np.cos(theta)
-		y = r * np.sin(theta)
-		theta = theta + angle
-		X.append(x)
-		Y.append(y)
-		runs = runs + 1
+    for n in np.arange(0, 2*np.pi, angle):
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+        theta = theta + angle
+        X.append(x)
+        Y.append(y)
+        runs = runs + 1
 
-	X.append(r)
-	Y.append(0)
-	print(X)
-	print(Y)
-	print("\n This program has looped ", runs, " times.")
+    X.append(r)
+    Y.append(0)
+    print(X)
+    print(Y)
+    print("\n This program has looped ", runs, " times.")
 
-	axis = {'X-axis': X, 'Y-axis': Y}
-	df = pd.DataFrame(axis, columns= ['X-axis', 'Y-axis'])
-	df.to_csv("waypoints.csv", index = False)
-	plot_waypoints(df)
+    axis = {'X-axis': X, 'Y-axis': Y}
+    df = pd.DataFrame(axis, columns= ['X-axis', 'Y-axis'])
+    df.to_csv("waypoints.csv", index = False)
+    plot_waypoints(df)
 
 def angle_mode():
-	try:
-		r = float(input("Radius in metres (103.67): "))
-		degrees = float(input("Angle in degrees: "))
+    try:
+        path = raw_input("Path mode (inner/outer/custom): ")
+        if path == "inner":
+            r = 101.5
+        elif path == "outer":
+            r = 104.5
+        elif path == "custom":
+            r = float(input("Radius in metres (103.67): "))
+        else:
+            print("Invalid input.")
+            point_mode()
+            
+        degrees = float(input("Angle in degrees: "))
 
-	except:
-		print("Invalid input.")
-		angle_mode()	
+    except:
+        print("Invalid input.")
+        angle_mode()
 
-	print("\nRadius: ", r, "\nAngle: ", degrees)
+    print("\nRadius: ", r, "\nAngle: ", degrees)
 
-	angle = np.radians(degrees)
-	theta = 0
+    angle = np.radians(degrees)
+    theta = 0
 
-	X = []
-	Y = []
-	runs = int(2*np.pi/angle)
+    X = []
+    Y = []
+    runs = int(2*np.pi/angle)
 
-	for n in np.arange(0, 2*np.pi, angle):
-		x = r * np.cos(theta)
-		y = r * np.sin(theta)
-		theta = theta + angle
-		X.append(x)
-		Y.append(y)
+    for n in np.arange(0, 2*np.pi, angle):
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
+        theta = theta + angle
+        X.append(x)
+        Y.append(y)
 
-	X.append(r)
-	Y.append(0)
-	print(X)
-	print(Y)
-	print("\n This program has looped ", runs, " times.")
+    X.append(r)
+    Y.append(0)
+    print(X)
+    print(Y)
+    print("\n This program has looped ", runs, " times.")
 
-	axis = {'X-axis': X, 'Y-axis': Y}
-	df = pd.DataFrame(axis, columns= ['X-axis', 'Y-axis'])
-	df.to_csv("waypoints.csv", index = False)
-	plot_waypoints(df)
+    axis = {'X-axis': X, 'Y-axis': Y}
+    df = pd.DataFrame(axis, columns= ['X-axis', 'Y-axis'])
+    df.to_csv("waypoints.csv", index = False)
+    plot_waypoints(df)
 
 def plot_waypoints(df):
-	figure(num=None, figsize=(10, 10), dpi=80, facecolor='w', edgecolor='k')
-	x = df['X-axis']
-	y = df['Y-axis']
-	img = plt.imread("road.png")
-	fig, pic = plt.subplots()
-	pic.imshow(img, extent=[-113.67, 113.67, -113.67, 113.67])
-	plt.xlabel("X-axis")
-	plt.ylabel("Y-axis")
-	plt.xlim(-110, 110)
-	plt.ylim(-110, 110)
-	plt.plot(x, y)
-	plt.show()
-	
+    figure(num=None, figsize=(10, 10), dpi=80, facecolor='w', edgecolor='k')
+    x = df['X-axis']
+    y = df['Y-axis']
+    img = plt.imread("road.png")
+    fig, pic = plt.subplots()
+    pic.imshow(img, extent=[-113.67, 113.67, -113.67, 113.67])
+    plt.xlabel("X-axis")
+    plt.ylabel("Y-axis")
+    plt.xlim(-110, 110)
+    plt.ylim(-110, 110)
+    plt.plot(x, y)
+    plt.show()
+    
 if __name__ == "__main__":
-	main()
+    main()
