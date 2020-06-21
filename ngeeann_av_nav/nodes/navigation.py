@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-
 target_vel = 5.0 # target velocitys
 k = 1.0 # control gain
 ksoft = 1.0 # softening soften to ensure a non-zero denominator
@@ -21,7 +20,6 @@ rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state')
 get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
 navigation = rospy.Publisher('/ngeeann_av/ackermann_cmd',AckermannDrive, queue_size=1) 
 
-
 #retrieves yaw angle from quaternion coordinates
 def get_yaw_rad():
     a1 = 2.0 * (state.pose.orientation.z * state.pose.orientation.w + state.pose.orientation.x * state.pose.orientation.y)
@@ -30,10 +28,6 @@ def get_yaw_rad():
     a2 = -1.0 + 2.0 * (state.pose.orientation.w * state.pose.orientation.w + state.pose.orientation.x * state.pose.orientation.x)
     yaw = np.arctan2(a1, a2)
     return yaw
-
-
-
-
 
 #gets and prints model state
 def show_vehicle_status():
@@ -49,7 +43,6 @@ def show_vehicle_status():
     print('y: ' + str(state.twist.linear.y))
     print('z: ' + str(state.twist.linear.z))"""
 
-
 #Sets vehicle command
 def set_vehicle_command (velocity, steering_angle):
     drive = AckermannDrive()
@@ -58,8 +51,6 @@ def set_vehicle_command (velocity, steering_angle):
     drive.steering_angle = steering_angle
     drive.steering_angle_velocity = 0.0
     navigation.publish(drive)
-
-
 
 def stanley_control(cx, cy, cyaw, last_target_idx):
     """
@@ -78,7 +69,6 @@ def stanley_control(cx, cy, cyaw, last_target_idx):
 
     #recieves yaw
     yaw = get_yaw_rad()
-
 
     # theta_e corrects the heading error
     theta_e = normalize_angle((cyaw[current_target_idx]-halfpi) - yaw)
@@ -164,7 +154,6 @@ if __name__=="__main__":
 
     state = get_model_srv('ngeeann_av', '')
     target_idx, _ = calc_target_index(cx, cy)
-
 
     while not rospy.is_shutdown():
         try:
