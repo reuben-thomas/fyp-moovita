@@ -11,7 +11,7 @@ import numpy as np
 
 target_vel = 5.0 # target velocitys
 k = 1.0 # control gain
-ksoft = 0.1 # softening soften to ensure a non-zero denominator
+ksoft = 1.0 # softening soften to ensure a non-zero denominator
 max_steer = 0.95  # [rad] max steering angle
 halfpi = np.pi / 2
 cog2frontaxle = 1.483 # Distance from the vehicle's centre of gravity to its front axle
