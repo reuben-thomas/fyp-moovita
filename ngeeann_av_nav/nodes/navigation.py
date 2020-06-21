@@ -13,7 +13,7 @@ target_vel = 5.0 # target velocitys
 k = 1.0 # control gain
 max_steer = 0.95  # [rad] max steering angle
 halfpi = np.pi / 2
-
+cog2frontaxle = 1.483 # Distance from the vehicle's centre of gravity to its front axle
 
 rospy.init_node('navigation')
 rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
@@ -124,8 +124,8 @@ def calc_target_index(cx, cy):
     yaw = get_yaw_rad()
 
     # Calc front axle position
-    fx = state.pose.position.x + 1.483 * np.cos((yaw)+halfpi)
-    fy = state.pose.position.y + 1.483 * np.sin((yaw)+halfpi)
+    fx = state.pose.position.x + cog2frontaxle * np.cos((yaw)+halfpi)
+    fy = state.pose.position.y + cog2frontaxle * np.sin((yaw)+halfpi)
     print('front axle (fx, fy): (' + str(fx) + ', ' + str(fy) + ')')
 
     # Search nearest point index
