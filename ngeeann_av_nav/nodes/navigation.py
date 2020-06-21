@@ -130,10 +130,10 @@ def calc_target_index(cx, cy):
     print('front axle (fx, fy): (' + str(fx) + ', ' + str(fy) + ')')
 
     # Search nearest point index
-    dx = [fx - icx for icx in cx]
-    dy = [fy - icy for icy in cy]
-    d = np.hypot(dx, dy)
-    target_idx = np.argmin(d)
+    dx = [fx - icx for icx in cx] # Find the x-axis of the front axle relative to the path
+    dy = [fy - icy for icy in cy] # Find the y-axis of the front axle relative to the path
+    d = np.hypot(dx, dy) # Find the distance from the front axle to the path
+    target_idx = np.argmin(d) # Find the shortest distance in the array
 
     # Project RMS error onto front axle vector
     front_axle_vec = [-np.cos((yaw+halfpi)+ halfpi), -np.sin((yaw+halfpi)+ halfpi)]
