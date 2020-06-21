@@ -11,6 +11,7 @@ import numpy as np
 
 target_vel = 5.0 # target velocitys
 k = 1.0 # control gain
+ksoft = 0.1 # softening soften to ensure a non-zero denominator
 max_steer = 0.95  # [rad] max steering angle
 halfpi = np.pi / 2
 cog2frontaxle = 1.483 # Distance from the vehicle's centre of gravity to its front axle
@@ -84,7 +85,7 @@ def stanley_control(cx, cy, cyaw, last_target_idx):
     print('Heading error = ' + str(cyaw[current_target_idx]) + ' - ' + str(yaw) + ' = ' + str(theta_e))
 
     # theta_d corrects the cross track error
-    theta_d = np.arctan2(k * error_front_axle, target_vel)
+    theta_d = np.arctan2(k * error_front_axle, ksoft + target_vel)
     # Steering control
     delta = theta_e + theta_d
 
