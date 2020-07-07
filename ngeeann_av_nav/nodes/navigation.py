@@ -149,7 +149,6 @@ def walk_up_folder(path, dir_goal='fyp-moovita'):
 
 if __name__=="__main__":
     #  target course
-<<<<<<< HEAD
     dir_path = os.path.dirname(os.path.abspath(__file__))
     dir_path = walk_up_folder(dir_path)
     df = pd.read_csv(os.path.join(dir_path, 'scripts', 'waypoints.csv'))
@@ -157,18 +156,13 @@ if __name__=="__main__":
     ax = df['X-axis'].values.tolist()
     ay = df['Y-axis'].values.tolist()
     ay[1] = 47
-=======
->>>>>>> affc4078eb68a2906a654d2d134a078c2d021074
+    
     '''
     ax = [100.0, 100.0, 96.0, 90.0, 0.0]
     ay = [18.3, 31.0, 43.0, 47.0, 0.0]
     '''
-<<<<<<< HEAD
     r = rospy.Rate(30) # Set update rate, default to 30
 
-=======
-    
->>>>>>> affc4078eb68a2906a654d2d134a078c2d021074
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
     last_idx = len(cx) - 1
 
