@@ -134,20 +134,34 @@ def calc_target_index(cx, cy):
 
     return target_idx, error_front_axle
 
-r = rospy.Rate(30) #Set update rate, default to 30
+def walk_up_folder(path, dir_goal='fyp-moovita'):
+    dir_path = os.path.dirname(path)
+    split_path = str.split(dir_path, '/')     
+    counter = 0  
+    while (split_path[-1] != dir_goal and counter < 20):
+        dir_path = os.path.dirname(dir_path)
+        split_path = str.split(dir_path, '/')
+        counter += 1
+    
+    return dir_path
 
 if __name__=="__main__":
     #  target course
-    df = pd.read_csv(os.path.join(os.path.expanduser('~'), 'catkin_ws', 'src', 'fyp-moovita', 'scripts', 'waypoints.csv'))
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    dir_path = walk_up_folder(dir_path)
+    df = pd.read_csv(os.path.join(dir_path, 'scripts', 'waypoints.csv'))
+    
+    # df = pd.read_csv(os.path.join(os.path.expanduser('~'), 'catkin_ws', 'src', 'fyp-moovita', 'scripts', 'waypoints.csv'))
     ax = df['X-axis'].values.tolist()
     ay = df['Y-axis'].values.tolist()
-    #ax[1] = 82
     ay[1] = 47
 
     '''
     ax = [100.0, 100.0, 96.0, 90.0, 0.0]
     ay = [18.3, 31.0, 43.0, 47.0, 0.0]
     '''
+
+    r = rospy.Rate(30) # Set update rate, default to 30
 
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
     last_idx = len(cx) - 1
