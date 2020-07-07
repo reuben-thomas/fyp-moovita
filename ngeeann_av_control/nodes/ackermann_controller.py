@@ -1,125 +1,7 @@
 #!/usr/bin/env python
 
-"""ackermann_controller
-
-Control the wheels of a vehicle with Ackermann steering.
-
-Subscribed Topics:
-    ackermann_cmd (ackermann_msgs/AckermannDrive)
-        Ackermann command. It contains the vehicle's desired speed and steering
-        angle.
-
-Published Topics:
-    <left steering controller name>/command (std_msgs/Float64)
-        Command for the left steering controller.
-    <right steering controller name>/command (std_msgs/Float64)
-        Command for the right steering controller.
-    <left front axle controller name>/command (std_msgs/Float64)
-        Command for the left front axle controller.
-    <right front axle controller name>/command (std_msgs/Float64)
-        Command for the right front axle controller.
-    <left rear axle controller name>/command (std_msgs/Float64)
-        Command for the left rear axle controller.
-    <right rear axle controller name>/command (std_msgs/Float64)
-        Command for the right rear axle controller.
-    <shock absorber controller name>/command (std_msgs/Float64)
-        One of these topics exists for each shock absorber. They are latched
-        topics.
-
-Services Called:
-    controller_manager/list_controllers (controller_manager_msgs/
-                                         ListControllers)
-        List the states of the controllers.
-
-Parameters:
-    ~left_front_wheel/steering_link_name (string, default: left_steering_link)
-    ~right_front_wheel/steering_link_name (string,
-                                           default: right_steering_link)
-        Names of links that have origins coincident with the origins of the
-        left and right steering joints, respectively. The steering links are
-        used to compute the distance between the steering joints, as well as
-        the vehicle's wheelbase.
-
-    ~left_front_wheel/steering_controller_name (string, default:
-                                                left_steering_controller)
-    ~right_front_wheel/steering_controller_name (string, default:
-                                                 right_steering_controller)
-        Steering controller names.
-
-    ~left_rear_wheel/link_name (string, default: left_wheel)
-    ~right_rear_wheel/link_name (string, default: right_wheel)
-        Names of links that have origins coincident with the centers of the
-        left and right wheels, respectively. The rear wheel links are used to
-        compute the vehicle's wheelbase.
-
-    ~left_front_wheel/axle_controller_name (string)
-    ~right_front_wheel/axle_controller_name
-    ~left_rear_wheel/axle_controller_name
-    ~right_rear_wheel/axle_controller_name
-        Axle controller names. If no controller name is specified for an axle,
-        that axle will not have a controller. This allows the control of
-        front-wheel, rear-wheel, and four-wheel drive vehicles.
-
-    ~left_front_wheel/diameter (double, default: 1.0)
-    ~right_front_wheel/diameter
-    ~left_rear_wheel/diameter
-    ~right_rear_wheel/diameter
-        Wheel diameters. Each diameter must be greater than zero. Unit: meter.
-
-    ~shock_absorbers (sequence of mappings, default: empty)
-        Zero or more shock absorbers.
-
-        Key-Value Pairs:
-
-        controller_name (string)
-            Controller name.
-        equilibrium_position (double, default: 0.0)
-            Equilibrium position. Unit: meter.
-
-    ~cmd_timeout (double, default: 0.5)
-        If ~cmd_timeout is greater than zero and this node does not receive a
-        command for more than ~cmd_timeout seconds, vehicle motion is paused
-        until a command is received. If ~cmd_timeout is less than or equal to
-        zero, the command timeout is disabled.
-    ~publishing_frequency (double, default: 30.0)
-        Joint command publishing frequency. It must be greater than zero.
-        Unit: hertz.
-
-Required tf Transforms:
-    <~left_front_wheel/steering_link_name> to <~right_rear_wheel/link_name>
-        Specifies the position of the left front wheel's steering link in the
-        right rear wheel's frame.
-    <~right_front_wheel/steering_link_name> to <~right_rear_wheel/link_name>
-        Specifies the position of the right front wheel's steering link in the
-        right rear wheel's frame.
-    <~left_rear_wheel/link_name> to <~right_rear_wheel/link_name>
-        Specifies the position of the left rear wheel in the right rear
-        wheel's frame.
-
-Copyright (c) 2013-2015 Wunderkammer Laboratory
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
-
-import math
-import numpy
-import threading
-
-from math import pi
-
-import rospy
-import tf
-
+import threading, rospy, tf
+import numpy as np
 from ackermann_msgs.msg import AckermannDrive
 from std_msgs.msg import Float64
 from controller_manager_msgs.srv import ListControllers
@@ -235,12 +117,12 @@ class _AckermannCtrlr(object):
         tfl = tf.TransformListener()
         ls_pos = self._get_link_pos(tfl, left_steer_link_name)
         rs_pos = self._get_link_pos(tfl, right_steer_link_name)
-        self._joint_dist_div_2 = numpy.linalg.norm(ls_pos - rs_pos) / 2
+        self._joint_dist_div_2 = np.linalg.norm(ls_pos - rs_pos) / 2
         lrw_pos = self._get_link_pos(tfl, left_rear_link_name)
-        rrw_pos = numpy.array([0.0] * 3)
+        rrw_pos = np.array([0.0] * 3)
         front_cent_pos = (ls_pos + rs_pos) / 2     # Front center position
         rear_cent_pos = (lrw_pos + rrw_pos) / 2    # Rear center position
-        self._wheelbase = numpy.linalg.norm(front_cent_pos - rear_cent_pos)
+        self._wheelbase = np.linalg.norm(front_cent_pos - rear_cent_pos)
         self._inv_wheelbase = 1 / self._wheelbase  # Inverse of _wheelbase
         self._wheelbase_sqr = self._wheelbase ** 2
 
@@ -361,7 +243,7 @@ class _AckermannCtrlr(object):
                           "The default diameter will be used instead.")
             dia = self._DEF_WHEEL_DIA
 
-        return axle_ctrlr_name, 1 / (pi * dia)
+        return axle_ctrlr_name, 1 / (np.pi * dia)
 
     def _get_link_pos(self, tfl, link):
         # Return the position of the specified link, relative to the right
@@ -372,7 +254,7 @@ class _AckermannCtrlr(object):
                 trans, not_used = \
                     tfl.lookupTransform(self._right_rear_link_name, link,
                                         rospy.Time(0))
-                return numpy.array(trans)
+                return np.array(trans)
             except:
                 pass
 
@@ -391,16 +273,14 @@ class _AckermannCtrlr(object):
 
         # Compute the desired steering angles for the left and right front
         # wheels.
-        center_y = self._wheelbase * math.tan((pi / 2) - theta)
+        center_y = self._wheelbase * np.tan((np.pi / 2) - theta)
         steer_ang_changed = theta != self._last_steer_ang
         if steer_ang_changed:
             self._last_steer_ang = theta
             self._theta_left = \
-                _get_steer_ang(math.atan(self._inv_wheelbase *
-                                         (center_y - self._joint_dist_div_2)))
+                _get_steer_ang(np.arctan(self._inv_wheelbase * (center_y - self._joint_dist_div_2)))
             self._theta_right = \
-                _get_steer_ang(math.atan(self._inv_wheelbase *
-                                         (center_y + self._joint_dist_div_2)))
+                _get_steer_ang(np.arctan(self._inv_wheelbase * (center_y + self._joint_dist_div_2)))
 
         return steer_ang_changed, center_y
 
@@ -426,13 +306,13 @@ class _AckermannCtrlr(object):
             right_dist = center_y + self._joint_dist_div_2
 
             # Front
-            gain = (2 * pi) * veh_speed / abs(center_y)
-            r = math.sqrt(left_dist ** 2 + self._wheelbase_sqr)
+            gain = (2 * np.pi) * veh_speed / abs(center_y)
+            r = np.sqrt(left_dist ** 2 + self._wheelbase_sqr)
             self._left_front_ang_vel = gain * r * self._left_front_inv_circ
-            r = math.sqrt(right_dist ** 2 + self._wheelbase_sqr)
+            r = np.sqrt(right_dist ** 2 + self._wheelbase_sqr)
             self._right_front_ang_vel = gain * r * self._right_front_inv_circ
             # Rear
-            gain = (2 * pi) * veh_speed / center_y
+            gain = (2 * np.pi) * veh_speed / center_y
             self._left_rear_ang_vel = \
                 gain * left_dist * self._left_rear_inv_circ
             self._right_rear_ang_vel = \
@@ -476,8 +356,8 @@ def _create_cmd_pub(list_ctrlrs, ctrlr_name):
 def _get_steer_ang(phi):
     # Return the desired steering angle for a front wheel.
     if phi >= 0.0:
-        return (pi / 2) - phi
-    return (-pi / 2) - phi
+        return (np.pi / 2) - phi
+    return (-np.pi / 2) - phi
 
 
 # main

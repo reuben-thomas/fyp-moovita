@@ -3,10 +3,9 @@
 Cubic spline planner
 Author: Atsushi Sakai(@Atsushi_twi)
 """
-import math
+
 import numpy as np
 import bisect
-
 
 class Spline:
     """
@@ -166,7 +165,7 @@ class Spline2D:
         """
         dx = self.sx.calcd(s)
         dy = self.sy.calcd(s)
-        yaw = math.atan2(dy, dx)
+        yaw = np.arctan2(dy, dx)
         return yaw
 
 
