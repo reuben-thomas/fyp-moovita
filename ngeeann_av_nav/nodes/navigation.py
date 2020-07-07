@@ -5,7 +5,7 @@ from gazebo_msgs.srv import GetModelState
 from geometry_msgs.msg import Twist
 from ackermann_msgs.msg import AckermannDrive
 import matplotlib.pyplot as plt
-import pandas as pd
+#import pandas as pd
 import numpy as np
 
 target_vel = 5.0 # target velocitys
@@ -22,11 +22,13 @@ navigation = rospy.Publisher('/ngeeann_av/ackermann_cmd',AckermannDrive, queue_s
 
 #retrieves yaw angle from quaternion coordinates
 def get_yaw_rad():
-    a1 = 2.0 * (state.pose.orientation.z * state.pose.orientation.w + state.pose.orientation.x * state.pose.orientation.y)
+    #a1 = 2.0 * (state.pose.orientation.z * state.pose.orientation.w + state.pose.orientation.x * state.pose.orientation.y)
     #a2 = (state.pose.orientation.w * state.pose.orientation.w) - (state.pose.orientation.x * state.pose.orientation.x) - (state.pose.orientation.y * state.pose.orientation.y) + (state.pose.orientation.z * state.pose.orientation.z)
     
-    a2 = -1.0 + 2.0 * (state.pose.orientation.w * state.pose.orientation.w + state.pose.orientation.x * state.pose.orientation.x)
-    yaw = np.arctan2(a1, a2)
+    #a2 = -1.0 + 2.0 * (state.pose.orientation.w * state.pose.orientation.w + state.pose.orientation.x * state.pose.orientation.x)
+    #yaw = np.arctan2(a1, a2)
+
+    yaw = 2.0 * np.arctan2(state.pose.orientation.z, state.pose.orientation.w)
     return yaw
 
 #gets and prints model state
@@ -147,22 +149,26 @@ def walk_up_folder(path, dir_goal='fyp-moovita'):
 
 if __name__=="__main__":
     #  target course
+<<<<<<< HEAD
     dir_path = os.path.dirname(os.path.abspath(__file__))
     dir_path = walk_up_folder(dir_path)
     df = pd.read_csv(os.path.join(dir_path, 'scripts', 'waypoints.csv'))
     
-    # df = pd.read_csv(os.path.join(os.path.expanduser('~'), 'catkin_ws', 'src', 'fyp-moovita', 'scripts', 'waypoints.csv'))
     ax = df['X-axis'].values.tolist()
     ay = df['Y-axis'].values.tolist()
     ay[1] = 47
-
+=======
+>>>>>>> affc4078eb68a2906a654d2d134a078c2d021074
     '''
     ax = [100.0, 100.0, 96.0, 90.0, 0.0]
     ay = [18.3, 31.0, 43.0, 47.0, 0.0]
     '''
-
+<<<<<<< HEAD
     r = rospy.Rate(30) # Set update rate, default to 30
 
+=======
+    
+>>>>>>> affc4078eb68a2906a654d2d134a078c2d021074
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
     last_idx = len(cx) - 1
 
