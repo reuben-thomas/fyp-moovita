@@ -25,7 +25,6 @@ def heading_to_quaternion(heading):
     quaternion.w = np.cos(heading / 2.0)
     return quaternion
 
-
 #Converts Cubic Spline to Path and PUblishes it
 def create_pub_path(ax, ay, ds, count):
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds)

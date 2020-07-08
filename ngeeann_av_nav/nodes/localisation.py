@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#LOCALIZATION NODE
+#LOCALISATION NODE
 #Retrieves vehicle state from gazebo, converts to 2D position and planae
 
 import rospy
@@ -9,11 +9,11 @@ from geometry_msgs.msg import Pose2D
 import numpy as np
 
 
-#initialization
+#initialisation
 rospy.init_node('localisation')
 rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
 get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
-localisation = rospy.Publisher('/ngeeann_av/state2D',Pose2D, queue_size=1) 
+localisation = rospy.Publisher('/ngeeann_av/state2D', Pose2D, queue_size=1) 
 
 
 def show_vehicle_status():

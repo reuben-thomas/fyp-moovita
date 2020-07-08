@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import rospy
+import rospy, cubic_spline_planner
 from geometry_msgs.msg import Pose2D
 from ackermann_msgs.msg import AckermannDrive
 import matplotlib.pyplot as plt
@@ -14,15 +14,36 @@ max_steer = 0.95  # Max steering angles in radians
 cog2frontaxle = 1.483 # Distance from the vehicle's centre of gravity to its front axle
 halfpi = np.pi / 2
 
-path_tracker = rospy.Subscriber('/ngeeann_av/path', Path, queue_size=3)
-localisation = rospy.Publisher('/ngeeann_av/state2D',Pose2D, queue_size=1) 
-rospy.init_node('path_tracker')
 
-# Retrieves yaw angle from quaternion coordinates
-def get_yaw_rad():
+def main():
+    path_tracker = rospy.Subscriber('/ngeeann_av/path', Path, queue_size=3)
+    localisation = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, localisation)
 
-    yaw = 2.0 * np.arctan2(state.pose.orientation.z, state.pose.orientation.w)
-    return yaw
+    rospy.init_node('path_tracker')
+    r = rospy.Rate(30) # Set update rate, default to 30
+
+    ax = [100.0, 100.0, 96.0, 90.0, 0.0]
+    ay = [18.3, 31.0, 43.0, 47.0, 0.0]
+
+    cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
+    last_idx = len(cx) - 1
+
+    target_idx, _ = calc_target_index(cx, cy)
+
+    while not rospy.is_shutdown():
+        try:
+            di, target_idx = stanley_control(cx, cy, cyaw, target_idx)
+
+            set_vehicle_command(target_vel, di)
+            r.sleep()
+
+        except rospy.ServiceException as e:
+            rospy.loginfo("Path tracking node failed:  {0}".format(e))
+
+def localisation(coordinates):
+    x = coordinates.x
+    y = coordinates.y
+    theta = coordinates.theta
 
 #Sets vehicle command
 def set_vehicle_command (velocity, steering_angle):
@@ -68,7 +89,6 @@ def stanley_control(cx, cy, cyaw, last_target_idx):
 
     return delta, current_target_idx
 
-
 def normalize_angle(angle):
     """
     Normalize an angle to [-pi, pi].
@@ -82,7 +102,6 @@ def normalize_angle(angle):
         angle += 2.0 * np.pi
 
     return angle
-
 
 def calc_target_index(cx, cy):
     """
@@ -117,18 +136,4 @@ def calc_target_index(cx, cy):
     return target_idx, error_front_axle
 
 if __name__=="__main__":
-    r = rospy.Rate(30) # Set update rate, default to 30
-
-    cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
-    last_idx = len(cx) - 1
-
-    target_idx, _ = calc_target_index(cx, cy)
-
-    while not rospy.is_shutdown():
-        try:
-            di, target_idx = stanley_control(cx, cy, cyaw, target_idx)
-
-            set_vehicle_command(target_vel, di)
-            r.sleep()
-        except rospy.ServiceException as e:
-            rospy.loginfo("Path tracking node failed:  {0}".format(e))
+    main()
