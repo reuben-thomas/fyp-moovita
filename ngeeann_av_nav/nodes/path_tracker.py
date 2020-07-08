@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import rospy
-from gazebo_msgs.srv import GetModelState
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Pose2D
 from ackermann_msgs.msg import AckermannDrive
 import matplotlib.pyplot as plt
 import numpy as np
-from nav_msgs.msg import PoseArray
+from nav_msgs.msg import Path
 
 target_vel = 5.0 # Target Velocity 
 k = 1.0 # Control Gain
@@ -16,34 +15,14 @@ cog2frontaxle = 1.483 # Distance from the vehicle's centre of gravity to its fro
 halfpi = np.pi / 2
 
 path_tracker = rospy.Subscriber('/ngeeann_av/path', Path, queue_size=3)
+localisation = rospy.Publisher('/ngeeann_av/state2D',Pose2D, queue_size=1) 
 rospy.init_node('path_tracker')
-rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
-get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
 
-#retrieves yaw angle from quaternion coordinates
+# Retrieves yaw angle from quaternion coordinates
 def get_yaw_rad():
-    #a1 = 2.0 * (state.pose.orientation.z * state.pose.orientation.w + state.pose.orientation.x * state.pose.orientation.y)
-    #a2 = (state.pose.orientation.w * state.pose.orientation.w) - (state.pose.orientation.x * state.pose.orientation.x) - (state.pose.orientation.y * state.pose.orientation.y) + (state.pose.orientation.z * state.pose.orientation.z)
-    
-    #a2 = -1.0 + 2.0 * (state.pose.orientation.w * state.pose.orientation.w + state.pose.orientation.x * state.pose.orientation.x)
-    #yaw = np.arctan2(a1, a2)
 
     yaw = 2.0 * np.arctan2(state.pose.orientation.z, state.pose.orientation.w)
     return yaw
-
-#gets and prints model state
-def show_vehicle_status():
-    print('\n\nPosition:')
-    print('x: ' + str(state.pose.position.x))
-    print('y: ' + str(state.pose.position.y))
-    print('z: ' + str(state.pose.position.z))
-    yaw = get_yaw_rad()
-    print('Heading: ' + str(yaw))
-
-    """print('Velocity: ')
-    print('x: ' + str(state.twist.linear.x))
-    print('y: ' + str(state.twist.linear.y))
-    print('z: ' + str(state.twist.linear.z))"""
 
 #Sets vehicle command
 def set_vehicle_command (velocity, steering_angle):
@@ -78,6 +57,7 @@ def stanley_control(cx, cy, cyaw, last_target_idx):
 
     # theta_d corrects the cross track error
     theta_d = np.arctan2(k * error_front_axle, ksoft + target_vel)
+    
     # Steering control
     delta = theta_e + theta_d
 
@@ -142,18 +122,13 @@ if __name__=="__main__":
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
     last_idx = len(cx) - 1
 
-    state = get_model_srv('ngeeann_av', '')
     target_idx, _ = calc_target_index(cx, cy)
 
     while not rospy.is_shutdown():
         try:
-            state = get_model_srv('ngeeann_av', '')
-            print 'Status.success', state.success
-            show_vehicle_status()
-
             di, target_idx = stanley_control(cx, cy, cyaw, target_idx)
 
             set_vehicle_command(target_vel, di)
             r.sleep()
         except rospy.ServiceException as e:
-            rospy.loginfo("Navigation node failed:  {0}".format(e))
+            rospy.loginfo("Path tracking node failed:  {0}".format(e))

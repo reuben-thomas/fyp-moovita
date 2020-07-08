@@ -5,16 +5,15 @@
 
 import rospy
 from gazebo_msgs.srv import GetModelState
-from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Pose2D
 import numpy as np
 
 
 #initialization
-rospy.init_node('localization')
+rospy.init_node('localisation')
 rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
 get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
-localization = rospy.Publisher('/ngeeann_av/state2D',Pose2D, queue_size=1) 
+localisation = rospy.Publisher('/ngeeann_av/state2D',Pose2D, queue_size=1) 
 
 
 def show_vehicle_status():
@@ -36,7 +35,7 @@ def update_state():
     state2d.x = state.pose.position.x
     state2d.y = state.pose.position.y
     state2d.theta = get_heading()
-    localization.publish(state2d)
+    localisation.publish(state2d)
 
 
 r = rospy.Rate(30) #Set update rate, default to 30
