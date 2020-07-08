@@ -1,44 +1,68 @@
 #!/usr/bin/env python
 
 import rospy, cubic_spline_planner
+import numpy as np
+
 from geometry_msgs.msg import Pose2D
 from ackermann_msgs.msg import AckermannDrive
-import matplotlib.pyplot as plt
-import numpy as np
 from nav_msgs.msg import Path
 
-target_vel = 5.0 # Target Velocity 
-k = 1.0 # Control Gain
-ksoft = 1.0 # Softening gain to ensure a non-zero denominator
-max_steer = 0.95  # Max steering angles in radians
-cog2frontaxle = 1.483 # Distance from the vehicle's centre of gravity to its front axle
-halfpi = np.pi / 2
+class PathTracker:
 
+    def __init__(self):
+
+        # Initialise subscribers
+        self.path = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=30)
+        self.localisation = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=30)
+
+        # self.tracker_params = rospy.get_param("/path_tracker")
+        # self.target_vel = self.tracker_params("target_velocity")
+        # self.k = self.tracker_params["control_gain"]
+        # self.ksoft = self.tracker_params["softening_gain"]
+        # self.max_steer = self.tracker_params["steering_limits"]
+        # self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
+
+        self.halfpi = np.pi / 2
+
+        self.x = None
+        self.y = None
+        self.theta = None
+
+        self.cx = None
+        self.cy = None
+        self.cyaw = None
+
+        self.test = None
+
+    def vehicle_state_cb(self, data):
+
+        self.x = data.x
+        self.y = data.y
+        self.theta = data.theta
+        # rospy.loginfo("x: {}, y: {}, theta: {}".format(self.x, self.y, self.theta))
+
+    def path_cb(self, data):
+        self.cx = data.poses.pose.position.x
+        self.cy = data.poses.pose.position.y
+        self.cyaw = data.poses.pose.orientation
+        rospy.loginfo("x: {}, y: {}, cyaw: {}".format(self.cx, self.cy, self.cyaw))
 
 def main():
-    path_tracker = rospy.Subscriber('/ngeeann_av/path', Path, queue_size=3)
-    localisation = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, vehicle_state)
 
+    # Initialise the class
+    path_tracker = PathTracker()
+
+    # Initialise the node
     rospy.init_node('path_tracker')
-    r = rospy.Rate(30) # Set update rate, default to 30
 
-    while not rospy.is_shutdown():
-        try:
-            test() 
-            r.sleep()
+    # Set update rate, default to 30
+    r = rospy.Rate(30)
 
-        except rospy.ServiceException as e:
-            rospy.loginfo("Path tracking node failed:  {0}".format(e))
+    try:
+        rospy.spin()
 
-def vehicle_state(coordinates):
-    x = coordinates.x
-    y = coordinates.y
-    theta = coordinates.theta
-    
-    return x, y, theta
-
-def test():
-    print(xvehicle_state())
+    except KeyboardInterrupt:
+        print("Shutting down ROS node")
 
 if __name__=="__main__":
     main()
