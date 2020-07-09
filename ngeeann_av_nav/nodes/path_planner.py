@@ -63,16 +63,20 @@ if __name__=="__main__":
 
     while not rospy.is_shutdown():
         try:
-            '''
+         
             # Get targets
             dir_path = os.path.dirname(os.path.abspath(__file__))
             dir_path = walk_up_folder(dir_path)
             df = pd.read_csv(os.path.join(dir_path, 'scripts', 'waypoints.csv'))
+            
+            ax = df['X-axis'].values.tolist()
+            ay = df['Y-axis'].values.tolist()
+            ay[1] = 47
 
             '''
             ax = [100.0, 100.0, 96.0, 90.0, 0.0]
             ay = [18.3, 31.0, 43.0, 47.0, 0.0]
-            
+            '''
 
             #create path
             create_pub_path(ax, ay, 0.1, count)

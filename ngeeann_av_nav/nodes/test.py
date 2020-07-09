@@ -52,7 +52,7 @@ class PathTracker:
         for i in range(0, len(msg.poses)):
             px = msg.poses[i].pose.position.x
             py = msg.poses[i].pose.position.y
-            orientation = msg.poses[i].pose.orientation
+            orientation = 2.0 * np.arctan2(msg.poses[i].pose.orientation.z, msg.poses[i].pose.orientation.w)
             self.cx.append(px)
             self.cy.append(py)
             self.cyaw.append(orientation)
@@ -83,7 +83,7 @@ class PathTracker:
             current_target_idx = last_target_idx
 
         phi_t = self.normalise_angle((self.cyaw[current_target_idx] - self.halfpi) - self.yaw)
-        e_t = np.arctan2(self.k * error_front_axle, self.ksoft + target_vel)
+        e_t = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
         sigma_t = phi_t + e_t
 
         if sigma_t >= self.max_steer:
@@ -130,7 +130,7 @@ def main():
     try:
         target_idx, _ = path_tracker.target_index_calculator()
         steering_angle, target_index = path_tracker.stanley_control(target_idx)
-        set_vehicle_command(path_tracker.target_vel, steering_angle)
+        path_tracker.set_vehicle_command(path_tracker.target_vel, steering_angle)
         rospy.spin()
 
     except KeyboardInterrupt:
