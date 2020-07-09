@@ -60,8 +60,8 @@ class PathTracker:
     def target_index_calculator(self):
 
         # Calculate position of the front axle
-        fx = self.x + self.cog2frontaxle * np.cos(self.yaw)
-        fy = self.y + self.cog2frontaxle * np.sin(self.yaw)
+        fx = self.x + self.cog2frontaxle * np.cos((self.yaw)+self.halfpi)
+        fy = self.y + self.cog2frontaxle * np.sin((self.yaw)+self.halfpi)
 
         # Search for the nearest index
         dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
@@ -70,7 +70,7 @@ class PathTracker:
         target_idx = np.argmin(d) # Find the shortest distance in the array
 
         # Project RMS error onto the front axle vector
-        front_axle_vec = [-np.cos(self.yaw + self.halfpi), -np.sin((self.yaw + self.halfpi)]
+        front_axle_vec = [-np.cos((self.yaw + self.halfpi) + self.halfpi), -np.sin((self.yaw + self.halfpi) + self.halfpi)]
         error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
         
         return target_idx, error_front_axle
@@ -82,7 +82,7 @@ class PathTracker:
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
-        phi_t = self.normalise_angle((self.cyaw[current_target_idx] - self.yaw)
+        phi_t = self.normalise_angle((self.cyaw[current_target_idx] - self.halfpi) - self.yaw)
         e_t = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
         sigma_t = phi_t + e_t
 
