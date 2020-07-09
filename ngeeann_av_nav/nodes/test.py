@@ -25,6 +25,7 @@ class PathTracker:
         # self.max_steer = self.tracker_params["steering_limits"]
         # self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
 
+        # Class constants
         self.target_vel = 5.0
         self.k = 1.0
         self.ksoft = 1.0
@@ -136,5 +137,5 @@ def main():
     except KeyboardInterrupt:
         print("Shutting down ROS node...")
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
