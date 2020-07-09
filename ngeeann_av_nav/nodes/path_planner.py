@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import rospy, os, cubic_spline_planner
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 

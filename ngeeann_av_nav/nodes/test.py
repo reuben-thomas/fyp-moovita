@@ -11,41 +11,105 @@ class PathTracker:
 
     def __init__(self):
 
-        # Initialise subscribers
-        self.path = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=30)
-        self.localisation = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=30)
+        # Initialise publishers and subscribers
+        self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=30)
+        
+        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=30)
+        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=30)
 
-        # self.tracker_params = rospy.get_param("/path_tracker")
-        # self.target_vel = self.tracker_params("target_velocity")
-        # self.k = self.tracker_params["control_gain"]
-        # self.ksoft = self.tracker_params["softening_gain"]
-        # self.max_steer = self.tracker_params["steering_limits"]
-        # self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
+        # Load parameters
+        self.tracker_params = rospy.get_param("/path_tracker")
+        self.target_vel = self.tracker_params["target_velocity"]
+        self.k = self.tracker_params["control_gain"]
+        self.ksoft = self.tracker_params["softening_gain"]
+        self.max_steer = self.tracker_params["steering_limits"]
+        self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
 
         self.halfpi = np.pi / 2
 
+        # Class variables to use whenever within the class when necessary
         self.x = None
         self.y = None
-        self.theta = None
+        self.yaw = None
 
-        self.cx = None
-        self.cy = None
-        self.cyaw = None
+        self.cx = []
+        self.cy = []
+        self.cyaw = []
 
-        self.test = None
+    def vehicle_state_cb(self, msg):
 
-    def vehicle_state_cb(self, data):
+        self.x = msg.x
+        self.y = msg.y
+        self.yaw= msg.yaw
 
-        self.x = data.x
-        self.y = data.y
-        self.theta = data.theta
-        # rospy.loginfo("x: {}, y: {}, theta: {}".format(self.x, self.y, self.theta))
+    def path_cb(self, msg):
+        
+        for i in range(0, len(msg.poses)):
+            px = msg.poses[i].pose.position.x
+            py = msg.poses[i].pose.position.y
+            orientation = msg.poses[i].pose.orientation
+            self.cx.append(px)
+            self.cy.append(py)
+            self.cyaw.append(orientation)
+        
+    def target_index_calculator(self):
 
-    def path_cb(self, data):
-        self.cx = data.poses.pose.position.x
-        self.cy = data.poses.pose.position.y
-        self.cyaw = data.poses.pose.orientation
-        rospy.loginfo("x: {}, y: {}, cyaw: {}".format(self.cx, self.cy, self.cyaw))
+        # Calculate position of the front axle
+        fx = self.x + self.cog2frontaxle * np.cos((self.yaw)+self.halfpi)
+        fy = self.y + self.cog2frontaxle * np.sin((self.yaw)+self.halfpi)
+
+        # Search for the nearest index
+        dx = [fx - icx for icx in cx] # Find the x-axis of the front axle relative to the path
+        dy = [fy - icy for icy in cy] # Find the y-axis of the front axle relative to the path
+        d = np.hypot(dx, dy) # Find the distance from the front axle to the path
+        target_idx = np.argmin(d) # Find the shortest distance in the array
+
+        # Project RMS error onto the front axle vector
+        front_axle_vec = [-np.cos((self.yaw + self.halfpi) + self.halfpi), -np.sin((self.yaw + self.halfpi) + self.halfpi)]
+        error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
+        
+        return target_idx, error_front_axle
+
+    def stanley_control(self, last_target_idx):
+        
+        current_target_idx, error_front_axle = self.target_index_calculator()
+
+        if last_target_idx >= current_target_idx:
+            current_target_idx = last_target_idx
+
+        phi_t = normalise_angle((self.cyaw[current_target_idx] - self.halfpi) - self.yaw)
+        e_t = np.arctan2(self.k * error_front_axle, self.ksoft + target_vel)
+        sigma_t = phi_t + e_t
+
+        if sigma_t >= self.max_steer:
+            sigma_t = self.max_steer
+
+        elif sigma_t <= -self.max_steer:
+            sigma_t = -self.max_steer
+
+        else:
+            pass
+
+        return sigma_t, current_target_idx
+
+    def normalise_angle(self, angle):
+
+        while angle > np.pi:
+            angle -= 2.0 * np.pi
+
+        while angle < -np.pi:
+            angle += 2.0 * np.pi
+
+        return angle
+
+    def set_vehicle_command(self, velocity, steering_angle):
+        
+        drive = AckermannDrive()
+        drive.speed = velocity
+        drive.acceleration = 1.0
+        drive.steering_angle = steering_angle
+        drive.steering_angle_velocity = 0.0
+        self.tracker_pub.publish(drive)
 
 def main():
 
@@ -59,10 +123,13 @@ def main():
     r = rospy.Rate(30)
 
     try:
+        target_idx, _ = PathTracker.target_index_calculator()
+        steering_angle, target_index = PathTracker.stanley_control(target_idx)
+        set_vehicle_command(PathTracker.target_vel, steering_angle)
         rospy.spin()
 
     except KeyboardInterrupt:
-        print("Shutting down ROS node")
+        print("Shutting down ROS node...")
 
 if __name__=="__main__":
     main()
