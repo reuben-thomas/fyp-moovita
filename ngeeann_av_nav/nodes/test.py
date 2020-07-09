@@ -17,14 +17,19 @@ class PathTracker:
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=30)
         self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=30)
 
-        # Load parameters
-        self.tracker_params = rospy.get_param("/path_tracker")
-        self.target_vel = self.tracker_params["target_velocity"]
-        self.k = self.tracker_params["control_gain"]
-        self.ksoft = self.tracker_params["softening_gain"]
-        self.max_steer = self.tracker_params["steering_limits"]
-        self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
+        # Load parameters (Future)
+        # self.tracker_params = rospy.get_param("/path_tracker")
+        # self.target_vel = self.tracker_params["target_velocity"]
+        # self.k = self.tracker_params["control_gain"]
+        # self.ksoft = self.tracker_params["softening_gain"]
+        # self.max_steer = self.tracker_params["steering_limits"]
+        # self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
 
+        self.target_vel = 5.0
+        self.k = 1.0
+        self.ksoft = 1.0
+        self.max_steer = 0.95
+        self.cog2frontaxle = 1.483
         self.halfpi = np.pi / 2
 
         # Class variables to use whenever within the class when necessary
@@ -40,7 +45,7 @@ class PathTracker:
 
         self.x = msg.x
         self.y = msg.y
-        self.yaw= msg.yaw
+        self.yaw = msg.theta
 
     def path_cb(self, msg):
         
@@ -59,8 +64,8 @@ class PathTracker:
         fy = self.y + self.cog2frontaxle * np.sin((self.yaw)+self.halfpi)
 
         # Search for the nearest index
-        dx = [fx - icx for icx in cx] # Find the x-axis of the front axle relative to the path
-        dy = [fy - icy for icy in cy] # Find the y-axis of the front axle relative to the path
+        dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
+        dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
         d = np.hypot(dx, dy) # Find the distance from the front axle to the path
         target_idx = np.argmin(d) # Find the shortest distance in the array
 
@@ -77,7 +82,7 @@ class PathTracker:
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
-        phi_t = normalise_angle((self.cyaw[current_target_idx] - self.halfpi) - self.yaw)
+        phi_t = self.normalise_angle((self.cyaw[current_target_idx] - self.halfpi) - self.yaw)
         e_t = np.arctan2(self.k * error_front_axle, self.ksoft + target_vel)
         sigma_t = phi_t + e_t
 
@@ -123,9 +128,9 @@ def main():
     r = rospy.Rate(30)
 
     try:
-        target_idx, _ = PathTracker.target_index_calculator()
-        steering_angle, target_index = PathTracker.stanley_control(target_idx)
-        set_vehicle_command(PathTracker.target_vel, steering_angle)
+        target_idx, _ = path_tracker.target_index_calculator()
+        steering_angle, target_index = path_tracker.stanley_control(target_idx)
+        set_vehicle_command(path_tracker.target_vel, steering_angle)
         rospy.spin()
 
     except KeyboardInterrupt:
