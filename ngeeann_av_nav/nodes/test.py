@@ -42,6 +42,9 @@ class PathTracker:
         self.cy = []
         self.cyaw = []
 
+        self.dx = []
+        self.dy = []
+
     def vehicle_state_cb(self, msg):
 
         self.x = msg.x
@@ -65,13 +68,19 @@ class PathTracker:
         fy = self.y + self.cog2frontaxle * np.sin(self.yaw)
 
         # Search for the nearest index
-        dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
-        dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
-        d = np.hypot(dx, dy) # Find the distance from the front axle to the path
+        for i in range(0, len(self.cx)):
+            x = fx - self.cx[i]
+            y = fy - self.cy[i]
+            self.dx.append(x)
+            self.dy.append(y)
+            
+        # dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
+        # dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
+        d = np.hypot(self.dx, self.dy) # Find the distance from the front axle to the path
         target_idx = np.argmin(d) # Find the shortest distance in the array
 
         # Project RMS error onto the front axle vector
-        front_axle_vec = [-np.cos(self.yaw + self.halfpi), -np.sin((self.yaw + self.halfpi)]
+        front_axle_vec = [-np.cos(self.yaw + self.halfpi), -np.sin(self.yaw + self.halfpi)]
         error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
         
         return target_idx, error_front_axle
@@ -83,7 +92,7 @@ class PathTracker:
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
-        phi_t = self.normalise_angle((self.cyaw[current_target_idx] - self.yaw)
+        phi_t = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw)
         e_t = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
         sigma_t = phi_t + e_t
 
