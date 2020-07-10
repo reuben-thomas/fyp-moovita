@@ -18,7 +18,7 @@ class PathTracker:
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=30)
         self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=30)
 
-        # Load parameters (Future)
+        # Load parameters
         self.tracker_params = rospy.get_param("/path_tracker")
         self.target_vel = self.tracker_params["target_velocity"]
         self.k = self.tracker_params["control_gain"]
@@ -27,7 +27,8 @@ class PathTracker:
         self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
 
         # Class constants
-        self.halfpi = np.pi / 2
+        self.halfpi = np.pi / 2.0
+        self.frequency = 30.0
 
         # Class variables to use whenever within the class when necessary
         self.x = None
@@ -128,7 +129,7 @@ def main():
     rospy.init_node('path_tracker')
 
     # Set update rate, default to 30
-    r = rospy.Rate(30)
+    r = rospy.Rate(path_tracker.frequency)
 
     target_idx, _ = path_tracker.target_index_calculator()
 
