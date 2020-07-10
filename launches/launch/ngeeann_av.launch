@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+
+<!-- ngeeann_av.launch
+This launch file launches the latest work of fyp-moovita.
+-->
+
+<launch>
+
+	<!-- Vehicle Parameters -->
+	<arg name="x" default="101.835"/>
+	<arg name="y" default="0.0"/>
+	<arg name="z" default="0.0"/>
+	<arg name="roll" default="0.0"/>
+	<arg name="pitch" default="0.0"/>
+	<arg name="yaw" default="0.0"/>
+	<arg name="model" default="ngeeann_av"/>
+	<arg name="namespace" default="/ngeeann_av"/>
+
+	<!-- RViz launcher -->
+	<include file="$(find ngeeann_av_description)/launch/display.launch"/>
+
+	<!-- Vehicle Spawner -->
+	<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="
+	-urdf -param robot_description -model $(arg model)
+	-gazebo_namespace /ngeeann_av/gazebo
+	-x $(arg x) -y $(arg y) -z $(arg z)
+	-R $(arg roll) -P $(arg pitch) -Y $(arg yaw)"/>
+
+	<!-- Robot_description is used by nodes that publish to joint_states. -->
+  	<param name="robot_description" command="$(find xacro)/xacro --inorder $(find ngeeann_av_description)/urdf/ngeeann_av.xacro"/> 
+
+    <!-- Read joint positions from joint_states, then publish the vehicle's state to tf. -->
+    <node name="vehicle_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" ns="$(arg namespace)">
+      	<param name="publish_frequency" value="30.0"/>
+    </node>
+
+	<!-- Joint Controllers node -->
+  	<node name="controller_spawner" pkg="controller_manager" type="spawner" args="$(find ngeeann_av_gazebo)/config/controller.yaml" ns="$(arg namespace)"/>
+
+	<!-- Ackermann Controller node -->
+	<node name="ackermann_controller" pkg="ngeeann_av_gazebo" type="ackermann_controller.py" ns="$(arg namespace)">
+		<param name="cmd_timeout" value="0.5"/>
+		<rosparam file="$(find ngeeann_av_gazebo)/config/ackermann_params.yaml" command="load"/>
+	</node>
+
+	<!-- Localisation node -->
+	<node name="localisation" pkg="ngeeann_av_nav" type="localisation.py"/>
+
+	<!-- Path planner node -->
+	<node name="path_planner" pkg="ngeeann_av_nav" type="planner.py"/>
+
+	<!-- Path tracker parameters -->
+	<rosparam file="$(find ngeeann_av_nav)/config/path_tracker_params.yaml"/>
+
+	<group ns="$(arg namespace)">
+
+		<!-- Gazebo world -->
+		<include file="$(find gazebo_ros)/launch/empty_world.launch">
+			<arg name="world_name" value="$(find ngeeann_av_description)/worlds/populated_road.world"/>
+			<arg name="paused" value="false"/>
+			<arg name="use_sim_time" value="true"/>
+			<arg name="gui" value="true"/>
+			<arg name="headless" value="false"/>
+			<arg name="debug" value="false"/>
+		</include>
+
+	</group>
+
+</launch>
