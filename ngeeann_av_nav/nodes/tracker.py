@@ -11,39 +11,31 @@ class PathTracker:
 
     def __init__(self):
 
-        # Initialise publishers and subscribers
+        # Initialise publishers
         self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=30)
         
+        # Initialise subscribers
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=30)
         self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=30)
 
         # Load parameters (Future)
-        # self.tracker_params = rospy.get_param("/path_tracker")
-        # self.target_vel = self.tracker_params["target_velocity"]
-        # self.k = self.tracker_params["control_gain"]
-        # self.ksoft = self.tracker_params["softening_gain"]
-        # self.max_steer = self.tracker_params["steering_limits"]
-        # self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
+        self.tracker_params = rospy.get_param("/path_tracker")
+        self.target_vel = self.tracker_params["target_velocity"]
+        self.k = self.tracker_params["control_gain"]
+        self.ksoft = self.tracker_params["softening_gain"]
+        self.max_steer = self.tracker_params["steering_limits"]
+        self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
 
         # Class constants
-        self.target_vel = 5.0
-        self.k = 1.0
-        self.ksoft = 1.0
-        self.max_steer = 0.95
-        self.cog2frontaxle = 1.483
         self.halfpi = np.pi / 2
 
         # Class variables to use whenever within the class when necessary
         self.x = None
         self.y = None
         self.yaw = None
-
         self.cx = []
         self.cy = []
         self.cyaw = []
-
-        self.dx = []
-        self.dy = []
 
     def vehicle_state_cb(self, msg):
 
@@ -68,13 +60,6 @@ class PathTracker:
         # Calculate position of the front axle
         fx = self.x + self.cog2frontaxle * np.cos(self.yaw)
         fy = self.y + self.cog2frontaxle * np.sin(self.yaw)
-
-        # Search for the nearest index
-        # for i in range(0, len(self.cx)):
-        #     x = fx - self.cx[i]
-        #     y = fy - self.cy[i]
-        #     self.dx.append(x)
-        #     self.dy.append(y)
 
         while not self.cx or not self.cy:
             pass
