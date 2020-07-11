@@ -24,13 +24,15 @@ class PathPlanner:
         self.ds = 0.1
 
         # Class variables to use whenever within the class when necessary
+        '''
         self.ax = [100.0, 100.0, 96.0, 90.0, 0.0]
         self.ay = [18.3, 31.0, 43.0, 47.0, 0.0]
+        '''
         self.cx = []
         self.cy = []
         self.cyaw = []
 
-        '''
+        
         # Get path to waypoints.csv
         dir_path = os.path.dirname(os.path.abspath(__file__))
         dir_path = self.walk_up_folder(dir_path)
@@ -40,7 +42,7 @@ class PathPlanner:
         self.ax = df['X-axis'].values.tolist()
         self.ay = df['Y-axis'].values.tolist()
         self.ay[1] = 47
-        '''
+        
 
     def create_pub_path(self, count):
 

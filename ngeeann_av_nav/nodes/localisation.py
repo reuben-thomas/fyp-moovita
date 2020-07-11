@@ -25,8 +25,8 @@ class Localisation:
         self.frequency = self.localisation_params["update_frequency"]
         self.model = self.localisation_params["model_name"]
 
-        # Class variables to use whenever within the class when necessary
-        self.state = self.get_model_srv(self.model, '')
+        # Class constants
+        self.state = None
 
     def update_state(self):
 
@@ -49,6 +49,7 @@ def main():
     
     while not rospy.is_shutdown():
         try:
+            localisation.state = localisation.get_model_srv(localisation.model, '')
             localisation.update_state()
             r.sleep()
 

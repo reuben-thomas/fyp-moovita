@@ -16,7 +16,7 @@ class PathTracker:
         
         # Initialise subscribers
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=50)
-        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=50)
+        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=10)
 
         # Load parameters
         self.tracker_params = rospy.get_param("/path_tracker")
@@ -126,7 +126,7 @@ def main():
     path_tracker = PathTracker()
 
     # Initialise the node
-    rospy.init_node('path_tracker')
+    rospy.init_node('path_tracker', anonymous=True)
 
     # Set update rate
     r = rospy.Rate(path_tracker.frequency)
