@@ -106,7 +106,7 @@ class PathTracker:
         print("\n")
         print("Heading error = {}".format(heading_error))
         print("Cross-track error = {}".format(crosstrack_error))
-        print("Steering error = {} + {} = {}".format(heading_error, crosstrack_error, sigma_t))
+        print("Steering error (+-0.95) = {} + {} = {}".format(heading_error, crosstrack_error, sigma_t))
 
         return sigma_t, current_target_idx
 
