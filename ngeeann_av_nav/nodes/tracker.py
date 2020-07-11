@@ -37,7 +37,7 @@ class PathTracker:
         self.cx = []
         self.cy = []
         self.cyaw = []
-
+        
     def vehicle_state_cb(self, msg):
 
         self.x = msg.x
@@ -68,14 +68,18 @@ class PathTracker:
         dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
         dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
 
-        rospy.loginfo("dx:{} and dy:{}".format(dx, dy))
-
         d = np.hypot(dx, dy) # Find the distance from the front axle to the path
         target_idx = np.argmin(d) # Find the shortest distance in the array
 
         # Project RMS error onto the front axle vector
         front_axle_vec = [-np.cos(self.yaw + self.halfpi), -np.sin(self.yaw + self.halfpi)]
         error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
+
+        print("\n")
+        print("Vehicle speed: {}".format(self.target_vel))
+        print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
+        print("Target (x, y): ({}, {})".format(self.cx[target_idx], self.cy[target_idx]))
+        print("e(t): {}".format(error_front_axle))
         
         return target_idx, error_front_axle
 
@@ -86,9 +90,9 @@ class PathTracker:
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
-        phi_t = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw)
-        e_t = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
-        sigma_t = phi_t + e_t
+        heading_error = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw)
+        crosstrack_error = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
+        sigma_t = heading_error + crosstrack_error
 
         if sigma_t >= self.max_steer:
             sigma_t = self.max_steer
@@ -98,6 +102,11 @@ class PathTracker:
 
         else:
             pass
+
+        print("\n")
+        print("Heading error = {}".format(heading_error))
+        print("Cross-track error = {}".format(crosstrack_error))
+        print("Steering error = {} + {} = {}".format(heading_error, crosstrack_error, sigma_t))
 
         return sigma_t, current_target_idx
 
