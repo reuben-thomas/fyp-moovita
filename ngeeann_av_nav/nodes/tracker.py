@@ -12,14 +12,15 @@ class PathTracker:
     def __init__(self):
 
         # Initialise publishers
-        self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=30)
+        self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=50)
         
         # Initialise subscribers
-        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=30)
-        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=30)
+        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=50)
+        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=50)
 
         # Load parameters
         self.tracker_params = rospy.get_param("/path_tracker")
+        self.frequency = self.tracker_params["update_frequency"]
         self.target_vel = self.tracker_params["target_velocity"]
         self.k = self.tracker_params["control_gain"]
         self.ksoft = self.tracker_params["softening_gain"]
@@ -28,7 +29,6 @@ class PathTracker:
 
         # Class constants
         self.halfpi = np.pi / 2.0
-        self.frequency = 30.0
 
         # Class variables to use whenever within the class when necessary
         self.x = None
@@ -128,7 +128,7 @@ def main():
     # Initialise the node
     rospy.init_node('path_tracker')
 
-    # Set update rate, default to 30
+    # Set update rate
     r = rospy.Rate(path_tracker.frequency)
 
     target_idx, _ = path_tracker.target_index_calculator()
@@ -140,7 +140,7 @@ def main():
             r.sleep()
 
         except KeyboardInterrupt:
-            print("Shutting down ROS node...")
+            rospy.loginfo("Shutting down ROS node...")
 
 if __name__ == "__main__":
     main()

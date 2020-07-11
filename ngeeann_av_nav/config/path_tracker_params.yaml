@@ -1,6 +1,0 @@
-path_tracker:
-  target_velocity: 5.0
-  control_gain: 1.0
-  softening_gain: 1.0
-  steering_limits: 0.95
-  centreofgravity_to_frontaxle: 1.483

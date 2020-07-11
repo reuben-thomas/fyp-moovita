@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 
-<!-- ngeeann_av.launch
-This launch file launches the latest work of fyp-moovita.
--->
+<!-- ngeeann_av.launch -->
+<!-- This launch file launches the latest work of fyp-moovita. -->
 
 <launch>
 
@@ -49,8 +48,8 @@ This launch file launches the latest work of fyp-moovita.
 	<!-- Path planner node -->
 	<node name="path_planner" pkg="ngeeann_av_nav" type="planner.py"/>
 
-	<!-- Path tracker parameters -->
-	<rosparam file="$(find ngeeann_av_nav)/config/path_tracker_params.yaml"/>
+	<!-- Navigation parameters -->
+	<rosparam file="$(find ngeeann_av_nav)/config/navigation_params.yaml"/>
 
 	<group ns="$(arg namespace)">
 

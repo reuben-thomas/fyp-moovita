@@ -1,37 +1,59 @@
 #!/usr/bin/env python
 
-#LOCALISATION NODE
-#Retrieves vehicle state from gazebo, converts to 2D position and planae
+# LOCALISATION NODE
+# Retrieves vehicle state from gazebo, converts to 2D position and planae
 
 import rospy
-from gazebo_msgs.srv import GetModelState
-from geometry_msgs.msg import Pose2D
 import numpy as np
 
-def get_heading():
-    heading = 2.0 * np.arctan2(state.pose.orientation.z, state.pose.orientation.w)
-    return heading
+from gazebo_msgs.srv import GetModelState
+from geometry_msgs.msg import Pose2D
 
+class Localisation:
 
-def update_state():
+    def __init__(self):
 
-    state2d = Pose2D()
-    state2d.x = state.pose.position.x
-    state2d.y = state.pose.position.y
-    state2d.theta = get_heading()
-    localisation.publish(state2d)
+        # Wait and initialise service
+        rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
+        self.get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
 
-if __name__=="__main__":
+        # Initialise publishers
+        self.localisation_pub = rospy.Publisher('/ngeeann_av/state2D', Pose2D, queue_size=50)
+
+        # Load parameters
+        self.localisation_params = rospy.get_param("/localisation")
+        self.frequency = self.localisation_params["update_frequency"]
+        self.model = self.localisation_params["model_name"]
+
+        # Class variables to use whenever within the class when necessary
+        self.state = self.get_model_srv(self.model, '')
+
+    def update_state(self):
+
+        state2d = Pose2D()
+        state2d.x = self.state.pose.position.x
+        state2d.y = self.state.pose.position.y
+        state2d.theta = 2.0 * np.arctan2(self.state.pose.orientation.z, self.state.pose.orientation.w)
+        self.localisation_pub.publish(state2d)
+
+def main():
+
+    # Initialise the class
+    localisation = Localisation()
+
+    # Initialise the node
     rospy.init_node('localisation')
-    rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
-    get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
-    localisation = rospy.Publisher('/ngeeann_av/state2D', Pose2D, queue_size=1) 
-    r = rospy.Rate(30) # Set update rate, default to 30
+
+    # Set update rate
+    r = rospy.Rate(localisation.frequency)
     
     while not rospy.is_shutdown():
         try:
-            state = get_model_srv('ngeeann_av', '')
-            update_state()
+            localisation.update_state()
             r.sleep()
-        except rospy.ServiceException as e:
-            rospy.loginfo("Navigation node failed:  {0}".format(e))
+
+        except KeyboardInterrupt:
+            rospy.loginfo("Shutting down ROS node...")
+
+if __name__=="__main__":
+    main()
