@@ -19,13 +19,17 @@ class PathTracker:
         self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=10)
 
         # Load parameters
-        self.tracker_params = rospy.get_param("/path_tracker")
-        self.frequency = self.tracker_params["update_frequency"]
-        self.target_vel = self.tracker_params["target_velocity"]
-        self.k = self.tracker_params["control_gain"]
-        self.ksoft = self.tracker_params["softening_gain"]
-        self.max_steer = self.tracker_params["steering_limits"]
-        self.cg2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
+        try:
+            self.tracker_params = rospy.get_param("/path_tracker")
+            self.frequency = self.tracker_params["update_frequency"]
+            self.target_vel = self.tracker_params["target_velocity"]
+            self.k = self.tracker_params["control_gain"]
+            self.ksoft = self.tracker_params["softening_gain"]
+            self.max_steer = self.tracker_params["steering_limits"]
+            self.cg2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
+        
+        except:
+            raise Exception("Missing ROS parameters. Check the configuration file.")
 
         # Class constants
         self.halfpi = np.pi / 2.0
