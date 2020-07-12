@@ -36,6 +36,10 @@ class Localisation:
         state2d.theta = 2.0 * np.arctan2(self.state.pose.orientation.z, self.state.pose.orientation.w)
         self.localisation_pub.publish(state2d)
 
+        # Print state
+        rospy.loginfo("Position (x,y): ({},{})".format(round(state2d.x, 5), round(state2d.y, 5)))
+        rospy.loginfo("Heading: {}".format(round(state2d.theta, 5)))
+
 def main():
 
     # Initialise the class

@@ -24,9 +24,9 @@ class PathPlanner:
         self.ds = 0.1
 
         # Class variables to use whenever within the class when necessary
-        '''
-        self.ax = [100.0, 100.0, 96.0, 90.0, 0.0]
-        self.ay = [18.3, 31.0, 43.0, 47.0, 0.0]
+        self.ax = [100.0, 100.0, 96.0, 90.0]
+        self.ay = [18.3, 31.0, 43.0, 47.0]
+        
         '''
         self.cx = []
         self.cy = []
@@ -42,6 +42,7 @@ class PathPlanner:
         self.ax = df['X-axis'].values.tolist()
         self.ay = df['Y-axis'].values.tolist()
         self.ay[1] = 47
+        '''
         
 
     def create_pub_path(self, count):
@@ -62,6 +63,8 @@ class PathPlanner:
             npose.pose.position.z = 0.0
             npose.pose.orientation = self.heading_to_quaternion(self.cyaw[n] + (self.halfpi))
             target_path.poses.append(npose)
+
+        rospy.loginfo("Total Points: {}".format(len(target_path.poses)))
 
         self.path_planner_pub.publish(target_path)
 
