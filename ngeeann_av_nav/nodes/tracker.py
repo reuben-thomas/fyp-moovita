@@ -135,7 +135,7 @@ def main():
     path_tracker = PathTracker()
 
     # Initialise the node
-    rospy.init_node('path_tracker', anonymous=True)
+    rospy.init_node('path_tracker')
 
     # Set update rate
     r = rospy.Rate(path_tracker.frequency)
