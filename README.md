@@ -11,7 +11,6 @@ This project covers the development of an autonomous vehicle platform in a simul
 
 ### Software
 1. [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
-   - [fake_localization](http://wiki.ros.org/fake_localization)
    - [joint_state_publisher](http://wiki.ros.org/joint_state_publisher)
    - joint_state_publisher_gui
    - [ros_controller](http://wiki.ros.org/ros_control#Install)
@@ -57,35 +56,32 @@ This project covers the development of an autonomous vehicle platform in a simul
 3. Install [Git](https://git-scm.com/download/linux)
    - `sudo apt-get install git`
   
-4. Install [fake_localization](http://wiki.ros.org/fake_localization)
-   - `sudo apt-get install ros-kinetic-fake-localization`
-  
-5. Install [joint_state_publisher](http://wiki.ros.org/joint_state_publisher)
+4. Install [joint_state_publisher](http://wiki.ros.org/joint_state_publisher)
     - `sudo apt-get install joint-state-publisher`
   
-6. Install joint_state_publisher_gui
+5. Install joint_state_publisher_gui
     - `sudo apt-get install ros-kinetic-joint-state-publisher-gui`
   
-7. Install [ros_controller](http://wiki.ros.org/ros_control#Install)
+6. Install [ros_controller](http://wiki.ros.org/ros_control#Install)
     - `sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers`
     
-8. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
+7. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
     - `sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control`
     
-9. Install [rospy](http://wiki.ros.org/rospy)
+8. Install [rospy](http://wiki.ros.org/rospy)
     - `sudo apt-get install python-rospy`
    
-10. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
+9. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
    - `git clone https://github.com/ros-drivers/ackermann_msgs.git`
    
-11. Install [pip](https://pypi.org/project/pip/)
+10. Install [pip](https://pypi.org/project/pip/)
     - `sudo apt-get install python-pip`
    
-12. Install [NumPy](https://pypi.org/project/numpy/)
+11. Install [NumPy](https://pypi.org/project/numpy/)
     - `pip install --upgrade pip`
     - `pip install NumPy`
     
-13. Install [pandas](https://pandas.pydata.org/getting_started.html)
+12. Install [pandas](https://pandas.pydata.org/getting_started.html)
     - `pip install --upgrade pip`
     - `pip install pandas`
     
