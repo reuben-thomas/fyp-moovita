@@ -25,7 +25,7 @@ class PathTracker:
         self.k = self.tracker_params["control_gain"]
         self.ksoft = self.tracker_params["softening_gain"]
         self.max_steer = self.tracker_params["steering_limits"]
-        self.cog2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
+        self.cg2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
 
         # Class constants
         self.halfpi = np.pi / 2.0
@@ -59,8 +59,8 @@ class PathTracker:
     def target_index_calculator(self):
 
         # Calculate position of the front axle
-        fx = self.x + self.cog2frontaxle * np.cos(self.yaw)
-        fy = self.y + self.cog2frontaxle * np.sin(self.yaw)
+        fx = self.x + self.cg2frontaxle * np.cos(self.yaw)
+        fy = self.y + self.cg2frontaxle * np.sin(self.yaw)
 
         while not self.cx or not self.cy:
             pass
