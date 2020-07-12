@@ -2,7 +2,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
+import sys, os
+import pandas as pd
 
 try:
     import cubic_spline_planner
@@ -127,12 +128,33 @@ def calc_target_index(state, cx, cy):
 
     return target_idx, error_front_axle
 
+def walk_up_folder(path, dir_goal='fyp-moovita'):
+    dir_path = os.path.dirname(path)
+    split_path = str.split(dir_path, '/')     
+    counter = 0  
+    while (split_path[-1] != dir_goal and counter < 20):
+        dir_path = os.path.dirname(dir_path)
+        split_path = str.split(dir_path, '/')
+        counter += 1
+    
+    return dir_path
 
 def main():
     """Plot an example of Stanley steering control on a cubic spline."""
+
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    dir_path = walk_up_folder(dir_path)
+    df = pd.read_csv(os.path.join(dir_path, 'scripts', 'waypoints.csv'))
+    
+    ax = df['X-axis'].values.tolist()
+    ay = df['Y-axis'].values.tolist()
+    # ay[1] = 47
+
     #  target course
+    '''
     ax = [0.0, 100.0, 100.0, 50.0, 60.0]
     ay = [0.0, 0.0, -30.0, -20.0, 0.0]
+    '''
 
     cx, cy, cyaw, ck, s = cubic_spline_planner.calc_spline_course(
         ax, ay, ds=0.1)
@@ -142,7 +164,7 @@ def main():
     max_simulation_time = 100.0
 
     # Initial state
-    state = State(x=-0.0, y=5.0, yaw=np.radians(20.0), v=0.0)
+    state = State(x=101.835, y=5.0, yaw=np.radians(20.0), v=0.0)
 
     last_idx = len(cx) - 1
     time = 0.0
