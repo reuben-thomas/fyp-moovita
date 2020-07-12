@@ -33,7 +33,15 @@ class Localisation:
         state2d = Pose2D()
         state2d.x = self.state.pose.position.x
         state2d.y = self.state.pose.position.y
-        state2d.theta = 2.0 * np.arctan2(self.state.pose.orientation.z, self.state.pose.orientation.w)
+        state2d.theta = -2.0 * np.arctan2(self.state.pose.orientation.z, self.state.pose.orientation.w)
+
+        # Aligning heading to y-axis
+        if state2d.theta > 2.0 * np.pi:
+            state2d.theta -= 2.0 * np.pi
+        elif state2d.theta < 0.0:
+            state2d.theta += 2.0 * np.pi
+        
+
         self.localisation_pub.publish(state2d)
 
         # Print state

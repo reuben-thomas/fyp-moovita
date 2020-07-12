@@ -24,8 +24,8 @@ class PathPlanner:
         self.ds = 0.1
 
         # Class variables to use whenever within the class when necessary
-        self.ax = [100.0, 100.0, 96.0, 90.0]
-        self.ay = [18.3, 31.0, 43.0, 47.0]
+        self.ax = [101.835, 100.0, 100.0, 96.0, 90.0]
+        self.ay = [10, 18.3, 31.0, 43.0, 47.0]
         
         '''
         self.cx = []
