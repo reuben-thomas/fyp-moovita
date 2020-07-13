@@ -51,8 +51,8 @@ class Localisation:
         self.localisation_pub.publish(state2d)
 
         # Print state
-        rospy.loginfo("Position (x,y): ({},{})".format(round(state2d.x, 5), round(state2d.y, 5)))
-        rospy.loginfo("Heading: {}".format(round(state2d.theta, 5)))
+        rospy.loginfo("Position (x,y): ({},{})".format(round(state2d.pose.x, 5), round(state2d.pose.y, 5)))
+        rospy.loginfo("Heading: {}".format(round(state2d.pose.theta, 5)))
 
 def main():
 
