@@ -6,6 +6,7 @@ import numpy as np
 from ngeeann_av_nav.msg import State2D
 from ackermann_msgs.msg import AckermannDrive
 from nav_msgs.msg import Path
+from ngeeann_av_nav.msg import Path2D
 
 class PathTracker:
 
@@ -16,7 +17,7 @@ class PathTracker:
         
         # Initialise subscribers
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
-        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=10)
+        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb, queue_size=10)
 
         # Load parameters
         try:
@@ -51,20 +52,20 @@ class PathTracker:
     def path_cb(self, msg):
         
         for i in range(0, len(msg.poses)):
-            px = msg.poses[i].pose.position.x
-            py = msg.poses[i].pose.position.y
-            orientation = 2 * np.arctan2(msg.poses[i].pose.orientation.z, msg.poses[i].pose.orientation.w)
+            px = msg.poses[i].x
+            py = msg.poses[i].y
+            ptheta = msg.poses[i].theta
             self.cx.append(px)
             self.cy.append(py)
-            self.cyaw.append(orientation)
+            self.cyaw.append(ptheta)
 
         self.path_sub.unregister()
         
     def target_index_calculator(self):
 
         # Calculate position of the front axle
-        fx = self.x + self.cg2frontaxle * np.cos(self.yaw)
-        fy = self.y + self.cg2frontaxle * np.sin(self.yaw)
+        fx = self.x + self.cg2frontaxle * np.sin(self.yaw + self.halfpi)
+        fy = self.y + self.cg2frontaxle * np.cos(self.yaw + self.halfpi)
 
         while not self.cx or not self.cy:
             pass
@@ -76,7 +77,7 @@ class PathTracker:
         target_idx = np.argmin(d) # Find the shortest distance in the array
 
         # Project RMS error onto the front axle vector
-        front_axle_vec = [-np.cos(self.yaw + self.halfpi), -np.sin(self.yaw + self.halfpi)]
+        front_axle_vec = [-np.cos(self.yaw + np.pi), -np.sin(self.yaw + np.pi)]
         error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
         print("\n")
@@ -94,16 +95,14 @@ class PathTracker:
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
-        heading_error = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw)
+        heading_error = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw - self.halfpi)
         crosstrack_error = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
         sigma_t = heading_error + crosstrack_error
 
         if sigma_t >= self.max_steer:
             sigma_t = self.max_steer
-
         elif sigma_t <= -self.max_steer:
             sigma_t = -self.max_steer
-
         else:
             pass
 

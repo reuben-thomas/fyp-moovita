@@ -38,12 +38,7 @@ class PathPlanner:
             npose = Pose2D()
             npose.x  = cx[n]
             npose.y = cy[n]
-
-            # Aligns target heading to y-axis
-            npose.theta = -cyaw[n] + self.halfpi
-            if (npose.theta < 0.0):
-                npose.theta = (2.0 * np.pi) + npose.theta
-
+            npose.theta = cyaw[n]
             target_path.poses.append(npose)
 
         rospy.loginfo("Total Points: {}".format(len(target_path.poses)))
