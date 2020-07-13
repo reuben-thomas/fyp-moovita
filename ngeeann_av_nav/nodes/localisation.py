@@ -21,9 +21,13 @@ class Localisation:
         self.localisation_pub = rospy.Publisher('/ngeeann_av/state2D', State2D, queue_size=50)
 
         # Load parameters
-        self.localisation_params = rospy.get_param("/localisation")
-        self.frequency = self.localisation_params["update_frequency"]
-        self.model = self.localisation_params["model_name"]
+        try:
+            self.localisation_params = rospy.get_param("/localisation")
+            self.frequency = self.localisation_params["update_frequency"]
+            self.model = self.localisation_params["model_name"]
+
+        except:
+            raise Exception("Missing ROS parameters. Check the configuration file.")
 
         # Class constants
         self.state = None
