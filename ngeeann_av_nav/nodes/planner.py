@@ -28,11 +28,6 @@ class PathPlanner:
         self.ay = [10, 18.3, 31.0, 43.0, 47.0]
         
         '''
-        self.cx = []
-        self.cy = []
-        self.cyaw = []
-
-        
         # Get path to waypoints.csv
         dir_path = os.path.dirname(os.path.abspath(__file__))
         dir_path = self.walk_up_folder(dir_path)
@@ -43,25 +38,24 @@ class PathPlanner:
         self.ay = df['Y-axis'].values.tolist()
         self.ay[1] = 47
         '''
-        
 
     def create_pub_path(self, count):
 
-        self.cx, self.cy, self.cyaw, _, _ = cubic_spline_planner.calc_spline_course(self.ax, self.ay, self.ds)
+        cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(self.ax, self.ay, self.ds)
         target_path = Path()
         target_path.header.frame_id = self.frame_id
         target_path.header.stamp = rospy.Time.now()
         target_path.header.seq = count
 
-        for n in range(0, len(self.cx)):
+        for n in range(0, len(cx)):
             npose = PoseStamped()
             npose.header.frame_id = self.frame_id
             npose.header.seq = n
             npose.header.stamp = rospy.Time.now()
-            npose.pose.position.x = self.cx[n]
-            npose.pose.position.y = self.cy[n]
+            npose.pose.position.x = cx[n]
+            npose.pose.position.y = cy[n]
             npose.pose.position.z = 0.0
-            npose.pose.orientation = self.heading_to_quaternion(self.cyaw[n] + (self.halfpi))
+            npose.pose.orientation = self.heading_to_quaternion(cyaw[n] + (self.halfpi))
             target_path.poses.append(npose)
 
         rospy.loginfo("Total Points: {}".format(len(target_path.poses)))
