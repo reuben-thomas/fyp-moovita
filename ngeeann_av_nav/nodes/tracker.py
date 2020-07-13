@@ -50,6 +50,7 @@ class PathTracker:
         self.x = msg.pose.x
         self.y = msg.pose.y
         self.yaw = msg.pose.theta
+        self.vel = msg.twist.y
         self.yawrate = msg.twist.w
 
     def path_cb(self, msg):
@@ -97,7 +98,7 @@ class PathTracker:
     def trajectory_yaw_calc(self, target_idx):
 
         # points ahead / behind
-        n = 2
+        n = 5
 
         if ((target_idx - n) == 0):
             return 0.0
@@ -125,7 +126,7 @@ class PathTracker:
             r_traj = (a * b * c) / (4.0 * area)
 
             #trajectory yaw rate
-            traj_yaw_rate = self.target_vel / r_traj
+            traj_yaw_rate = self.vel / r_traj
             
             if (self.cyaw[target_idx + n] > self.cyaw[target_idx - n]):
                 return traj_yaw_rate
@@ -148,7 +149,7 @@ class PathTracker:
             current_target_idx = last_target_idx
 
 
-        if ((current_target_idx - 2) != 0):
+        if ((current_target_idx - 5) != 0):
             yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yaw_calc(current_target_idx))
             print("Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, yaw_rate_term))
 
