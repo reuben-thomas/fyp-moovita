@@ -13,7 +13,7 @@ class PathPlanner:
     def __init__(self):
 
         # Initialise publishers
-        self.path_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=50)
+        self.path_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
         # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=30) 
 
         # Load parameters

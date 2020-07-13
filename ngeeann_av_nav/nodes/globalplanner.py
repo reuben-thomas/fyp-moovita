@@ -11,7 +11,7 @@ class GlobalPlanner:
     def __init__(self):
 
         # Initialise publisher(s)
-        self.path_planner_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=30)
+        self.path_planner_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=10)
 
         # Initialise suscriber(s)
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
@@ -20,7 +20,7 @@ class GlobalPlanner:
         try:
             self.global_planner_params = rospy.get_param("/path_planner")
             self.frequency = self.global_planner_params["update_frequency"]
-            
+
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
 
