@@ -2,6 +2,7 @@
 
 import rospy, cubic_spline_planner
 import numpy as np
+import math
 
 from ngeeann_av_nav.msg import State2D
 from ackermann_msgs.msg import AckermannDrive
@@ -26,6 +27,7 @@ class PathTracker:
             self.target_vel = self.tracker_params["target_velocity"]
             self.k = self.tracker_params["control_gain"]
             self.ksoft = self.tracker_params["softening_gain"]
+            self.kyaw = self.tracker_params["yawrate_gain"]
             self.max_steer = self.tracker_params["steering_limits"]
             self.cg2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
         
@@ -48,6 +50,7 @@ class PathTracker:
         self.x = msg.pose.x
         self.y = msg.pose.y
         self.yaw = msg.pose.theta
+        self.yawrate = msg.twist.w
 
     def path_cb(self, msg):
         
@@ -59,6 +62,7 @@ class PathTracker:
             self.cy.append(py)
             self.cyaw.append(ptheta)
 
+        rospy.loginfo("Total Points: {}".format(len(msg.poses)))
         self.path_sub.unregister()
         
     def target_index_calculator(self):
@@ -84,9 +88,57 @@ class PathTracker:
         print("Vehicle speed: {}".format(self.target_vel))
         print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
         print("Target (x, y): ({}, {})".format(self.cx[target_idx], self.cy[target_idx]))
-        print("e(t): {}".format(error_front_axle))
+
+
+        # print("e(t): {}".format(error_front_axle))
         
         return target_idx, error_front_axle
+
+    def trajectory_yaw_calc(self, target_idx):
+
+        # points ahead / behind
+        n = 2
+
+        if ((target_idx - n) == 0):
+            return 0.0
+        else:
+            #3 points created at previous, current, next target by given increment
+            x1 = self.cx[target_idx - n]
+            y1 = self.cy[target_idx - n]
+            x2 = self.cx[target_idx]
+            y2 = self.cy[target_idx]
+            x3 = self.cx[target_idx + n]
+            y3 = self.cy[target_idx + n]
+
+            #define each side of triangle
+            a = self.distance_calc(x1, y1, x2, y2)
+            b = self.distance_calc(x2, y2, x3, y3)
+            c = self.distance_calc(x1, y1, x3, y3)
+
+            #calculate half perimeter
+            p = (a + b + c) * 0.5
+
+            #calculate triangle area
+            area = math.sqrt(p * (p - a) + (p -b) + (p - c))
+
+            #radius of circle drawn from 3 points
+            r_traj = (a * b * c) / (4.0 * area)
+
+            #trajectory yaw rate
+            traj_yaw_rate = self.target_vel / r_traj
+            
+            if (self.cyaw[target_idx + n] > self.cyaw[target_idx - n]):
+                return traj_yaw_rate
+            elif (self.cyaw[target_idx + n] < self.cyaw[target_idx - n]):
+                return -traj_yaw_rate
+            else:
+                return 0.0
+
+
+    def distance_calc(self, x1, y1, x2, y2):
+        dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+        return dist
+
 
     def stanley_control(self, last_target_idx):
         
@@ -94,6 +146,11 @@ class PathTracker:
 
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
+
+
+        if ((current_target_idx - 2) != 0):
+            yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yaw_calc(current_target_idx))
+            print("Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, yaw_rate_term))
 
         heading_error = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw - self.halfpi)
         crosstrack_error = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
