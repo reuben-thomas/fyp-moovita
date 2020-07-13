@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-# LOCALISATION NODE
-# Retrieves vehicle state from gazebo, converts to 2D position and planae
-
 import rospy
 import numpy as np
 
@@ -50,7 +47,6 @@ class Localisation:
         state2d.twist.x = self.state.twist.linear.x
         state2d.twist.y = self.state.twist.linear.y
         state2d.twist.w = -self.state.twist.angular.z
-
 
         self.localisation_pub.publish(state2d)
 
