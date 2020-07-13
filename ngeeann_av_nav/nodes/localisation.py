@@ -8,6 +8,7 @@ import numpy as np
 
 from gazebo_msgs.srv import GetModelState
 from geometry_msgs.msg import Pose2D
+from ngeeann_av_nav.msg import State2D
 
 class Localisation:
 
@@ -18,7 +19,7 @@ class Localisation:
         self.get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
 
         # Initialise publishers
-        self.localisation_pub = rospy.Publisher('/ngeeann_av/state2D', Pose2D, queue_size=50)
+        self.localisation_pub = rospy.Publisher('/ngeeann_av/state2D', State2D, queue_size=50)
 
         # Load parameters
         self.localisation_params = rospy.get_param("/localisation")
@@ -30,17 +31,23 @@ class Localisation:
 
     def update_state(self):
 
-        state2d = Pose2D()
-        state2d.x = self.state.pose.position.x
-        state2d.y = self.state.pose.position.y
-        state2d.theta = -2.0 * np.arctan2(self.state.pose.orientation.z, self.state.pose.orientation.w)
+        # Set vehicle pose x,y, theta
+        state2d = State2D()
+        state2d.pose.x = self.state.pose.position.x
+        state2d.pose.y = self.state.pose.position.y
+        state2d.pose.theta = -2.0 * np.arctan2(self.state.pose.orientation.z, self.state.pose.orientation.w)
 
         # Aligning heading to y-axis
-        if state2d.theta > 2.0 * np.pi:
-            state2d.theta -= 2.0 * np.pi
-        elif state2d.theta < 0.0:
-            state2d.theta += 2.0 * np.pi
-        
+        if state2d.pose.theta > 2.0 * np.pi:
+            state2d.pose.theta -= 2.0 * np.pi
+        elif state2d.pose.theta < 0.0:
+            state2d.pose.theta += 2.0 * np.pi
+
+        # Set linear velocity x,y and angular velocity w
+        state2d.twist.x = self.state.twist.linear.x
+        state2d.twist.y = self.state.twist.linear.y
+        state2d.twist.w = self.state.twist.angular.z
+
 
         self.localisation_pub.publish(state2d)
 
