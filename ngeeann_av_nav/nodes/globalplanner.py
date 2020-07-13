@@ -4,14 +4,14 @@ import rospy, os
 import numpy as np
 import pandas as pd
 
-from ngeeann_av_nav.msg import Path2D
+from ngeeann_av_nav.msg import Path2D, State2D
 
 class GlobalPlanner:
 
     def __init__(self):
 
         # Initialise publisher(s)
-        self.path_planner_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=10)
+        self.goals_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=10)
 
         # Initialise suscriber(s)
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
@@ -34,6 +34,20 @@ class GlobalPlanner:
         self.ay = df['Y-axis'].values.tolist()
         # self.ay[1] = 47
 
+        # Class variables to use whenever within the class when necessary
+        self.x = None
+        self.y = None
+        self.yaw = None
+
+    def vehicle_state_cb(self, msg):
+
+        self.x = msg.pose.x
+        self.y = msg.pose.y
+        self.yaw = msg.pose.theta
+
+    def publish_goals(self):
+
+        pass
 
     def walk_up_folder(self, path, dir_goal='fyp-moovita'):
 
@@ -41,10 +55,10 @@ class GlobalPlanner:
         split_path = str.split(dir_path, '/')     
         counter = 0  
 
-        while (split_path[-1] != dir_goal and counter < 20.0):
+        while (split_path[-1] != dir_goal and counter < 20):
             dir_path = os.path.dirname(dir_path)
             split_path = str.split(dir_path, '/')
-            counter += 1.0
+            counter += 1
     
         return dir_path
         
