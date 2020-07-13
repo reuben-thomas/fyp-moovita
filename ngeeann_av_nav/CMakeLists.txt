@@ -55,6 +55,7 @@ add_message_files(
   FILES
   State2D.msg
   Twist2D.msg
+  Path2D.msg
 )
 
 ## Generate services in the 'srv' folder

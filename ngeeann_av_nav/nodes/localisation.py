@@ -6,8 +6,7 @@
 import rospy
 import numpy as np
 
-from gazebo_msgs.srv import GetModelState
-from geometry_msgs.msg import Pose2D
+from gazebo_msgs.srv import GetModelState  
 from ngeeann_av_nav.msg import State2D
 
 class Localisation:
@@ -31,7 +30,7 @@ class Localisation:
 
     def update_state(self):
 
-        # Set vehicle pose x,y, theta
+        # Define vehicle pose x,y, theta
         state2d = State2D()
         state2d.pose.x = self.state.pose.position.x
         state2d.pose.y = self.state.pose.position.y
@@ -43,10 +42,11 @@ class Localisation:
         elif state2d.pose.theta < 0.0:
             state2d.pose.theta += 2.0 * np.pi
 
-        # Set linear velocity x,y and angular velocity w
+        # Define linear velocity x,y and angular velocity w
         state2d.twist.x = self.state.twist.linear.x
         state2d.twist.y = self.state.twist.linear.y
-        state2d.twist.w = self.state.twist.angular.z
+        state2d.twist.w = -self.state.twist.angular.z
+
 
         self.localisation_pub.publish(state2d)
 
