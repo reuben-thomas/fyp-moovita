@@ -13,16 +13,20 @@ class PathPlanner:
     def __init__(self):
 
         # Initialise publishers
-        self.path_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=30)
+        self.path_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=50)
         # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=30) 
 
         # Load parameters
-        self.planner_params = rospy.get_param("/path_planner")
-        self.frequency = self.planner_params["update_frequency"]
-        self.frame_id = self.planner_params["frame_id"]
+        try:
+            self.planner_params = rospy.get_param("/path_planner")
+            self.frequency = self.planner_params["update_frequency"]
+            self.frame_id = self.planner_params["frame_id"]
+
+        except:
+            raise Exception("Missing ROS parameters. Check the configuration file.")
 
         # Class constants
-        self.halfpi = np.pi / 2.0
+        self.halfpi = np.pi / 2
         self.ds = 0.1
 
         # Class variables to use whenever within the class when necessary
@@ -42,7 +46,7 @@ class PathPlanner:
             # Aligns target heading to y-axis
             npose.theta = -cyaw[n] + self.halfpi
             if (npose.theta < 0.0):
-                npose.theta = (2.0 * np.pi) + npose.theta
+                npose.theta = (2 * np.pi) + npose.theta
 
             target_path.poses.append(npose)
 
@@ -79,8 +83,8 @@ class PathPlanner:
         quaternion = Quaternion()
         quaternion.x = 0.0
         quaternion.y = 0.0
-        quaternion.z = np.sin(heading / 2.0)
-        quaternion.w = np.cos(heading / 2.0)
+        quaternion.z = np.sin(heading / 2)
+        quaternion.w = np.cos(heading / 2)
 
         return quaternion
 
@@ -90,10 +94,10 @@ class PathPlanner:
         split_path = str.split(dir_path, '/')     
         counter = 0  
 
-        while (split_path[-1] != dir_goal and counter < 20.0):
+        while (split_path[-1] != dir_goal and counter < 20):
             dir_path = os.path.dirname(dir_path)
             split_path = str.split(dir_path, '/')
-            counter += 1.0
+            counter += 1
         
         return dir_path
 
