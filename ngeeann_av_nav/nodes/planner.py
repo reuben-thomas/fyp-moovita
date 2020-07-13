@@ -6,13 +6,15 @@ import pandas as pd
 
 from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
 from nav_msgs.msg import Path
+from ngeeann_av_nav.msg import Path2D
 
 class PathPlanner:
 
     def __init__(self):
 
         # Initialise publishers
-        self.path_planner_pub = rospy.Publisher('/ngeeann_av/path', Path, queue_size=10) 
+        self.path_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=30)
+        # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=30) 
 
         # Load parameters
         self.planner_params = rospy.get_param("/path_planner")
@@ -26,21 +28,30 @@ class PathPlanner:
         # Class variables to use whenever within the class when necessary
         self.ax = [101.835, 100.0, 100.0, 96.0, 90.0]
         self.ay = [10, 18.3, 31.0, 43.0, 47.0]
-        
-        '''
-        # Get path to waypoints.csv
-        dir_path = os.path.dirname(os.path.abspath(__file__))
-        dir_path = self.walk_up_folder(dir_path)
-        df = pd.read_csv(os.path.join(dir_path, 'scripts', 'waypoints.csv'))
 
-        # Import waypoints.csv into ax and ay
-        self.ax = df['X-axis'].values.tolist()
-        self.ay = df['Y-axis'].values.tolist()
-        self.ay[1] = 47
-        '''
+    def create_pub_path(self):
 
-    def create_pub_path(self, count):
+        cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(self.ax, self.ay, self.ds)
+        target_path = Path2D()
 
+        for n in range(0, len(cx)):
+            npose = Pose2D()
+            npose.x  = cx[n]
+            npose.y = cy[n]
+
+            # Aligns target heading to y-axis
+            npose.theta = -cyaw[n] + self.halfpi
+            if (npose.theta < 0.0):
+                npose.theta = (2.0 * np.pi) + npose.theta
+
+            target_path.poses.append(npose)
+
+        rospy.loginfo("Total Points: {}".format(len(target_path.poses)))
+
+        self.path_planner_pub.publish(target_path)
+
+    # Consecutively constructs and publishes path in Path2D and Path message, visualized in rviz (Requires map frame)
+    def create_viz_path(self):
         cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(self.ax, self.ay, self.ds)
         target_path = Path()
         target_path.header.frame_id = self.frame_id
@@ -55,13 +66,14 @@ class PathPlanner:
             npose.pose.position.x = cx[n]
             npose.pose.position.y = cy[n]
             npose.pose.position.z = 0.0
-            npose.pose.orientation = self.heading_to_quaternion(cyaw[n] + (self.halfpi))
+            npose.pose.orientation = self.heading_to_quaternion(cyaw[n])
             target_path.poses.append(npose)
 
         rospy.loginfo("Total Points: {}".format(len(target_path.poses)))
 
         self.path_planner_pub.publish(target_path)
 
+    # Converts yaw heading to quaternion
     def heading_to_quaternion(self, heading):
 
         quaternion = Quaternion()
@@ -96,18 +108,12 @@ def main():
     # Set update rate
     r = rospy.Rate(path_planner.frequency) 
 
-    # Start index from zero
-    count = 0
 
     while not rospy.is_shutdown():
         try:
 
             # Create path
-            path_planner.create_pub_path(count)
-            
-            # Count every time path is created
-            count += 1.0
-
+            path_planner.create_pub_path()
             r.sleep()
 
         except KeyboardInterrupt:
