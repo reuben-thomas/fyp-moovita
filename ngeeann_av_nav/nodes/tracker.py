@@ -32,7 +32,7 @@ class PathTracker:
             raise Exception("Missing ROS parameters. Check the configuration file.")
 
         # Class constants
-        self.halfpi = np.pi / 2.0
+        self.halfpi = np.pi / 2
 
         # Class variables to use whenever within the class when necessary
         self.x = None
@@ -53,7 +53,7 @@ class PathTracker:
         for i in range(0, len(msg.poses)):
             px = msg.poses[i].pose.position.x
             py = msg.poses[i].pose.position.y
-            orientation = 2.0 * np.arctan2(msg.poses[i].pose.orientation.z, msg.poses[i].pose.orientation.w)
+            orientation = 2 * np.arctan2(msg.poses[i].pose.orientation.z, msg.poses[i].pose.orientation.w)
             self.cx.append(px)
             self.cy.append(py)
             self.cyaw.append(orientation)
@@ -117,10 +117,10 @@ class PathTracker:
     def normalise_angle(self, angle):
 
         while angle > np.pi:
-            angle -= 2.0 * np.pi
+            angle -= 2 * np.pi
 
         while angle < -np.pi:
-            angle += 2.0 * np.pi
+            angle += 2 * np.pi
 
         return angle
 
