@@ -3,7 +3,7 @@
 import rospy, cubic_spline_planner
 import numpy as np
 
-from geometry_msgs.msg import Pose2D
+from ngeeann_av_nav.msg import State2D
 from ackermann_msgs.msg import AckermannDrive
 from nav_msgs.msg import Path
 
@@ -15,7 +15,7 @@ class PathTracker:
         self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=50)
         
         # Initialise subscribers
-        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', Pose2D, self.vehicle_state_cb, queue_size=50)
+        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
         self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path, self.path_cb, queue_size=10)
 
         # Load parameters
@@ -44,9 +44,9 @@ class PathTracker:
         
     def vehicle_state_cb(self, msg):
 
-        self.x = msg.x
-        self.y = msg.y
-        self.yaw = msg.theta
+        self.x = msg.pose.x
+        self.y = msg.pose.y
+        self.yaw = msg.pose.theta
 
     def path_cb(self, msg):
         
