@@ -48,7 +48,6 @@ class Localisation:
         state2d.twist.y = self.state.twist.linear.y
         state2d.twist.w = self.state.twist.angular.z
 
-
         self.localisation_pub.publish(state2d)
 
         # Print state
