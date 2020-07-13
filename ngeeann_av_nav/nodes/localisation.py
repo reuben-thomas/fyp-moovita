@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-# LOCALISATION NODE
-# Retrieves vehicle state from gazebo, converts to 2D position and planae
-
 import rospy
 import numpy as np
 
@@ -21,9 +18,13 @@ class Localisation:
         self.localisation_pub = rospy.Publisher('/ngeeann_av/state2D', State2D, queue_size=50)
 
         # Load parameters
-        self.localisation_params = rospy.get_param("/localisation")
-        self.frequency = self.localisation_params["update_frequency"]
-        self.model = self.localisation_params["model_name"]
+        try:
+            self.localisation_params = rospy.get_param("/localisation")
+            self.frequency = self.localisation_params["update_frequency"]
+            self.model = self.localisation_params["model_name"]
+
+        except:
+            raise Exception("Missing ROS parameters. Check the configuration file.")
 
         # Class constants
         self.state = None
@@ -46,7 +47,6 @@ class Localisation:
         state2d.twist.x = self.state.twist.linear.x
         state2d.twist.y = self.state.twist.linear.y
         state2d.twist.w = -self.state.twist.angular.z
-
 
         self.localisation_pub.publish(state2d)
 
