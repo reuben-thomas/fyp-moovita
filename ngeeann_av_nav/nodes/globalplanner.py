@@ -6,7 +6,7 @@ import pandas as pd
 
 from ngeeann_av_nav.msg import Path2D, State2D
 
-class GlobalPlanner:
+class GlobalPathPlanner:
 
     def __init__(self):
 
@@ -18,8 +18,9 @@ class GlobalPlanner:
 
         # Load parameters
         try:
-            self.global_planner_params = rospy.get_param("/path_planner")
+            self.global_planner_params = rospy.get_param("/global_path_planner")
             self.frequency = self.global_planner_params["update_frequency"]
+            self.givenwp = self.global_planner_params["number_of_waypoints"]
 
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
@@ -37,17 +38,58 @@ class GlobalPlanner:
         # Class variables to use whenever within the class when necessary
         self.x = None
         self.y = None
-        self.yaw = None
+        self.ax_pub = self.ax[0]
+        self.ay_pub = self.ay[0]
+        self.lowerbound = 0
+        self.upperbound = self.lowerbound + self.givenwp
 
     def vehicle_state_cb(self, msg):
 
         self.x = msg.pose.x
         self.y = msg.pose.y
-        self.yaw = msg.pose.theta
 
-    def publish_goals(self):
+    def almost_reached(self):
+        
+        # If the vehicle has almost reached the goal
+        if self.x == self.ax_pub[self.upperbound - 1] and self.y == self.ay_pub[self.upperbound - 1]:
+            self.set_waypoints(False)
+        
+        else:
+            pass
 
-        pass
+    def set_waypoints(self, first):
+
+        if first == True:
+            self.publish_goals(self.ax_pub, self.ay_pub)
+
+        else:
+            # If the number of waypoints to give is less or equal than the number of waypoints left
+            if (len(self.ax) - self.upperbound) <= self.givenwp:
+                self.ax_pub = self.ax[self.lowerbound : self.upperbound]
+                self.ay_pub = self.ay[self.lowerbound : self.upperbound]
+
+            else:
+                # If the number of waypoints to give is more than the number of waypoints left.
+                self.upperbound = len(self.ax)
+                self.ax_pub = self.ax[self.lowerbound : self.upperbound]
+                self.ay_pub = self.ay[self.lowerbound : self.upperbound]
+
+            self.publish_goals(self.ax_pub, self.ay_pub)
+
+        self.lowerbound += self.givenwp
+        self.upperbound += self.givenwp
+
+    def publish_goals(self, ax, ay):
+
+        goals = Path2D()
+
+        for i in range(self.lowerbound, self.upperbound):
+            n = 0
+            goals.poses[i].x = ax[n]
+            goals.poses[i].y = ay[n]
+            n += 1
+
+        self.goals_pub.publish(goals)
 
     def walk_up_folder(self, path, dir_goal='fyp-moovita'):
 
@@ -65,13 +107,24 @@ class GlobalPlanner:
 def main():
     
     # Initialise the class
-    global_planner = GlobalPlanner()
+    global_planner = GlobalPathPlanner()
 
     # Initialise the node
     rospy.init_node('global_planner')
 
     # Set update rate
     r = rospy.Rate(global_planner.frequency)
+
+    # Publishes the first goal
+    global_planner.set_waypoints(True)
+
+    while not rospy.is_shutdown():
+        try:
+            global_planner.almost_reached()
+            r.sleep()
+
+        except KeyboardInterrupt:
+            rospy.loginfo("Shutting down ROS node...")
 
 if __name__=="__main__":
     main()
