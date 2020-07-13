@@ -54,8 +54,10 @@ class PathPlanner:
 
         self.path_planner_pub.publish(target_path)
 
-    # Consecutively constructs and publishes path in Path2D and Path message, visualized in rviz (Requires map frame)
     def create_viz_path(self):
+
+        ''' Consecutively constructs and publishes path in Path2D and Path message, visualized in rviz (Requires map frame) '''
+
         cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(self.ax, self.ay, self.ds)
         target_path = Path()
         target_path.header.frame_id = self.frame_id
@@ -77,8 +79,9 @@ class PathPlanner:
 
         self.path_planner_pub.publish(target_path)
 
-    # Converts yaw heading to quaternion
     def heading_to_quaternion(self, heading):
+
+        ''' Converts yaw heading to quaternion'''
 
         quaternion = Quaternion()
         quaternion.x = 0.0
@@ -87,19 +90,6 @@ class PathPlanner:
         quaternion.w = np.cos(heading / 2)
 
         return quaternion
-
-    def walk_up_folder(self, path, dir_goal='fyp-moovita'):
-
-        dir_path = os.path.dirname(path)
-        split_path = str.split(dir_path, '/')     
-        counter = 0  
-
-        while (split_path[-1] != dir_goal and counter < 20):
-            dir_path = os.path.dirname(dir_path)
-            split_path = str.split(dir_path, '/')
-            counter += 1
-        
-        return dir_path
 
 def main():
 
@@ -111,7 +101,6 @@ def main():
 
     # Set update rate
     r = rospy.Rate(path_planner.frequency) 
-
 
     while not rospy.is_shutdown():
         try:
