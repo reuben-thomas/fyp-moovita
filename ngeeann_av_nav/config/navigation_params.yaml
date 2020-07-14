@@ -8,7 +8,7 @@ local_path_planner:
 
 global_path_planner:
     update_frequency: 10.0
-    number_of_waypoints: 15
+    given_number_of_waypoints: 5
 
 path_tracker:
     update_frequency: 50.0

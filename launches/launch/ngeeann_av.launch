@@ -91,11 +91,11 @@
 	<!-- Localisation node -->
 	<node name="localisation" pkg="ngeeann_av_nav" type="localisation.py"/>
 
-	<!-- Global Path Planner node -->
-	<node name="global_planner" pkg="ngeeann_av_nav" type="globalplanner.py"/>
-
 	<!-- Local Path Planner node -->
 	<node name="local_planner" pkg="ngeeann_av_nav" type="localplanner.py"/>
+
+	<!-- Global Path Planner node -->
+	<node name="global_planner" pkg="ngeeann_av_nav" type="globalplanner.py"/>
 
 	<!-- Navigation parameters -->
 	<rosparam file="$(find ngeeann_av_nav)/config/navigation_params.yaml"/>

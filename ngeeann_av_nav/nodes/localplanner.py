@@ -7,6 +7,7 @@ import pandas as pd
 from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
 from nav_msgs.msg import Path
 from ngeeann_av_nav.msg import Path2D
+from std_msgs.msg import String
 
 class LocalPathPlanner:
 
@@ -14,10 +15,12 @@ class LocalPathPlanner:
 
         # Initialise publishers
         self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
-        # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=30)
+        # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=10)
+        self.initialised_pub = rospy.Publisher('/ngeeann_av/localplanner', String, queue_size=10)
 
         # Initialise subscribers
         self.goals_sub = rospy.Subscriber('/ngeeann_av/goals', Path2D, self.goals_cb, queue_size=10)
+        self.initialised_sub = rospy.Subscriber('/ngeeann_av/globalplanner', String, self.initilialised_cb, queue_size=10)
 
         # Load parameters
         try:
@@ -35,6 +38,15 @@ class LocalPathPlanner:
         # Class variables to use whenever within the class when necessary
         self.ax = []
         self.ay = []
+        self.alive = False
+
+    def initilialised_cb(self, msg):
+        
+        if msg.data == "I am alive!":
+            self.alive = True
+        
+        else:
+            self.alive = False
 
     def goals_cb(self, msg):
         
@@ -110,10 +122,15 @@ def main():
 
     while not rospy.is_shutdown():
         try:
+            local_planner.initialised_pub.publish("I am alive!")
 
-            # Create path
-            local_planner.create_pub_path()
-            r.sleep()
+            if local_planner.alive == True:
+                # Create path
+                local_planner.create_pub_path()
+                r.sleep()
+
+            else:
+                r.sleep()
 
         except KeyboardInterrupt:
             rospy.loginfo("Shutting down ROS node...")
