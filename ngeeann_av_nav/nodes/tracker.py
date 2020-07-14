@@ -8,6 +8,7 @@ from ngeeann_av_nav.msg import State2D
 from ackermann_msgs.msg import AckermannDrive
 from nav_msgs.msg import Path
 from ngeeann_av_nav.msg import Path2D
+from std_msgs.msg import String
 
 class PathTracker:
 
@@ -19,6 +20,7 @@ class PathTracker:
         # Initialise subscribers
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
         self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb, queue_size=10)
+        self.success_sub = rospy.Subscriber('/ngeeann_av/success', String, self.success_cb, queue_size=10)
 
         # Load parameters
         try:
@@ -66,8 +68,16 @@ class PathTracker:
         self.targets = len(msg.poses)
 
         rospy.loginfo("Total Points: {}".format(len(msg.poses)))
-        self.path_sub.unregister()
         
+    def success_cb(self, msg):
+
+        if msg.data == "Success.":
+            self.path_sub.unregister()
+            print("\nVehicle has completed all waypoints")
+
+        else:
+            print("\nVehicle has not yet reached the final waypoint.")
+
     def target_index_calculator(self):
 
         # Calculate position of the front axle
@@ -79,6 +89,8 @@ class PathTracker:
 
         dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
         dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
+
+        rospy.loginfo("dx:{}\n\ndy:{}".format(dx,dy))
 
         d = np.hypot(dx, dy) # Find the distance from the front axle to the path
         target_idx = np.argmin(d) # Find the shortest distance in the array
