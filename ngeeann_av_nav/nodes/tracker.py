@@ -50,7 +50,7 @@ class PathTracker:
         self.x = msg.pose.x
         self.y = msg.pose.y
         self.yaw = msg.pose.theta
-        self.vel = msg.twist.y
+        self.vel = math.sqrt((msg.twist.x**2.0) + (msg.twist.y**2.0))
         self.yawrate = msg.twist.w
 
     def path_cb(self, msg):
@@ -62,6 +62,8 @@ class PathTracker:
             self.cx.append(px)
             self.cy.append(py)
             self.cyaw.append(ptheta)
+
+        self.targets = len(msg.poses)
 
         rospy.loginfo("Total Points: {}".format(len(msg.poses)))
         self.path_sub.unregister()
@@ -98,7 +100,7 @@ class PathTracker:
     def trajectory_yaw_calc(self, target_idx):
 
         # points ahead / behind
-        n = 5
+        n = 3
 
         if ((target_idx - n) == 0):
             return 0.0
@@ -149,7 +151,7 @@ class PathTracker:
             current_target_idx = last_target_idx
 
 
-        if ((current_target_idx - 5) != 0):
+        if (((current_target_idx - 3) >= 0) and ((current_target_idx + 3) < self.targets)):
             yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yaw_calc(current_target_idx))
             print("Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, yaw_rate_term))
 

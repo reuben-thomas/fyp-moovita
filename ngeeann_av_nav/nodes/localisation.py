@@ -53,6 +53,7 @@ class Localisation:
         # Print state
         rospy.loginfo("Position (x,y): ({},{})".format(round(state2d.pose.x, 5), round(state2d.pose.y, 5)))
         rospy.loginfo("Heading: {}".format(round(state2d.pose.theta, 5)))
+        rospy.loginfo("Velocity (x,y): ({},{})".format(round(state2d.twist.x, 5), round(state2d.twist.y, 5)))
 
 def main():
 
