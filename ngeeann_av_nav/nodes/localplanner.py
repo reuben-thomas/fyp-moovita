@@ -8,17 +8,20 @@ from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
 from nav_msgs.msg import Path
 from ngeeann_av_nav.msg import Path2D
 
-class PathPlanner:
+class LocalPathPlanner:
 
     def __init__(self):
 
         # Initialise publishers
-        self.path_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
-        # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=30) 
+        self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
+        # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=30)
+
+        # Initialise subscribers
+        self.goals_sub = rospy.Subscriber('/ngeeann_av/goals', Path2D, self.goals_cb, queue_size=10)
 
         # Load parameters
         try:
-            self.planner_params = rospy.get_param("/path_planner")
+            self.planner_params = rospy.get_param("/local_path_planner")
             self.frequency = self.planner_params["update_frequency"]
             self.frame_id = self.planner_params["frame_id"]
 
@@ -30,8 +33,16 @@ class PathPlanner:
         self.ds = 0.1
 
         # Class variables to use whenever within the class when necessary
-        self.ax = [101.835, 100.0, 100.0, 96.0, 90.0, 90.0]
-        self.ay = [10, 18.3, 31.0, 43.0, 47.0, 50.0]
+        self.ax = []
+        self.ay = []
+
+    def goals_cb(self, msg):
+        
+        for i in range(0, len(msg.poses)):
+            px = msg.poses[i].x
+            py = msg.poses[i].y
+            self.ax.append(px)
+            self.ay.append(py)
 
     def create_pub_path(self):
 
@@ -47,7 +58,7 @@ class PathPlanner:
 
         rospy.loginfo("Total Points: {}".format(len(target_path.poses)))
 
-        self.path_planner_pub.publish(target_path)
+        self.local_planner_pub.publish(target_path)
 
     def create_viz_path(self):
 
@@ -72,7 +83,7 @@ class PathPlanner:
 
         rospy.loginfo("Total Points: {}".format(len(target_path.poses)))
 
-        self.path_planner_pub.publish(target_path)
+        self.local_planner_pub.publish(target_path)
 
     def heading_to_quaternion(self, heading):
 
@@ -89,19 +100,19 @@ class PathPlanner:
 def main():
 
     # Initialise the class
-    path_planner = PathPlanner()
+    local_planner = LocalPathPlanner()
 
     # Initialise the node
-    rospy.init_node('path_planner')
+    rospy.init_node('local_planner')
 
     # Set update rate
-    r = rospy.Rate(path_planner.frequency) 
+    r = rospy.Rate(local_planner.frequency) 
 
     while not rospy.is_shutdown():
         try:
 
             # Create path
-            path_planner.create_pub_path()
+            local_planner.create_pub_path()
             r.sleep()
 
         except KeyboardInterrupt:
