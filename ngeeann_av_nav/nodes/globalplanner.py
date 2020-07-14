@@ -15,11 +15,11 @@ class GlobalPathPlanner:
         # Initialise publisher(s)
         self.goals_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=10)
         self.success_pub = rospy.Publisher('/ngeeann_av/success', String, queue_size=10)
-        self.initialised_pub = rospy.Publisher('/ngeeann_av/globalplanner', String, queue_size=10)
+        self.initialised_pub = rospy.Publisher('/ngeeann_av/globalplanner_hb', String, queue_size=10)
 
         # Initialise suscriber(s)
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
-        self.initialised_sub = rospy.Subscriber('/ngeeann_av/localplanner', String, self.initilialised_cb, queue_size=10)
+        self.initialised_sub = rospy.Subscriber('/ngeeann_av/localplanner_hb', String, self.initilialised_cb, queue_size=10)
 
         # Load parameters
         try:

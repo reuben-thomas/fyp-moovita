@@ -16,11 +16,11 @@ class LocalPathPlanner:
         # Initialise publishers
         self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
         # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=10)
-        self.initialised_pub = rospy.Publisher('/ngeeann_av/localplanner', String, queue_size=10)
+        self.initialised_pub = rospy.Publisher('/ngeeann_av/localplanner_hb', String, queue_size=10)
 
         # Initialise subscribers
         self.goals_sub = rospy.Subscriber('/ngeeann_av/goals', Path2D, self.goals_cb, queue_size=10)
-        self.initialised_sub = rospy.Subscriber('/ngeeann_av/globalplanner', String, self.initilialised_cb, queue_size=10)
+        self.initialised_sub = rospy.Subscriber('/ngeeann_av/globalplanner_hb', String, self.initilialised_cb, queue_size=10)
 
         # Load parameters
         try:
