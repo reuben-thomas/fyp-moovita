@@ -4,6 +4,7 @@ import rospy, os
 import numpy as np
 import pandas as pd
 
+from geometry_msgs.msg import Pose2D
 from ngeeann_av_nav.msg import Path2D, State2D
 
 class GlobalPathPlanner:
@@ -38,10 +39,10 @@ class GlobalPathPlanner:
         # Class variables to use whenever within the class when necessary
         self.x = None
         self.y = None
-        self.ax_pub = self.ax[0]
-        self.ay_pub = self.ay[0]
         self.lowerbound = 0
-        self.upperbound = self.lowerbound + self.givenwp
+        self.upperbound = self.lowerbound + (self.givenwp)
+        self.ax_pub = self.ax[0 : self.upperbound]
+        self.ay_pub = self.ay[0 : self.upperbound]
 
     def vehicle_state_cb(self, msg):
 
@@ -51,7 +52,7 @@ class GlobalPathPlanner:
     def almost_reached(self):
         
         # If the vehicle has almost reached the goal
-        if self.x == self.ax_pub[self.upperbound - 1] and self.y == self.ay_pub[self.upperbound - 1]:
+        if self.x == self.ax[self.upperbound - 1] and self.y == self.ay[self.upperbound - 1]:
             self.set_waypoints(False)
         
         else:
@@ -75,7 +76,7 @@ class GlobalPathPlanner:
                 self.ay_pub = self.ay[self.lowerbound : self.upperbound]
 
             self.publish_goals(self.ax_pub, self.ay_pub)
-
+        
         self.lowerbound += self.givenwp
         self.upperbound += self.givenwp
 
@@ -83,13 +84,21 @@ class GlobalPathPlanner:
 
         goals = Path2D()
 
-        for i in range(self.lowerbound, self.upperbound):
-            n = 0
-            goals.poses[i].x = ax[n]
-            goals.poses[i].y = ay[n]
-            n += 1
+        count = 0
+
+        for i in range(0, self.givenwp):
+            goal = Pose2D()
+            goal.x = ax[i]
+            goal.y = ay[i]
+            goal.theta = None
+            print ax[i]
+            
+            goals.poses.append(goal)
+            count += 1
 
         self.goals_pub.publish(goals)
+
+        print("Published Waypoints:{}\n{}".format(count, goals))
 
     def walk_up_folder(self, path, dir_goal='fyp-moovita'):
 
