@@ -21,7 +21,7 @@ class LocalPathPlanner:
 
         # Load parameters
         try:
-            self.planner_params = rospy.get_param("/path_planner")
+            self.planner_params = rospy.get_param("/local_path_planner")
             self.frequency = self.planner_params["update_frequency"]
             self.frame_id = self.planner_params["frame_id"]
 
@@ -43,7 +43,6 @@ class LocalPathPlanner:
             py = msg.poses[i].y
             self.ax.append(px)
             self.ay.append(py)
-            rospy.loginfo("ax:{}".format(self.ax))
 
     def create_pub_path(self):
 

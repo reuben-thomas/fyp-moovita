@@ -91,7 +91,6 @@ class GlobalPathPlanner:
             goal.x = ax[i]
             goal.y = ay[i]
             goal.theta = None
-            print ax[i]
             
             goals.poses.append(goal)
             count += 1

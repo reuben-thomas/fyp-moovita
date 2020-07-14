@@ -2,13 +2,13 @@ localisation:
     update_frequency: 50.0
     model_name: ngeeann_av
 
-path_planner:
+local_path_planner:
     update_frequency: 10.0
     frame_id: base_link
 
 global_path_planner:
     update_frequency: 10.0
-    number_of_waypoints: 5
+    number_of_waypoints: 15
 
 path_tracker:
     update_frequency: 50.0
