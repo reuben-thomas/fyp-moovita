@@ -90,7 +90,7 @@ class PathTracker:
         dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
         dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
 
-        rospy.loginfo("dx:{}\n\ndy:{}".format(dx,dy))
+        # rospy.loginfo("dx:{}\n\ndy:{}".format(dx,dy))
 
         d = np.hypot(dx, dy) # Find the distance from the front axle to the path
         target_idx = np.argmin(d) # Find the shortest distance in the array
@@ -149,25 +149,62 @@ class PathTracker:
             else:
                 return 0.0
 
+    
+    def trajectory_yawrate_calc(self, target_idx):
+
+        # lookahead distance in either direction along the path
+        target_range = 2
+
+        intervals = 0
+        delta_theta = 0.0
+        delta_s = 0.0
+
+        start = target_idx - target_range
+        end = target_idx + target_range
+
+        for n in range(start, end + 1):
+
+            if (n >= 0) and ((n + 1) < self.targets):
+
+                x1 = self.cx[n]
+                y1 = self.cy[n]
+                x2 = self.cx[n+1]
+                y2 = self.cy[n+1]
+
+                delta_s += self.distance_calc(x1, y1, x2, y2)
+                delta_theta = self.cyaw[n + 1] - self.cyaw[n]
+                intervals += 1
+
+        # Average values given calculated intervals between points
+        delta_theta = delta_theta / intervals
+        delta_s = delta_s / intervals
+
+        # Angular velocity calculation
+        w = (delta_theta / delta_s) * self.vel
+
+        return w
 
     def distance_calc(self, x1, y1, x2, y2):
 
-        dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-        
+        dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)        
         return dist
-
 
     def stanley_control(self, last_target_idx):
         
         current_target_idx, error_front_axle = self.target_index_calculator()
 
+        # Ensures no backtracking to already missed targets
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
-
+        # METHOD 1 
         if (((current_target_idx - 3) >= 0) and ((current_target_idx + 3) < self.targets)):
-            yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yaw_calc(current_target_idx))
-            print("Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, yaw_rate_term))
+            # yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yaw_calc(current_target_idx))
+            print("METHOD 1 __________ Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, self.trajectory_yaw_calc(current_target_idx)))
+        
+        # METHOD 2
+        # yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yawrate_calc(current_target_idx))
+        print("METHOD 2 __________ Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, self.trajectory_yawrate_calc(current_target_idx)))
 
         heading_error = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw - self.halfpi)
         crosstrack_error = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
