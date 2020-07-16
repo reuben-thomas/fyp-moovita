@@ -13,6 +13,8 @@ class LocalPathPlanner:
 
     def __init__(self):
 
+        ''' Class constructor to initialise the class '''
+
         # Initialise publishers
         self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
         # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=10)
@@ -42,6 +44,8 @@ class LocalPathPlanner:
 
     def initilialised_cb(self, msg):
         
+        ''' Callback function to check if the Global Path Planner has been initialised '''
+
         if msg.data == "I am alive!":
             self.alive = True
         
@@ -49,6 +53,8 @@ class LocalPathPlanner:
             self.alive = False
 
     def goals_cb(self, msg):
+
+        ''' Callback function to receive waypoint data from the Global Path Planner '''
         
         for i in range(0, len(msg.poses)):
             px = msg.poses[i].x
@@ -57,6 +63,8 @@ class LocalPathPlanner:
             self.ay.append(py)
 
     def create_pub_path(self):
+
+        ''' Uses the cubic_spline_planner library to interpolate a cubic spline path over the given waypoints '''
 
         cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(self.ax, self.ay, self.ds)
         target_path = Path2D()
@@ -74,7 +82,7 @@ class LocalPathPlanner:
 
     def create_viz_path(self):
 
-        ''' Consecutively constructs and publishes path in Path2D and Path message, visualized in rviz (Requires map frame) '''
+        ''' Consecutively constructs and publishes path in Path2D and Path message, visualized in RViz (Requires map frame) '''
 
         cx, cy, cyaw, _, _ = cubic_spline_planner.calc_spline_course(self.ax, self.ay, self.ds)
         target_path = Path()
@@ -99,7 +107,7 @@ class LocalPathPlanner:
 
     def heading_to_quaternion(self, heading):
 
-        ''' Converts yaw heading to quaternion'''
+        ''' Converts yaw heading to quaternion coordinates '''
 
         quaternion = Quaternion()
         quaternion.x = 0.0
@@ -110,6 +118,8 @@ class LocalPathPlanner:
         return quaternion
 
 def main():
+
+    ''' Main function to initialise the class and node. '''
 
     # Initialise the class
     local_planner = LocalPathPlanner()
@@ -125,8 +135,10 @@ def main():
             local_planner.initialised_pub.publish("I am alive!")
 
             if local_planner.alive == True:
+                
                 # Create path
                 local_planner.create_pub_path()
+
                 r.sleep()
 
             else:

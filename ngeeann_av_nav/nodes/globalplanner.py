@@ -12,6 +12,8 @@ class GlobalPathPlanner:
 
     def __init__(self):
 
+        ''' Class constructor to initialise the class '''
+
         # Initialise publisher(s)
         self.goals_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=10)
         self.success_pub = rospy.Publisher('/ngeeann_av/success', String, queue_size=10)
@@ -44,7 +46,7 @@ class GlobalPathPlanner:
         # Import waypoints.csv into class variables ax and ay
         self.ax = df['X-axis'].values.tolist()
         self.ay = df['Y-axis'].values.tolist()
-        # self.ay[1] = 47
+        self.ay[1] = 47
 
         # Class variables to use whenever within the class when necessary
         self.alive = False
@@ -63,6 +65,8 @@ class GlobalPathPlanner:
 
     def initilialised_cb(self, msg):
 
+        ''' Callback function to check if the Local Path Planner has been initialised '''
+
         if msg.data == "I am alive!":
             self.alive = True
         
@@ -71,10 +75,14 @@ class GlobalPathPlanner:
 
     def vehicle_state_cb(self, msg):
 
+        ''' Callback function to receive information on the vehicle's vertical and horizontal coordinates '''
+
         self.x = msg.pose.x
         self.y = msg.pose.y
 
     def almost_reached(self):
+
+        ''' Tells the node when to compute and publish the waypoints to the Local Path Planner '''
         
         # If the vehicle has almost reached the goal
         if self.x == self.ax[self.upperindex - 1] and self.y == self.ay[self.upperindex - 1]:
@@ -85,10 +93,13 @@ class GlobalPathPlanner:
 
     def set_waypoints(self, first):
 
+        ''' Set the waypoints that are to be published, given the vehicle's position ''' 
+
         if first == True:
-            
+
             # If there is not enough waypoints to publish
             if  self.givenwp >= len(self.ax):
+                
                 # Publish entire array
                 self.publish_goals(self.ax, self.ay)
 
@@ -101,17 +112,15 @@ class GlobalPathPlanner:
                 self.upperindex += self.givenwp
 
         else:
-            # If the number of waypoints to give is more than the number of waypoints left
-            if  self.givenwp > (len(self.ax) - self.lowerindex):
-                # New upper index
-                self.upperbound = self.lowerbound + (len(self.ax) - self.lowerbound)
+            if  self.givenwp > (len(self.ax) - self.lowerindex): # If the number of waypoints to give is more than the number of waypoints left
+                self.upperbound = self.lowerbound + (len(self.ax) - self.lowerbound) # New upper index
+
                 self.ax_pub = self.ax[self.lowerbound : self.upperbound]
                 self.ay_pub = self.ay[self.lowerbound : self.upperbound]
 
                 self.success_pub.publish("Success.")
 
-            else:
-                # If the number of waypoints to give is less or equal to the number of waypoints left.
+            else: # If the number of waypoints to give is less or equal to the number of waypoints left.
                 self.ax_pub = self.ax[self.lowerbound : self.upperbound]
                 self.ay_pub = self.ay[self.lowerbound : self.upperbound]
 
@@ -124,6 +133,8 @@ class GlobalPathPlanner:
             self.publish_goals(self.ax_pub, self.ay_pub)
 
     def publish_goals(self, ax, ay):
+
+        ''' Publishes an array of waypoints for the Local Path Planner '''
 
         goals = Path2D()
 
@@ -142,6 +153,8 @@ class GlobalPathPlanner:
 
     def walk_up_folder(self, path, dir_goal='fyp-moovita'):
 
+        ''' Searches and returns the directory of the waypoint.csv file ''' 
+
         dir_path = os.path.dirname(path)
         split_path = str.split(dir_path, '/')     
         counter = 0  
@@ -154,6 +167,8 @@ class GlobalPathPlanner:
         return dir_path
         
 def main():
+
+    ''' Main function to initialise the class and node. '''
     
     # Initialise the class
     global_planner = GlobalPathPlanner()

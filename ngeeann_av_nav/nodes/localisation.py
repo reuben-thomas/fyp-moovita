@@ -10,6 +10,8 @@ class Localisation:
 
     def __init__(self):
 
+        ''' Class constructor to initialise the class '''
+
         # Wait and initialise service
         rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
         self.get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
@@ -30,6 +32,8 @@ class Localisation:
         self.state = None
 
     def update_state(self):
+
+        ''' Gets the vehicle position from Gazebo and publishes the data '''
 
         # Define vehicle pose x,y, theta
         state2d = State2D()
@@ -56,6 +60,8 @@ class Localisation:
         rospy.loginfo("Velocity (x,y): ({},{})".format(round(state2d.twist.x, 5), round(state2d.twist.y, 5)))
 
 def main():
+
+    ''' Main function to initialise the class and node. '''
 
     # Initialise the class
     localisation = Localisation()

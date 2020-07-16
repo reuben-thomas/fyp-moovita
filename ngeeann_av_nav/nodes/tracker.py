@@ -14,6 +14,8 @@ class PathTracker:
 
     def __init__(self):
 
+        ''' Class constructor to initialise the class '''
+
         # Initialise publishers
         self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=50)
         
@@ -49,6 +51,8 @@ class PathTracker:
         
     def vehicle_state_cb(self, msg):
 
+        ''' Callback function to receive information on the vehicle's vertical and horizontal coordinates '''
+
         self.x = msg.pose.x
         self.y = msg.pose.y
         self.yaw = msg.pose.theta
@@ -56,6 +60,8 @@ class PathTracker:
         self.yawrate = msg.twist.w
 
     def path_cb(self, msg):
+
+        ''' Callback function to receive path data from the Local Path Planner '''
         
         for i in range(0, len(msg.poses)):
             px = msg.poses[i].x
@@ -71,6 +77,8 @@ class PathTracker:
         
     def success_cb(self, msg):
 
+        ''' Unsubscribes from the Local Path Planner when vehicle has completed all waypoints '''
+
         if msg.data == "Success.":
             self.path_sub.unregister()
             print("\nVehicle has completed all waypoints")
@@ -79,6 +87,8 @@ class PathTracker:
             print("\nVehicle has not yet reached the final waypoint.")
 
     def target_index_calculator(self):
+
+        ''' Calculates the target index and the error of the front axle to the trajectory '''
 
         # Calculate position of the front axle
         fx = self.x + self.cg2frontaxle * np.sin(self.yaw + self.halfpi)
@@ -152,6 +162,8 @@ class PathTracker:
     
     def trajectory_yawrate_calc(self, target_idx):
 
+        ''' Calculates the curvator of the path '''
+
         # lookahead distance in either direction along the path
         target_range = 2
 
@@ -190,6 +202,8 @@ class PathTracker:
         return dist
 
     def stanley_control(self, last_target_idx):
+
+        ''' Calculates the steering angle of the vehicle '''
         
         current_target_idx, error_front_axle = self.target_index_calculator()
 
@@ -235,6 +249,8 @@ class PathTracker:
         return angle
 
     def set_vehicle_command(self, velocity, steering_angle):
+
+        ''' Publishes the calculated steering angle  '''
         
         drive = AckermannDrive()
         drive.speed = velocity
@@ -244,6 +260,8 @@ class PathTracker:
         self.tracker_pub.publish(drive)
 
 def main():
+
+    ''' Main function to initialise the class and node. '''
 
     # Initialise the class
     path_tracker = PathTracker()
