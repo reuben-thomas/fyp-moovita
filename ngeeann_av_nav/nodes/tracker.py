@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import rospy, cubic_spline_planner
+import rospy, cubic_spline_planner, datetime
 import numpy as np
 import math
 
@@ -48,6 +48,11 @@ class PathTracker:
         self.cx = []
         self.cy = []
         self.cyaw = []
+
+        # For debugging purposes
+        self.fails = 0
+        self.target_idx = None
+        self.error_front_axle = None
         
     def vehicle_state_cb(self, msg):
 
@@ -73,7 +78,7 @@ class PathTracker:
 
         self.targets = len(msg.poses)
 
-        rospy.loginfo("Total Points: {}".format(len(msg.poses)))
+        print("\nTotal Points: {}".format(len(msg.poses)))
         
     def success_cb(self, msg):
 
@@ -100,24 +105,29 @@ class PathTracker:
         dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
         dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
 
-        # rospy.loginfo("dx:{}\n\ndy:{}".format(dx,dy))
+        if len(dx) == len(dy):
+            d = np.hypot(dx, dy) # Find the distance from the front axle to the path
+            self.target_idx = np.argmin(d) # Find the shortest distance in the array
 
-        d = np.hypot(dx, dy) # Find the distance from the front axle to the path
-        target_idx = np.argmin(d) # Find the shortest distance in the array
+            # Project RMS error onto the front axle vector
+            front_axle_vec = [-np.cos(self.yaw + np.pi), -np.sin(self.yaw + np.pi)]
+            self.error_front_axle = np.dot([dx[self.target_idx], dy[self.target_idx]], front_axle_vec)
 
-        # Project RMS error onto the front axle vector
-        front_axle_vec = [-np.cos(self.yaw + np.pi), -np.sin(self.yaw + np.pi)]
-        error_front_axle = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
+            print("\n")
+            print("Vehicle speed: {}".format(self.target_vel))
+            print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
+            print("Target (x, y): ({}, {})".format(self.cx[self.target_idx], self.cy[self.target_idx]))
+            
+            return self.target_idx, self.error_front_axle
 
-        print("\n")
-        print("Vehicle speed: {}".format(self.target_vel))
-        print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
-        print("Target (x, y): ({}, {})".format(self.cx[target_idx], self.cy[target_idx]))
+        else:
+            self.fails += 1
 
+            print("\n")
+            print("Vehicle speed: {}".format(self.target_vel))
+            print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
 
-        # print("e(t): {}".format(error_front_axle))
-        
-        return target_idx, error_front_axle
+            return self.target_idx, self.error_front_axle
 
     def trajectory_yaw_calc(self, target_idx):
 
@@ -235,6 +245,7 @@ class PathTracker:
         print("Heading error = {}".format(heading_error))
         print("Cross-track error = {}".format(crosstrack_error))
         print("Steering error (+-0.95) = {} + {} = {}".format(heading_error, crosstrack_error, sigma_t))
+        print("Failure count: {}".format(self.fails))
 
         return sigma_t, current_target_idx
 
@@ -263,6 +274,9 @@ def main():
 
     ''' Main function to initialise the class and node. '''
 
+    # Time execution
+    begin_time = datetime.datetime.now()
+
     # Initialise the class
     path_tracker = PathTracker()
 
@@ -281,7 +295,9 @@ def main():
             r.sleep()
 
         except KeyboardInterrupt:
-            rospy.loginfo("Shutting down ROS node...")
+            print("\n")
+            print("Execution time: {}".format(datetime.datetime.now() - begin_time))
+            print("Shutting down ROS node...")
 
 if __name__ == "__main__":
     main()

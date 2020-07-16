@@ -196,7 +196,7 @@ def main():
             r.sleep()
 
         except KeyboardInterrupt:
-            rospy.loginfo("Shutting down ROS node...")
+            print("Shutting down ROS node...")
 
 if __name__=="__main__":
     main()

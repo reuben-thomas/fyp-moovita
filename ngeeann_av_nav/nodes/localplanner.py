@@ -76,7 +76,7 @@ class LocalPathPlanner:
             npose.theta = cyaw[n]
             target_path.poses.append(npose)
 
-        rospy.loginfo("Total Points: {}".format(len(target_path.poses)))
+        print("Total Points: {}".format(len(target_path.poses)))
 
         self.local_planner_pub.publish(target_path)
 
@@ -101,7 +101,7 @@ class LocalPathPlanner:
             npose.pose.orientation = self.heading_to_quaternion(cyaw[n])
             target_path.poses.append(npose)
 
-        rospy.loginfo("Total Points: {}".format(len(target_path.poses)))
+        print("Total Points: {}".format(len(target_path.poses)))
 
         self.local_planner_pub.publish(target_path)
 
@@ -145,7 +145,7 @@ def main():
                 r.sleep()
 
         except KeyboardInterrupt:
-            rospy.loginfo("Shutting down ROS node...")
+            print("Shutting down ROS node...")
 
 if __name__=="__main__":
     main()

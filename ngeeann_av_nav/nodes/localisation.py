@@ -55,9 +55,9 @@ class Localisation:
         self.localisation_pub.publish(state2d)
 
         # Print state
-        rospy.loginfo("Position (x,y): ({},{})".format(round(state2d.pose.x, 5), round(state2d.pose.y, 5)))
-        rospy.loginfo("Heading: {}".format(round(state2d.pose.theta, 5)))
-        rospy.loginfo("Velocity (x,y): ({},{})".format(round(state2d.twist.x, 5), round(state2d.twist.y, 5)))
+        print("Position (x,y): ({},{})".format(round(state2d.pose.x, 5), round(state2d.pose.y, 5)))
+        print("Heading: {}".format(round(state2d.pose.theta, 5)))
+        print("Velocity (x,y): ({},{})".format(round(state2d.twist.x, 5), round(state2d.twist.y, 5)))
 
 def main():
 
@@ -79,7 +79,7 @@ def main():
             r.sleep()
 
         except KeyboardInterrupt:
-            rospy.loginfo("Shutting down ROS node...")
+            print("Shutting down ROS node...")
 
 if __name__=="__main__":
     main()
