@@ -16,7 +16,7 @@ class LocalPathPlanner:
         ''' Class constructor to initialise the class '''
 
         # Initialise publishers
-        self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
+        self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=100)
         # self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=10)
         self.initialised_pub = rospy.Publisher('/ngeeann_av/localplanner_hb', String, queue_size=10)
 

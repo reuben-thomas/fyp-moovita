@@ -21,7 +21,7 @@ class PathTracker:
         
         # Initialise subscribers
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
-        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb, queue_size=10)
+        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb, queue_size=100)
         self.success_sub = rospy.Subscriber('/ngeeann_av/success', String, self.success_cb, queue_size=10)
 
         # Load parameters
@@ -49,6 +49,7 @@ class PathTracker:
         self.cy = []
         self.cyaw = []
         self.points = 1
+        self.targets = None
 
         # For debugging purposes
         self.fails = 0
@@ -68,6 +69,9 @@ class PathTracker:
     def path_cb(self, msg):
 
         ''' Callback function to receive path data from the Local Path Planner '''
+
+        self.cx = []
+        self.cy = []
         
         for i in range(0, len(msg.poses)):
             px = msg.poses[i].x
