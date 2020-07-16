@@ -55,6 +55,9 @@ class LocalPathPlanner:
     def goals_cb(self, msg):
 
         ''' Callback function to receive waypoint data from the Global Path Planner '''
+
+        self.ax = []
+        self.ay = []
         
         for i in range(0, len(msg.poses)):
             px = msg.poses[i].x
