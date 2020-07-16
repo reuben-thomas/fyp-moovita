@@ -48,6 +48,7 @@ class PathTracker:
         self.cx = []
         self.cy = []
         self.cyaw = []
+        self.points = 1
 
         # For debugging purposes
         self.fails = 0
@@ -87,6 +88,10 @@ class PathTracker:
         if msg.data == "Success.":
             self.path_sub.unregister()
             print("\nVehicle has completed all waypoints")
+
+        elif msg.data == "Reached.":
+            print("\nVehicle has almost reached the waypoint {}".format(self.points))
+            self.points += 1
 
         else:
             print("\nVehicle has not yet reached the final waypoint.")

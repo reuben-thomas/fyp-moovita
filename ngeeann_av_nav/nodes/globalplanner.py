@@ -28,6 +28,7 @@ class GlobalPathPlanner:
             self.global_planner_params = rospy.get_param("/global_path_planner")
             self.frequency = self.global_planner_params["update_frequency"]
             self.givenwp = self.global_planner_params["given_number_of_waypoints"]
+            self.tolerance = self.global_planner_params["target_tolerance"]
 
             if self.givenwp < 2:
                 self.givenwp == 2
@@ -85,11 +86,25 @@ class GlobalPathPlanner:
         ''' Tells the node when to compute and publish the waypoints to the Local Path Planner '''
         
         # If the vehicle has almost reached the goal
+        if self.x < self.ax[self.upperindex - 1] + self.tolerance and self.x > self.ax[self.upperindex - 1] - self.tolerance:
+            if self.y < self.ay[self.upperindex - 1] + self.tolerance and self.y > self.ay[self.upperindex - 1] - self.tolerance:
+                self.set_waypoints(False)
+                self.success_pub.publish("Reached.")
+
+            else:
+                pass
+
+        else:
+            pass
+
+        '''
         if self.x == self.ax[self.upperindex - 1] and self.y == self.ay[self.upperindex - 1]:
             self.set_waypoints(False)
+            self.success_pub.publish("Reached.")
         
         else:
             pass
+        '''
 
     def set_waypoints(self, first):
 
