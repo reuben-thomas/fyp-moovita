@@ -22,7 +22,7 @@ class LocalPathPlanner:
 
         # Initialise subscribers
         self.goals_sub = rospy.Subscriber('/ngeeann_av/goals', Path2D, self.goals_cb, queue_size=10)
-        self.initialised_sub = rospy.Subscriber('/ngeeann_av/globalplanner_hb', String, self.initilialised_cb, queue_size=10)
+        self.initialised_sub = rospy.Subscriber('/ngeeann_av/globalplanner_hb', String, self.initialised_cb, queue_size=10)
 
         # Load parameters
         try:
@@ -42,7 +42,7 @@ class LocalPathPlanner:
         self.ay = []
         self.alive = False
 
-    def initilialised_cb(self, msg):
+    def initialised_cb(self, msg):
         
         ''' Callback function to check if the Global Path Planner has been initialised '''
 

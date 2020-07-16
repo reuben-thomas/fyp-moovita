@@ -21,7 +21,7 @@ class GlobalPathPlanner:
 
         # Initialise suscriber(s)
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
-        self.initialised_sub = rospy.Subscriber('/ngeeann_av/localplanner_hb', String, self.initilialised_cb, queue_size=10)
+        self.initialised_sub = rospy.Subscriber('/ngeeann_av/localplanner_hb', String, self.initialised_cb, queue_size=10)
 
         # Load parameters
         try:
@@ -64,7 +64,7 @@ class GlobalPathPlanner:
         self.ax_pub = self.ax[self.lowerbound : self.upperbound]
         self.ay_pub = self.ay[self.lowerbound : self.upperbound]
 
-    def initilialised_cb(self, msg):
+    def initialised_cb(self, msg):
 
         ''' Callback function to check if the Local Path Planner has been initialised '''
 
