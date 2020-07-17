@@ -66,6 +66,7 @@ class PathTracker:
         self.yaw = msg.pose.theta
         self.vel = math.sqrt((msg.twist.x**2.0) + (msg.twist.y**2.0))
         self.yawrate = msg.twist.w
+        self.target_index_calculator()
 
     def path_cb(self, msg):
 
@@ -128,7 +129,7 @@ class PathTracker:
             print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
             print("Target (x, y): ({}, {})".format(self.cx[self.target_idx], self.cy[self.target_idx]))
             
-            return self.target_idx, self.error_front_axle
+            # return self.target_idx, self.error_front_axle
 
         else:
             self.fails += 1
@@ -139,6 +140,8 @@ class PathTracker:
 
             return self.target_idx, self.error_front_axle
 
+
+    '''
     def trajectory_yaw_calc(self, target_idx):
 
         # points ahead / behind
@@ -178,11 +181,12 @@ class PathTracker:
                 return -traj_yaw_rate
             else:
                 return 0.0
-
+    '''
     
+    '''
     def trajectory_yawrate_calc(self, target_idx):
 
-        ''' Calculates the curvator of the path '''
+        # Calculates the curvator of the path 
 
         # lookahead distance in either direction along the path
         target_range = 2
@@ -190,6 +194,7 @@ class PathTracker:
         intervals = 0
         delta_theta = 0.0
         delta_s = 0.0
+        w = 0.0
 
         start = target_idx - target_range
         end = target_idx + target_range
@@ -208,13 +213,16 @@ class PathTracker:
                 intervals += 1
 
         # Average values given calculated intervals between points
-        delta_theta = delta_theta / intervals
-        delta_s = delta_s / intervals
+        
+        if (intervals > 0):
+            delta_theta = delta_theta / intervals
+            delta_s = delta_s / intervals
 
-        # Angular velocity calculation
-        w = (delta_theta / delta_s) * self.vel
+            # Angular velocity calculation
+            w = (delta_theta / delta_s) * self.vel
 
         return w
+    '''
 
     def distance_calc(self, x1, y1, x2, y2):
 
@@ -233,24 +241,26 @@ class PathTracker:
 
         ''' Calculates the steering angle of the vehicle '''
         
-        current_target_idx, error_front_axle = self.target_index_calculator()
+        # current_target_idx, error_front_axle = self.target_index_calculator()
+        current_target_idx = self.target_idx
+        error_front_axle = self.error_front_axle
 
         # Ensures no backtracking to already missed targets
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
-        self.publish_current_target(self.cx[current_target_idx], self.cy[current_target_idx])
+        # self.publish_current_target(self.cx[current_target_idx], self.cy[current_target_idx])
 
-        # METHOD 1 
-        if (((current_target_idx - 3) >= 0) and ((current_target_idx + 3) < self.targets)):
-            # yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yaw_calc(current_target_idx))
-            print("METHOD 1 __________ Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, self.trajectory_yaw_calc(current_target_idx)))
-        
-        # METHOD 2
-        # yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yawrate_calc(current_target_idx))
+        '''
+        # yaw rate term
+        yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yawrate_calc(current_target_idx))
         print("METHOD 2 __________ Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, self.trajectory_yawrate_calc(current_target_idx)))
+        '''
 
+        # heading error term
         heading_error = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw - self.halfpi)
+        
+        # crosstrack error term
         crosstrack_error = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
         sigma_t = heading_error + crosstrack_error
 
@@ -307,11 +317,12 @@ def main():
     # Set update rate
     r = rospy.Rate(path_tracker.frequency)
 
-    target_idx, _ = path_tracker.target_index_calculator()
+    path_tracker.target_index_calculator()
+    target_idx = path_tracker.target_idx
 
     while not rospy.is_shutdown():
         try:
-            steering_angle, target_index = path_tracker.stanley_control(target_idx)
+            steering_angle, target_idx = path_tracker.stanley_control(target_idx)
             path_tracker.set_vehicle_command(path_tracker.target_vel, steering_angle)
             r.sleep()
 
