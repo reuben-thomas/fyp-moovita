@@ -139,6 +139,7 @@ class PathTracker:
 
             return self.target_idx, self.error_front_axle
 
+    '''
     def trajectory_yaw_calc(self, target_idx):
 
         # points ahead / behind
@@ -178,7 +179,7 @@ class PathTracker:
                 return -traj_yaw_rate
             else:
                 return 0.0
-
+    '''
     
     def trajectory_yawrate_calc(self, target_idx):
 
@@ -241,6 +242,7 @@ class PathTracker:
 
         self.publish_current_target(self.cx[current_target_idx], self.cy[current_target_idx])
 
+        '''
         # METHOD 1 
         if (((current_target_idx - 3) >= 0) and ((current_target_idx + 3) < self.targets)):
             # yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yaw_calc(current_target_idx))
@@ -249,6 +251,7 @@ class PathTracker:
         # METHOD 2
         # yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yawrate_calc(current_target_idx))
         print("METHOD 2 __________ Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, self.trajectory_yawrate_calc(current_target_idx)))
+        '''
 
         heading_error = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw - self.halfpi)
         crosstrack_error = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
