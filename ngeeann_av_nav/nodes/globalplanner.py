@@ -85,9 +85,9 @@ class GlobalPathPlanner:
         current_target_x = msg.x
         current_target_y = msg.y
 
-        print("Next goal: ({}, {})".format(self.ax[self.upperindex - 1], self.ay[self.upperindex - 1]))
+        print("Next goal: ({}, {})".format(self.ax[self.upperindex], self.ay[self.upperindex]))
 
-        if np.around(current_target_x) == np.around(self.ax[self.upperindex - 1]) and np.around(current_target_y) == np.around(self.ay[self.upperindex - 1]):
+        if np.around(current_target_x) == np.around(self.ax[self.upperindex]) and np.around(current_target_y) == np.around(self.ay[self.upperindex]):
             self.almost_reached(True)
             
         else:
