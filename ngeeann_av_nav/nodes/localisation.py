@@ -17,7 +17,7 @@ class Localisation:
         self.get_model_srv = rospy.ServiceProxy('/ngeeann_av/gazebo/get_model_state', GetModelState)
 
         # Initialise publishers
-        self.localisation_pub = rospy.Publisher('/ngeeann_av/state2D', State2D, queue_size=50)
+        self.localisation_pub = rospy.Publisher('/ngeeann_av/state2D', State2D, queue_size=10)
 
         # Load parameters
         try:

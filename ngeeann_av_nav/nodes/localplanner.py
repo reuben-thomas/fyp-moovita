@@ -22,7 +22,7 @@ class LocalPathPlanner:
 
         # Initialise subscribers
         self.goals_sub = rospy.Subscriber('/ngeeann_av/goals', Path2D, self.goals_cb, queue_size=10)
-        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
+        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=10)
         self.initialised_sub = rospy.Subscriber('/ngeeann_av/globalplanner_hb', String, self.initialised_cb, queue_size=10)
 
         # Load parameters
@@ -98,6 +98,7 @@ class LocalPathPlanner:
             npose.theta = cyaw[n]
             target_path.poses.append(npose)
 
+            '''
             # Appending to Visualization Path
             vpose = PoseStamped()
             vpose.header.frame_id = self.frame_id
@@ -108,6 +109,7 @@ class LocalPathPlanner:
             vpose.pose.position.z = 0.0
             vpose.pose.orientation = self.heading_to_quaternion(np.pi * 0.5 - cyaw[n])
             viz_path.poses.append(vpose)
+            '''
 
         self.local_planner_pub.publish(target_path)
         self.path_viz_pub.publish(viz_path)
@@ -155,6 +157,9 @@ def main():
                 local_planner.initialised_pub.publish("I am alive!")
                 
                 # Create path
+                while not local_planner.ax and not local_planner.ay:
+                    pass
+                
                 local_planner.create_pub_path()
 
                 r.sleep()

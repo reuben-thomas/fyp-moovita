@@ -21,7 +21,7 @@ class GlobalPathPlanner:
 
         # Initialise suscriber(s)
         self.initialised_sub = rospy.Subscriber('/ngeeann_av/localplanner_hb', String, self.initialised_cb, queue_size=10)
-        self.targets_sub = rospy.Subscriber('/ngeeann_av/current_target', Pose2D, self.target_check_cb, queue_size=50)
+        self.targets_sub = rospy.Subscriber('/ngeeann_av/current_target', Pose2D, self.target_check_cb, queue_size=10)
 
         # Load parameters
         try:
@@ -49,7 +49,7 @@ class GlobalPathPlanner:
         # Import waypoints.csv into class variables ax and ay
         self.ax = df['X-axis'].values.tolist()
         self.ay = df['Y-axis'].values.tolist()
-        self.ay[1] = 47
+        # self.ay[1] = 47
 
         # Class variables to use whenever within the class when necessary
         self.alive = False

@@ -16,13 +16,12 @@ class PathTracker:
         ''' Class constructor to initialise the class '''
 
         # Initialise publishers
-        self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=50)
-        self.targets_pub = rospy.Publisher('/ngeeann_av/current_target', Pose2D, queue_size=50)
-
+        self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=10)
+        self.targets_pub = rospy.Publisher('/ngeeann_av/current_target', Pose2D, queue_size=10)
 
         # Initialise subscribers
-        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
-        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb, queue_size=100)
+        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=10)
+        self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb, queue_size=10)
         self.success_sub = rospy.Subscriber('/ngeeann_av/success', String, self.success_cb, queue_size=10)
 
         # Load parameters
@@ -138,9 +137,8 @@ class PathTracker:
             print("Vehicle speed: {}".format(self.target_vel))
             print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
 
-            return self.target_idx, self.error_front_axle
-
-
+            # return self.target_idx, self.error_front_axle
+            
     '''
     def trajectory_yaw_calc(self, target_idx):
 
@@ -249,7 +247,9 @@ class PathTracker:
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
 
-        # self.publish_current_target(self.cx[current_target_idx], self.cy[current_target_idx])
+        
+        print("cx:{}\ntargets:{}".format(len(self.cx),current_target_idx))
+        self.publish_current_target(self.cx[current_target_idx], self.cy[current_target_idx])
 
         '''
         # yaw rate term
@@ -317,13 +317,11 @@ def main():
     # Set update rate
     r = rospy.Rate(path_tracker.frequency)
 
-    path_tracker.target_index_calculator()
-    target_idx = path_tracker.target_idx
-
     while not rospy.is_shutdown():
         try:
-            steering_angle, target_idx = path_tracker.stanley_control(target_idx)
+            steering_angle, path_tracker.target_idx = path_tracker.stanley_control(path_tracker.target_idx)
             path_tracker.set_vehicle_command(path_tracker.target_vel, steering_angle)
+
             r.sleep()
 
         except KeyboardInterrupt:
