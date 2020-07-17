@@ -199,11 +199,18 @@ def main():
     # Publishes the first goal
     global_planner.set_waypoints(True)
 
+    print_alive = True
+
     while not rospy.is_shutdown():
         try:
             if global_planner.alive == True:
-                print("\nLocal planner is awake.")
+                if print_alive == True:
+                    print("\nLocal planner is awake.")
 
+                else:
+                    pass
+
+                print_alive = False
                 global_planner.initialised_pub.publish("I am alive!")
                 r.sleep()
 

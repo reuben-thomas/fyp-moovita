@@ -131,12 +131,20 @@ def main():
     # Set update rate
     r = rospy.Rate(local_planner.frequency) 
 
+    print_alive = True
+
     while not rospy.is_shutdown():
         try:
             local_planner.initialised_pub.publish("I am alive!")
 
             if local_planner.alive == True:
-                print("\nGlobal planner is awake.")
+                if print_alive == True:
+                    print("\nGlobal planner is awake.")
+                
+                else:
+                    pass
+
+                print_alive = False
 
                 local_planner.initialised_pub.publish("I am alive!")
                 
