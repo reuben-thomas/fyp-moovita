@@ -71,9 +71,6 @@ class GlobalPathPlanner:
 
         if msg.data == "I am alive!":
             self.alive = True
-
-        elif msg.data == "Shutting Down.":
-            self.alive = False
         
         else:
             self.alive = False
@@ -216,7 +213,6 @@ def main():
 
         except KeyboardInterrupt:
             print("\n")
-            global_planner.initialised_pub.publish("Shutting Down.")
             print("Shutting down ROS node...")
 
 if __name__=="__main__":
