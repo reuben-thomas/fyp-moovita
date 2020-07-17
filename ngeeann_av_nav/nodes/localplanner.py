@@ -49,6 +49,9 @@ class LocalPathPlanner:
         if msg.data == "I am alive!":
             self.alive = True
         
+        elif msg.data == "Shutting Down.":
+            self.alive = False
+
         else:
             self.alive = False
 
@@ -78,8 +81,6 @@ class LocalPathPlanner:
             npose.y = cy[n]
             npose.theta = cyaw[n]
             target_path.poses.append(npose)
-
-        print("Total Points: {}".format(len(target_path.poses)))
 
         self.local_planner_pub.publish(target_path)
 
@@ -138,6 +139,9 @@ def main():
             local_planner.initialised_pub.publish("I am alive!")
 
             if local_planner.alive == True:
+                print("\nGlobal planner is awake.")
+
+                local_planner.initialised_pub.publish("I am alive!")
                 
                 # Create path
                 local_planner.create_pub_path()
@@ -145,9 +149,12 @@ def main():
                 r.sleep()
 
             else:
+                print("\nGlobal planner is asleep.")
                 r.sleep()
 
         except KeyboardInterrupt:
+            print("\n")
+            local_planner.initialised_pub.publish("Shutting Down.")
             print("Shutting down ROS node...")
 
 if __name__=="__main__":

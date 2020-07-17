@@ -4,10 +4,9 @@ import rospy, cubic_spline_planner, datetime
 import numpy as np
 import math
 
-from ngeeann_av_nav.msg import State2D
+from ngeeann_av_nav.msg import State2D, Path2D
 from ackermann_msgs.msg import AckermannDrive
-from nav_msgs.msg import Path
-from ngeeann_av_nav.msg import Path2D
+from geometry_msgs.msg import Pose2D
 from std_msgs.msg import String
 
 class PathTracker:
@@ -18,7 +17,9 @@ class PathTracker:
 
         # Initialise publishers
         self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=50)
-        
+        self.targets_pub = rospy.Publisher('/ngeeann_av/current_target', Pose2D, queue_size=50)
+
+
         # Initialise subscribers
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
         self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb, queue_size=100)
@@ -219,6 +220,14 @@ class PathTracker:
 
         dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)        
         return dist
+        
+    def publish_current_target(self, x, y):
+
+        current_target = Pose2D()
+        current_target.x = x
+        current_target.y = y
+
+        self.targets_pub.publish(current_target)
 
     def stanley_control(self, last_target_idx):
 
@@ -229,6 +238,8 @@ class PathTracker:
         # Ensures no backtracking to already missed targets
         if last_target_idx >= current_target_idx:
             current_target_idx = last_target_idx
+
+        self.publish_current_target(self.cx[current_target_idx], self.cy[current_target_idx])
 
         # METHOD 1 
         if (((current_target_idx - 3) >= 0) and ((current_target_idx + 3) < self.targets)):
@@ -251,6 +262,7 @@ class PathTracker:
             pass
 
         print("\n")
+        print("Current Target ID: {}".format(current_target_idx))
         print("Heading error = {}".format(heading_error))
         print("Cross-track error = {}".format(crosstrack_error))
         print("Steering error (+-0.95) = {} + {} = {}".format(heading_error, crosstrack_error, sigma_t))

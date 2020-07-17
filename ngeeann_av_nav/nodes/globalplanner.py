@@ -20,8 +20,8 @@ class GlobalPathPlanner:
         self.initialised_pub = rospy.Publisher('/ngeeann_av/globalplanner_hb', String, queue_size=10)
 
         # Initialise suscriber(s)
-        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
         self.initialised_sub = rospy.Subscriber('/ngeeann_av/localplanner_hb', String, self.initialised_cb, queue_size=10)
+        self.targets_sub = rospy.Subscriber('/ngeeann_av/current_target', Pose2D, self.target_check_cb, queue_size=50)
 
         # Load parameters
         try:
@@ -52,8 +52,8 @@ class GlobalPathPlanner:
         # Class variables to use whenever within the class when necessary
         self.alive = False
 
-        self.x = None
-        self.y = None
+        self.current_target_x = 0.0
+        self.current_target_y = 0.0
 
         self.lowerbound = 0
         self.upperbound = self.lowerbound + (self.givenwp)
@@ -64,47 +64,39 @@ class GlobalPathPlanner:
         self.ax_pub = self.ax[self.lowerbound : self.upperbound]
         self.ay_pub = self.ay[self.lowerbound : self.upperbound]
 
+        self.current_target = None
+
     def initialised_cb(self, msg):
 
         ''' Callback function to check if the Local Path Planner has been initialised '''
 
         if msg.data == "I am alive!":
             self.alive = True
+
+        elif msg.data == "Shutting Down.":
+            self.alive = False
         
         else:
             self.alive = False
 
-    def vehicle_state_cb(self, msg):
+    def target_check_cb(self, msg):
 
-        ''' Callback function to receive information on the vehicle's vertical and horizontal coordinates '''
-
-        self.x = msg.pose.x
-        self.y = msg.pose.y
+        ''' Callback function to receive information on the vehicle's current target '''
+        
+        self.current_target_x = msg.x
+        self.current_target_y = msg.y
 
     def almost_reached(self):
 
         ''' Tells the node when to compute and publish the waypoints to the Local Path Planner '''
         
         # If the vehicle has almost reached the goal
-        if self.x < self.ax[self.upperindex - 1] + self.tolerance and self.x > self.ax[self.upperindex - 1] - self.tolerance:
-            if self.y < self.ay[self.upperindex - 1] + self.tolerance and self.y > self.ay[self.upperindex - 1] - self.tolerance:
-                self.set_waypoints(False)
-                self.success_pub.publish("Reached.")
-
-            else:
-                pass
-
-        else:
-            pass
-
-        '''
-        if self.x == self.ax[self.upperindex - 1] and self.y == self.ay[self.upperindex - 1]:
+        if np.around(self.current_target_x, - 1) == np.around(self.ax[self.upperindex - 1], -1) and np.around(self.current_target_y, -1) == np.around(self.ay[self.upperindex - 1], -1):
             self.set_waypoints(False)
             self.success_pub.publish("Reached.")
-        
+
         else:
             pass
-        '''
 
     def set_waypoints(self, first):
 
@@ -207,10 +199,21 @@ def main():
 
     while not rospy.is_shutdown():
         try:
-            global_planner.almost_reached()
-            r.sleep()
+            if global_planner.alive == True:
+                print("\nLocal planner is awake.")
+
+                global_planner.initialised_pub.publish("I am alive!")
+                
+                global_planner.almost_reached()
+                r.sleep()
+
+            else:
+                print("\nLocal planner is asleep.")
+                r.sleep()
 
         except KeyboardInterrupt:
+            print("\n")
+            global_planner.initialised_pub.publish("Shutting Down.")
             print("Shutting down ROS node...")
 
 if __name__=="__main__":
