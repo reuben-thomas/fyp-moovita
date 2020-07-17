@@ -6,7 +6,7 @@ import pandas as pd
 
 from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
 from nav_msgs.msg import Path
-from ngeeann_av_nav.msg import Path2D, State2D
+from ngeeann_av_nav.msg import Path2D
 from std_msgs.msg import String
 
 class LocalPathPlanner:
@@ -23,7 +23,6 @@ class LocalPathPlanner:
         # Initialise subscribers
         self.goals_sub = rospy.Subscriber('/ngeeann_av/goals', Path2D, self.goals_cb, queue_size=10)
         self.initialised_sub = rospy.Subscriber('/ngeeann_av/globalplanner_hb', String, self.initialised_cb, queue_size=10)
-        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=50)
 
         # Load parameters
         try:
