@@ -52,9 +52,6 @@ class GlobalPathPlanner:
         # Class variables to use whenever within the class when necessary
         self.alive = False
 
-        self.current_target_x = 0.0
-        self.current_target_y = 0.0
-
         self.lowerbound = 0
         self.upperbound = self.lowerbound + (self.givenwp)
 
@@ -65,6 +62,8 @@ class GlobalPathPlanner:
         self.ay_pub = self.ay[self.lowerbound : self.upperbound]
 
         self.current_target = None
+
+        self.points = 1
 
     def initialised_cb(self, msg):
 
@@ -83,19 +82,30 @@ class GlobalPathPlanner:
 
         ''' Callback function to receive information on the vehicle's current target '''
         
-        self.current_target_x = msg.x
-        self.current_target_y = msg.y
+        current_target_x = msg.x
+        current_target_y = msg.y
 
-    def almost_reached(self):
+        print("Next Goal: {}".format(self.ax[self.upperindex - 1]))
+
+        if np.around(current_target_x) == np.around(self.ax[self.upperindex - 1]) and np.around(current_target_y) == np.around(self.ay[self.upperindex - 1]):
+            self.almost_reached(True)
+            
+        else:
+            self.almost_reached(False)
+
+    def almost_reached(self, reached):
 
         ''' Tells the node when to compute and publish the waypoints to the Local Path Planner '''
         
         # If the vehicle has almost reached the goal
-        if np.around(self.current_target_x, - 1) == np.around(self.ax[self.upperindex - 1], -1) and np.around(self.current_target_y, -1) == np.around(self.ay[self.upperindex - 1], -1):
+        if reached == True:
             self.set_waypoints(False)
             self.success_pub.publish("Reached.")
+            print("\nVehicle has almost reached waypoint {}".format(self.points))
+            self.points += 1
 
         else:
+            print("Not yet reached.")
             pass
 
     def set_waypoints(self, first):
@@ -113,11 +123,6 @@ class GlobalPathPlanner:
             else:
                 self.publish_goals(self.ax_pub, self.ay_pub)
 
-                self.lowerbound += self.givenwp
-                self.upperbound += self.givenwp
-                self.lowerindex += self.givenwp
-                self.upperindex += self.givenwp
-
         else:
             if  self.givenwp > (len(self.ax) - self.lowerindex): # If the number of waypoints to give is more than the number of waypoints left
                 self.upperbound = self.lowerbound + (len(self.ax) - self.lowerbound) # New upper index
@@ -128,13 +133,13 @@ class GlobalPathPlanner:
                 self.success_pub.publish("Success.")
 
             else: # If the number of waypoints to give is less or equal to the number of waypoints left.
-                self.ax_pub = self.ax[self.lowerbound : self.upperbound]
-                self.ay_pub = self.ay[self.lowerbound : self.upperbound]
-
                 self.lowerbound += self.givenwp
                 self.upperbound += self.givenwp
                 self.lowerindex += self.givenwp
                 self.upperindex += self.givenwp
+                
+                self.ax_pub = self.ax[self.lowerbound : self.upperbound]
+                self.ay_pub = self.ay[self.lowerbound : self.upperbound]
 
             print("ax_pub:{}\nay_pub{}".format(self.ax_pub, self.ay_pub))
             self.publish_goals(self.ax_pub, self.ay_pub)
@@ -203,8 +208,6 @@ def main():
                 print("\nLocal planner is awake.")
 
                 global_planner.initialised_pub.publish("I am alive!")
-                
-                global_planner.almost_reached()
                 r.sleep()
 
             else:
