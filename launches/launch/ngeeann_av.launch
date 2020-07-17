@@ -89,7 +89,7 @@
 	</node> -->
 
 	<!-- Localisation node -->
-	<node name="localisation" pkg="ngeeann_av_nav" type="localisation.py" launch-prefix="gnome-terminal --command"/>
+	<node name="localisation" pkg="ngeeann_av_nav" type="localisation.py"/>
 
 	<!-- Local Path Planner node -->
 	<node name="local_planner" pkg="ngeeann_av_nav" type="localplanner.py" launch-prefix="gnome-terminal --command"/>

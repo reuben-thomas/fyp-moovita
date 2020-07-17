@@ -65,6 +65,8 @@ class LocalPathPlanner:
             self.ax.append(px)
             self.ay.append(py)
 
+        print("\nGoals received: {}".format(len(msg.poses)))
+
     def create_pub_path(self):
 
         ''' Uses the cubic_spline_planner library to interpolate a cubic spline path over the given waypoints '''
@@ -102,7 +104,7 @@ class LocalPathPlanner:
             npose.pose.orientation = self.heading_to_quaternion(cyaw[n])
             target_path.poses.append(npose)
 
-        print("Total Points: {}".format(len(target_path.poses)))
+        print("Total points: {}".format(len(target_path.poses)))
 
         self.local_planner_pub.publish(target_path)
 

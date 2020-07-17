@@ -44,6 +44,8 @@ class GlobalPathPlanner:
         dir_path = self.walk_up_folder(dir_path)
         df = pd.read_csv(os.path.join(dir_path, 'scripts', 'waypoints.csv'))
 
+        print("Waypoint directory: {}".format(os.path.join(dir_path, 'scripts', 'waypoints.csv')))
+
         # Import waypoints.csv into class variables ax and ay
         self.ax = df['X-axis'].values.tolist()
         self.ay = df['Y-axis'].values.tolist()
@@ -64,6 +66,7 @@ class GlobalPathPlanner:
         self.current_target = None
 
         self.points = 1
+        self.total_goals = 0
 
     def initialised_cb(self, msg):
 
@@ -82,7 +85,7 @@ class GlobalPathPlanner:
         current_target_x = msg.x
         current_target_y = msg.y
 
-        print("Next Goal: {}".format(self.ax[self.upperindex - 1]))
+        print("Next goal: ({}, {})".format(self.ax[self.upperindex - 1]), self.ay[self.upperindex - 1])
 
         if np.around(current_target_x) == np.around(self.ax[self.upperindex - 1]) and np.around(current_target_y) == np.around(self.ay[self.upperindex - 1]):
             self.almost_reached(True)
@@ -98,6 +101,7 @@ class GlobalPathPlanner:
         if reached == True:
             self.set_waypoints(False)
             self.success_pub.publish("Reached.")
+
             print("\nVehicle has almost reached waypoint {}".format(self.points))
             self.points += 1
 
@@ -147,7 +151,8 @@ class GlobalPathPlanner:
 
         goals = Path2D()
 
-        count = 0
+        goals_per_publish = 0
+        self.total_goals += 1
 
         for i in range(0, self.givenwp):
             goal = Pose2D()
@@ -155,10 +160,14 @@ class GlobalPathPlanner:
             goal.y = ay[i]
             
             goals.poses.append(goal)
-            count += 1
+            goals_per_publish += 1
 
         self.goals_pub.publish(goals)
-        print("Published Waypoints:{}\n{}".format(count, goals))
+
+        print("\n")
+        print("Total goals published: {}".format(self.total_goals))
+        print("Goals per publish:{}".format(goals_per_publish))
+        print("\nPublished goals: \n{}".format(goals))
 
     def walk_up_folder(self, path, dir_goal='fyp-moovita'):
 
