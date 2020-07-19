@@ -15,7 +15,7 @@
 </gazebo>
 
 <gazebo reference="chassis_link">
-  <material>Gazebo/OrangeTransparent</material>
+  <material>Gazebo/White</material>
   <mu1>0.2</mu1>
   <mu2>0.2</mu2>
   <selfCollide>true</selfCollide>
