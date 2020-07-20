@@ -12,9 +12,7 @@ from std_msgs.msg import String
 class PathTracker:
 
     def __init__(self):
-
-        ''' Class constructor to initialise the class '''
-
+        
         # Initialise publishers
         self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=10)
         self.targets_pub = rospy.Publisher('/ngeeann_av/current_target', Pose2D, queue_size=10)
@@ -55,10 +53,12 @@ class PathTracker:
         self.fails = 0
         self.target_idx = None
         self.error_front_axle = None
-        
-    def vehicle_state_cb(self, msg):
+        self.heading_error = None
+        self.yawrate_error = None
 
-        ''' Callback function to receive information on the vehicle's vertical and horizontal coordinates '''
+
+    # Callback function to recieve information on the vehicle's vertical and horizontal coordinates
+    def vehicle_state_cb(self, msg):
 
         self.x = msg.pose.x
         self.y = msg.pose.y
@@ -67,10 +67,10 @@ class PathTracker:
         self.yawrate = msg.twist.w
         self.target_index_calculator()
 
+
+    # Callback function to recieve path data from the local path planner
     def path_cb(self, msg):
-
-        ''' Callback function to receive path data from the Local Path Planner '''
-
+        '''
         self.cx = []
         self.cy = []
         
@@ -85,10 +85,15 @@ class PathTracker:
         self.targets = len(msg.poses)
 
         print("\nTotal Points: {}".format(len(msg.poses)))
-        
-    def success_cb(self, msg):
+        '''
+        # Debug Path
+        ax = [100.0, 100.0, 96.0, 90.0, 0.0]
+        ay = [18.3, 31.0, 43.0, 47.0, 0.0]
+        self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
 
-        ''' Unsubscribes from the Local Path Planner when vehicle has completed all waypoints '''
+
+    # Unsubscribes from local path planner once vehicle has completed all waypoints
+    def success_cb(self, msg):
 
         if msg.data == "Success.":
             self.path_sub.unregister()
@@ -101,9 +106,9 @@ class PathTracker:
         else:
             print("\nVehicle has not yet reached the final waypoint.")
 
+    
+    # Calculates the target index and each corresponding error
     def target_index_calculator(self):
-
-        ''' Calculates the target index and the error of the front axle to the trajectory '''
 
         # Calculate position of the front axle
         fx = self.x + self.cg2frontaxle * np.sin(self.yaw + self.halfpi)
@@ -115,87 +120,39 @@ class PathTracker:
         dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
         dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
 
-        if len(dx) == len(dy):
-            d = np.hypot(dx, dy) # Find the distance from the front axle to the path
-            self.target_idx = np.argmin(d) # Find the shortest distance in the array
-
-            # Project RMS error onto the front axle vector
-            front_axle_vec = [-np.cos(self.yaw + np.pi), -np.sin(self.yaw + np.pi)]
-            self.error_front_axle = np.dot([dx[self.target_idx], dy[self.target_idx]], front_axle_vec)
-
-            print("\n")
-            print("Vehicle speed: {}".format(self.target_vel))
-            print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
-            print("Target (x, y): ({}, {})".format(self.cx[self.target_idx], self.cy[self.target_idx]))
-            
-            # return self.target_idx, self.error_front_axle
-
-        else:
+        if len(dx) != len(dy):
             self.fails += 1
+            pass
 
-            print("\n")
-            print("Vehicle speed: {}".format(self.target_vel))
-            print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
+        d = np.hypot(dx, dy) # Find the distance from the front axle to the path
+        self.target_idx = np.argmin(d) # Find the shortest distance in the array
 
-            # return self.target_idx, self.error_front_axle
-            
-    '''
-    def trajectory_yaw_calc(self, target_idx):
-
-        # points ahead / behind
-        n = 3
-
-        if ((target_idx - n) == 0):
-            return 0.0
-        else:
-            #3 points created at previous, current, next target by given increment
-            x1 = self.cx[target_idx - n]
-            y1 = self.cy[target_idx - n]
-            x2 = self.cx[target_idx]
-            y2 = self.cy[target_idx]
-            x3 = self.cx[target_idx + n]
-            y3 = self.cy[target_idx + n]
-
-            #define each side of triangle
-            a = self.distance_calc(x1, y1, x2, y2)
-            b = self.distance_calc(x2, y2, x3, y3)
-            c = self.distance_calc(x1, y1, x3, y3)
-
-            #calculate half perimeter
-            p = (a + b + c) * 0.5
-
-            #calculate triangle area
-            area = math.sqrt(p * (p - a) + (p -b) + (p - c))
-
-            #radius of circle drawn from 3 points
-            r_traj = (a * b * c) / (4.0 * area)
-
-            #trajectory yaw rate
-            traj_yaw_rate = self.vel / r_traj
-            
-            if (self.cyaw[target_idx + n] > self.cyaw[target_idx - n]):
-                return traj_yaw_rate
-            elif (self.cyaw[target_idx + n] < self.cyaw[target_idx - n]):
-                return -traj_yaw_rate
-            else:
-                return 0.0
-    '''
+        # Cross track error, project RMS error onto the front axle vector
+        front_axle_vec = [-np.cos(self.yaw + np.pi), -np.sin(self.yaw + np.pi)]
+        self.error_front_axle = np.dot([dx[self.target_idx], dy[self.target_idx]], front_axle_vec)
     
-    '''
-    def trajectory_yawrate_calc(self, target_idx):
+        # Heading error
+        self.heading_error = self.normalise_angle(self.cyaw[self.target_idx] - self.yaw - self.halfpi)
 
-        # Calculates the curvator of the path 
+        # Yaw rate discrepancy
+        #self.yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
 
-        # lookahead distance in either direction along the path
-        target_range = 2
+        print("\n")
+        print("Vehicle speed: {}".format(self.target_vel))
+        print("Front axle position (fx, fy): ({}, {})".format(fx, fy))
+        print("Target (x, y): ({}, {})".format(self.cx[self.target_idx], self.cy[self.target_idx]))
 
+    
+    # Calculates the desired yawrate of the vehicle
+    def trajectory_yawrate_calc(self):
+        target_range = 2    #number of points to look ahead and behind
         intervals = 0
         delta_theta = 0.0
         delta_s = 0.0
         w = 0.0
 
-        start = target_idx - target_range
-        end = target_idx + target_range
+        start = self.target_idx - target_range
+        end = self.target_idx + target_range
 
         for n in range(start, end + 1):
 
@@ -211,7 +168,6 @@ class PathTracker:
                 intervals += 1
 
         # Average values given calculated intervals between points
-        
         if (intervals > 0):
             delta_theta = delta_theta / intervals
             delta_s = delta_s / intervals
@@ -220,13 +176,16 @@ class PathTracker:
             w = (delta_theta / delta_s) * self.vel
 
         return w
-    '''
 
+
+    # Calculates distance between two points in 2D
     def distance_calc(self, x1, y1, x2, y2):
 
         dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)        
         return dist
-        
+
+
+    # Publishes current vehicle target
     def publish_current_target(self, x, y):
 
         current_target = Pose2D()
@@ -235,35 +194,27 @@ class PathTracker:
 
         self.targets_pub.publish(current_target)
 
+
+    # Stanley controller determines the appropriate steering angle
     def stanley_control(self, last_target_idx):
 
-        ''' Calculates the steering angle of the vehicle '''
-        
-        # current_target_idx, error_front_axle = self.target_index_calculator()
-        current_target_idx = self.target_idx
-        error_front_axle = self.error_front_axle
+        if (self.target_idx == None):
+            self.target_index_calculator()
 
         # Ensures no backtracking to already missed targets
-        if last_target_idx >= current_target_idx:
-            current_target_idx = last_target_idx
+        if last_target_idx >= self.target_idx:
+            self.target_idx = last_target_idx
 
+        print("cx:{}\ntargets:{}".format(len(self.cx), self.target_idx))
+        self.publish_current_target(self.cx[self.target_idx], self.cy[self.target_idx])
         
-        print("cx:{}\ntargets:{}".format(len(self.cx),current_target_idx))
-        self.publish_current_target(self.cx[current_target_idx], self.cy[current_target_idx])
+        crosstrack_term = np.arctan2(self.k * self.error_front_axle, self.ksoft + self.target_vel)
+        heading_term = self.heading_error
+        # yawrate_term = self.kyaw * self.yawrate_error
 
-        '''
-        # yaw rate term
-        yaw_rate_term = self.kyaw * (self.yawrate - self.trajectory_yawrate_calc(current_target_idx))
-        print("METHOD 2 __________ Measured Yaw Rate = {}, Trajectory Yaw Rate = {}".format(self.yawrate, self.trajectory_yawrate_calc(current_target_idx)))
-        '''
+        sigma_t = crosstrack_term + heading_term
 
-        # heading error term
-        heading_error = self.normalise_angle(self.cyaw[current_target_idx] - self.yaw - self.halfpi)
-        
-        # crosstrack error term
-        crosstrack_error = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
-        sigma_t = heading_error + crosstrack_error
-
+        # Constrains steering angle to the vehicle limits
         if sigma_t >= self.max_steer:
             sigma_t = self.max_steer
         elif sigma_t <= -self.max_steer:
@@ -271,15 +222,10 @@ class PathTracker:
         else:
             pass
 
-        print("\n")
-        print("Current Target ID: {}".format(current_target_idx))
-        print("Heading error = {}".format(heading_error))
-        print("Cross-track error = {}".format(crosstrack_error))
-        print("Steering error (+-0.95) = {} + {} = {}".format(heading_error, crosstrack_error, sigma_t))
-        print("Failure count: {}".format(self.fails))
+        return sigma_t, self.target_idx
 
-        return sigma_t, current_target_idx
 
+    # Normalises angle to -pi to pi
     def normalise_angle(self, angle):
 
         while angle > np.pi:
@@ -290,6 +236,8 @@ class PathTracker:
 
         return angle
 
+
+    # Publishes to vehicle state
     def set_vehicle_command(self, velocity, steering_angle):
 
         ''' Publishes the calculated steering angle  '''
@@ -302,9 +250,6 @@ class PathTracker:
         self.tracker_pub.publish(drive)
 
 def main():
-
-    ''' Main function to initialise the class and node. '''
-
     # Time execution
     begin_time = datetime.datetime.now()
 
