@@ -14,8 +14,8 @@ global_path_planner:
 path_tracker:
     update_frequency: 50.0
     target_velocity: 5.0
-    control_gain: 1.0
-    softening_gain: 1.0
+    control_gain: 2.0
+    softening_gain: 2.0
     yawrate_gain: 0.5
     steering_limits: 0.95
     centreofgravity_to_frontaxle: 1.483

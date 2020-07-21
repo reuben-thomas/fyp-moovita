@@ -2,15 +2,16 @@
 
 import rospy
 import numpy as np
+import tf
 
 from gazebo_msgs.srv import GetModelState  
+from nav_msgs.msg import Odometry
 from ngeeann_av_nav.msg import State2D
+
 
 class Localisation:
 
     def __init__(self):
-
-        ''' Class constructor to initialise the class '''
 
         # Wait and initialise service
         rospy.wait_for_service('/ngeeann_av/gazebo/get_model_state') 
@@ -18,6 +19,9 @@ class Localisation:
 
         # Initialise publishers
         self.localisation_pub = rospy.Publisher('/ngeeann_av/state2D', State2D, queue_size=10)
+
+        # Publishes artificial map frame
+        self.map_broadcaster = tf.TransformBroadcaster()
 
         # Load parameters
         try:
@@ -31,9 +35,9 @@ class Localisation:
         # Class constants
         self.state = None
 
-    def update_state(self):
 
-        ''' Gets the vehicle position from Gazebo and publishes the data '''
+    # Gets vehicle position from Gazebo and publishes data
+    def update_state(self):
 
         # Define vehicle pose x,y, theta
         state2d = State2D()
@@ -59,9 +63,19 @@ class Localisation:
         print("Heading: {}".format(round(state2d.pose.theta, 5)))
         print("Velocity (x,y): ({},{})".format(round(state2d.twist.x, 5), round(state2d.twist.y, 5)))
 
-def main():
 
-    ''' Main function to initialise the class and node. '''
+    # Publishes map frame transform
+    def update_odom(self):
+
+        # Publish transform
+        x = self.state.pose.position.x
+        y = self.state.pose.position.y
+        z = self.state.pose.position.z
+        odom_quat = [self.state.pose.orientation.x, self.state.pose.orientation.y, self.state.pose.orientation.z, self.state.pose.orientation.w]
+        self.odom_broadcaster.sendTransform((x, y, z), odom_quat, rospy.Time.now(), "base_link", "map")
+
+
+def main():
 
     # Initialise the class
     localisation = Localisation()
@@ -76,6 +90,7 @@ def main():
         try:
             localisation.state = localisation.get_model_srv(localisation.model, '')
             localisation.update_state()
+            localisation.update_odom()
             r.sleep()
 
         except KeyboardInterrupt:

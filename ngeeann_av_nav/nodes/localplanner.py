@@ -84,11 +84,9 @@ class LocalPathPlanner:
         
         target_path = Path2D()
         
-        
         viz_path = Path()
-        viz_path.header.frame_id = self.frame_id
+        viz_path.header.frame_id = "map"
         viz_path.header.stamp = rospy.Time.now()
-        
 
         for n in range(0, len(cx)):
             # Appending to Target Path
@@ -98,18 +96,16 @@ class LocalPathPlanner:
             npose.theta = cyaw[n]
             target_path.poses.append(npose)
 
-            '''
             # Appending to Visualization Path
             vpose = PoseStamped()
             vpose.header.frame_id = self.frame_id
             vpose.header.seq = n
             vpose.header.stamp = rospy.Time.now()
-            vpose.pose.position.x = cx[n] - self.x
-            vpose.pose.position.y = cy[n] - self.y
+            vpose.pose.position.x = cx[n]
+            vpose.pose.position.y = cy[n]
             vpose.pose.position.z = 0.0
             vpose.pose.orientation = self.heading_to_quaternion(np.pi * 0.5 - cyaw[n])
             viz_path.poses.append(vpose)
-            '''
 
         self.local_planner_pub.publish(target_path)
         self.path_viz_pub.publish(viz_path)
