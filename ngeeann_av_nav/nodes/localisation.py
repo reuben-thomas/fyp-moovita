@@ -72,7 +72,7 @@ class Localisation:
         y = self.state.pose.position.y
         z = self.state.pose.position.z
         odom_quat = [self.state.pose.orientation.x, self.state.pose.orientation.y, self.state.pose.orientation.z, self.state.pose.orientation.w]
-        self.odom_broadcaster.sendTransform((x, y, z), odom_quat, rospy.Time.now(), "base_link", "map")
+        self.map_broadcaster.sendTransform((x, y, z), odom_quat, rospy.Time.now(), "base_link", "map")
 
 
 def main():
