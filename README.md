@@ -100,6 +100,15 @@ This project covers the development of an autonomous vehicle platform in a simul
    - Type `source devel/setup.bash`
    - Type `echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc`
    
+## Main Launch
+### Usage
+1. Launch ackermann_vehicle.launch
+   - Launch your terminal
+   - Type `catkin_make`
+   - Type `roslaunch launches ngeeann_av.launch`
+2. Execute tracker.py
+   - Type `rosrun ngeeann_av_nav tracker.py`
+   
 ## circle_road_gen.py 
 ### Description
 circle_road_gen.py is a custom script which uses the NumPy library to calculate and generate the three-dimensional <point> coordinates of a circle for Gazebo's world file. This is primarily used to create a circular road of a certain radius and smoothness. The radius of the circle is calculated from the centre of the circle to the middle of the road (using Gazebo's SDF tag).
@@ -174,11 +183,3 @@ Launches nodes used by both RViz and Gazebo when visualizing a vehicle with Acke
 ```
 rostopic pub /ngeeann_av/ackermann_cmd ackermann_msgs/AckermannDrive "{steering_angle: 0.0, steering_angle_velocity: 0.0, speed: 5, acceleration: 0.0, jerk: 0.0}" -r 10
 ```
-
-## navigation.py
-### Usage
-1. Launch ackermann_vehicle.launch
-   - Launch your terminal
-   - Type `roslaunch ngeeann_av_control ackermann_vehicle.launch`
-2. Execute navigation.py
-   - Type `rosrun ngeeann_av_nav navigation.py`
