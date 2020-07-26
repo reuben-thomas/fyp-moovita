@@ -102,7 +102,7 @@ This project covers the development of an autonomous vehicle platform in a simul
    
 ## Main Launch
 ### Usage
-1. Launch ackermann_vehicle.launch
+1. Launch ngeeann_av.launch
    - Launch your terminal
    - Type `catkin_make`
    - Type `roslaunch launches ngeeann_av.launch`
