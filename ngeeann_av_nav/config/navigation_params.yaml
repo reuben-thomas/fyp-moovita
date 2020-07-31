@@ -13,7 +13,7 @@ global_path_planner:
 
 path_tracker:
     update_frequency: 50.0
-    target_velocity: 5.0
+    target_velocity: 2.0
     control_gain: 1.0
     softening_gain: 1.0
     yawrate_gain: 1.0
