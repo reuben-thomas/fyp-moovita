@@ -8,7 +8,7 @@ project(ngeeann_av_nav)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  ngeeann_av_control
+  ngeeann_av_gazebo
   ngeeann_av_description
   std_msgs
   message_generation
@@ -111,7 +111,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ngeeann_av_nav
-#  CATKIN_DEPENDS ngeeann_av_control ngeeann_av_description roscpp rospy tf
+#  CATKIN_DEPENDS ngeeann_av_gazebo ngeeann_av_description roscpp rospy tf
 #  DEPENDS system_lib
 )
 

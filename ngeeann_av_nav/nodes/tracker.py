@@ -72,7 +72,6 @@ class PathTracker:
     # Callback function to recieve path data from the local path planner
     def path_cb(self, msg):
 
-        '''
         self.cx = []
         self.cy = []
         
@@ -96,6 +95,7 @@ class PathTracker:
                 72.4146732353573,79.2366107489881,85.31873737719536,90.60426594239112,95.0438468884701,98.59602904431858,101.22764664223064,102.91412897774526,103.6397298196936]
 
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
+        '''
 
 
     # Unsubscribes from local path planner once vehicle has completed all waypoints
