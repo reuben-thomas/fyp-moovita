@@ -11,10 +11,9 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
 # apt-get installs
 sudo apt-get update
-sudo apt-get install gazebo7
+sudo apt-get install gazebo7 gazebo7-common
 sudo apt-get install libgazebo7-dev
 sudo apt-get install git
-sudo apt-get install ros-kinetic-fake-localization
 sudo apt-get install joint-state-publisher
 sudo apt-get install ros-kinetic-joint-state-publisher-gui
 sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers

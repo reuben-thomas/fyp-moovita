@@ -36,6 +36,28 @@
   </collision>
 </link>
 
+<joint name="spoiler_joint" type="fixed">
+  <origin xyz="0 0.05 -0.05" rpy="1.5708 0 3.14159" />
+  <parent link="chassis_link"/>
+  <child link="spoiler_link"/>
+</joint>
+
+<link name="spoiler_link">
+  <visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <mesh filename="package://ngeeann_av_description/meshes/spoiler.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <mesh filename="package://ngeeann_av_description/meshes/spoiler.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
 <link name="br_1">
   <inertial>
     <origin rpy="0 0 0" xyz="-0.0377 1.5929e-07 -1.5929e-07"/>

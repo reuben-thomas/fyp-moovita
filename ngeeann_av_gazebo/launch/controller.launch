@@ -1,6 +1,7 @@
+<?xml version="1.0"?>
 <launch>
 
-<rosparam file="$(find ngeeann_av_control)/config/indiv_controller.yaml" command="load"/>
+<rosparam file="$(find ngeeann_av_gazebo)/config/indiv_controller.yaml" command="load"/>
 
   <!-- load the controllers -->
 <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"

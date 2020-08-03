@@ -9,6 +9,7 @@ project(ngeeann_av_description)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  gazebo_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -81,7 +82,12 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add a build_depend and a exec_depend tag for "dynamic_reconfigure"
 ## * In this file (CMakeLists.txt):
 ##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
+
+
+find_package(gazebo REQUIRED)
+
+
+
 ##   * uncomment the "generate_dynamic_reconfigure_options" section below
 ##     and list every .cfg file to be processed
 

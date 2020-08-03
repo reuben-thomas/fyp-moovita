@@ -1,0 +1,21 @@
+localisation:
+    update_frequency: 50.0
+    model_name: ngeeann_av
+
+local_path_planner:
+    update_frequency: 10.0
+    frame_id: base_link
+
+global_path_planner:
+    update_frequency: 2.0
+    given_number_of_waypoints: 5
+    target_tolerance: 10.0
+
+path_tracker:
+    update_frequency: 50.0
+    target_velocity: 2.0
+    control_gain: 1.0
+    softening_gain: 1.0
+    yawrate_gain: 1.0
+    steering_limits: 0.95
+    centreofgravity_to_frontaxle: 1.483
