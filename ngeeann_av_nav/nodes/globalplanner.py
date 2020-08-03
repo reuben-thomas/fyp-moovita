@@ -16,6 +16,7 @@ class GlobalPathPlanner:
 
         # Initialise publisher(s)
         self.goals_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=10)
+        self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_goals', Path, queue_size=10)
         self.success_pub = rospy.Publisher('/ngeeann_av/success', String, queue_size=10)
         self.initialised_pub = rospy.Publisher('/ngeeann_av/globalplanner_hb', String, queue_size=10)
 
