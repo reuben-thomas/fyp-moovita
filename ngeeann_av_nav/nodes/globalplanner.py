@@ -4,7 +4,8 @@ import rospy, os
 import numpy as np
 import pandas as pd
 
-from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose2D, Quaternion, PoseStamped
+from nav_msgs.msg import Path
 from ngeeann_av_nav.msg import Path2D, State2D
 from std_msgs.msg import String
 
@@ -16,7 +17,7 @@ class GlobalPathPlanner:
 
         # Initialise publisher(s)
         self.goals_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=10)
-        self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_goals', Path, queue_size=10)
+        self.goals_viz_pub = rospy.Publisher('/ngeeann_av/viz_goals', Path, queue_size=10)
         self.success_pub = rospy.Publisher('/ngeeann_av/success', String, queue_size=10)
         self.initialised_pub = rospy.Publisher('/ngeeann_av/globalplanner_hb', String, queue_size=10)
 
@@ -149,21 +150,36 @@ class GlobalPathPlanner:
     def publish_goals(self, ax, ay):
 
         ''' Publishes an array of waypoints for the Local Path Planner '''
-
         goals = Path2D()
+
+        viz_goals = Path()
+        viz_goals.header.frame_id = "map"
+        viz_goals.header.stamp = rospy.Time.now()
 
         goals_per_publish = 0
         self.total_goals += 1
 
         for i in range(0, self.givenwp):
+            # Appending to Target Goals
             goal = Pose2D()
             goal.x = ax[i]
             goal.y = ay[i]
-            
             goals.poses.append(goal)
+            
+            # Appending to Visualization Path
+            vpose = PoseStamped()
+            vpose.header.frame_id = "map"
+            vpose.header.seq = i
+            vpose.header.stamp = rospy.Time.now()
+            vpose.pose.position.x = ax[i]
+            vpose.pose.position.y = ay[i]
+            vpose.pose.position.z = 0.0
+            viz_goals.poses.append(vpose)
+            
             goals_per_publish += 1
 
         self.goals_pub.publish(goals)
+        self.goals_viz_pub.publish(viz_goals)
 
         print("\n")
         print("Total goals published: {}".format(self.total_goals))
