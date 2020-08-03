@@ -7,7 +7,7 @@ local_path_planner:
     frame_id: base_link
 
 global_path_planner:
-    update_frequency: 10.0
+    update_frequency: 2.0
     given_number_of_waypoints: 5
     target_tolerance: 10.0
 
