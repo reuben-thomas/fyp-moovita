@@ -69,29 +69,12 @@ This project covers the development of an autonomous vehicle platform in a simul
 7. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
     - `sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control`
     
-<<<<<<< HEAD
-9. Install [rospy](http://wiki.ros.org/rospy)
-=======
 8. Install [rospy](http://wiki.ros.org/rospy)
->>>>>>> 84fb15e0089cd76c8e316d79800e7f8e40ee2cde
     - `sudo apt-get install python-rospy`
    
 10. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
    - `git clone https://github.com/ros-drivers/ackermann_msgs.git`
    
-<<<<<<< HEAD
-11. Install [pip](https://pypi.org/project/pip/)
-    - `sudo apt-get install python-pip`
-   
-12. Install [NumPy](https://pypi.org/project/numpy/)
-    - `pip install --upgrade pip`
-    - `pip install NumPy`
-    
-13. Install [pandas](https://pandas.pydata.org/getting_started.html)
-    - `pip install --upgrade pip`
-    - `pip install pandas`
-    
-=======
 10. Install [pip](https://pypi.org/project/pip/)
     - `sudo apt-get install python-pip`
    
@@ -102,7 +85,6 @@ This project covers the development of an autonomous vehicle platform in a simul
 12. Install [pandas](https://pandas.pydata.org/getting_started.html)
     - `pip install --upgrade pip`
     - `pip install pandas`
->>>>>>> 84fb15e0089cd76c8e316d79800e7f8e40ee2cde
     
 ## Usage
 1. Create catkin workspace
@@ -147,13 +129,9 @@ circle_road_gen.py is a custom script which uses the NumPy library to calculate 
   
 ## circle_wp_gen.py
 ### Description
-<<<<<<< HEAD
-circle_wp_gen.py is a custom script which uses the NumPy and pandas library to calculate and generate a csv file that contains two-dimensional coordinates; x-axis and y-axis in their respective columns. This is primarily used to generate waypoints on a circular road of a certain radius and smoothness. The user is given two different smoothness modes; Point mode and Angle mode. The radius of the circle is calculated from the centre of gazebo world.
-=======
 circle_wp_gen.py is a custom script which uses the NumPy and pandas library to calculate and generate a csv file that contains the two-dimensional coordinates; x-axis and y-axis in their respective columns. This is primarily used to generate waypoints on a circular road of a certain radius and smoothness. The user is given two different smoothness modes; Point mode and Angle mode. The radius of the circle is calculated from the centre of gazebo world.
 
 ![circle_wp_gen](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/circle_wp_gen.png?raw=true)
->>>>>>> 84fb15e0089cd76c8e316d79800e7f8e40ee2cde
 
 ### Point mode
 The user is able to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on how many points the user has set. More points means a smoother waypoint
