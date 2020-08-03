@@ -16,18 +16,12 @@ sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31
 # Install ROS Kinetic
 sudo apt-get update
 sudo apt-get install ros-kinetic-desktop-full
-<<<<<<< HEAD
-=======
 sudo apt-cache search ros-kinetic
->>>>>>> 84fb15e0089cd76c8e316d79800e7f8e40ee2cde
 
 # Setup Environment
 echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 source ~/.bashrc
-<<<<<<< HEAD
 source /opt/ros/kinetic/setup.bash
-=======
->>>>>>> 84fb15e0089cd76c8e316d79800e7f8e40ee2cde
 
 # Install the ROS dependencies for building packages
 sudo apt install python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential
