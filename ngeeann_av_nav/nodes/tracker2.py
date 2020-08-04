@@ -5,6 +5,7 @@ import rospy, cubic_spline_planner, datetime
 import numpy as np
 import math
 
+from gazebo_msgs.srv import GetModelState
 from ngeeann_av_nav.msg import State2D, Path2D
 from ackermann_msgs.msg import AckermannDrive
 from geometry_msgs.msg import Pose2D
@@ -18,6 +19,7 @@ class PathTracker:
         self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=10)
 
         # Initialise subscribers
+        rospy.wait_for_message('/ngeeann_av/state2D', State2D)
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb)
 
         # Load parameters
@@ -49,9 +51,7 @@ class PathTracker:
         # Debug Circle Paths
         ax = [103.67,103.18603057117863,101.73864097687299,99.34134510374726,96.01652585745269,91.79522617946827,86.7168592075202,80.82884028573427,74.18614426034304,66.8507921943588]
         ay = [0.0,10.00559818120778,19.917776788058948,29.643988479592114,39.09342223782818,48.17785124577748,56.81245663745863,64.91661942879698,72.4146732353573,79.2366107489881]
-
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
-
 
     # Callback function to recieve information on the vehicle's vertical and horizontal coordinates
     def vehicle_state_cb(self, msg):
@@ -61,23 +61,15 @@ class PathTracker:
         self.vel = math.sqrt((msg.twist.x**2.0) + (msg.twist.y**2.0))
         self.yawrate = msg.twist.w
 
-
   # Calculates the target index and each corresponding error
     def target_index_calculator(self):  
 
         # Calculate position of the front axle
-        fx = self.x + self.cg2frontaxle * np.sin(self.yaw + self.halfpi)
-        fy = self.y + self.cg2frontaxle * np.cos(self.yaw + self.halfpi)
-
-        while not self.cx or not self.cy:
-            pass
+        fx = self.x + self.cg2frontaxle * np.cos(self.yaw + self.halfpi)
+        fy = self.y + self.cg2frontaxle * np.sin(self.yaw + self.halfpi)
 
         dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
         dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
-
-        if len(dx) != len(dy):
-            self.fails += 1
-            pass
 
         d = np.hypot(dx, dy) # Find the distance from the front axle to the path
         target_idx = np.argmin(d) # Find the shortest distance in the array
@@ -94,7 +86,6 @@ class PathTracker:
         yawrate_error = 0.0
 
         #print("\nTarget (x, y): ({}, {})".format(self.cx[target_idx], self.cy[target_idx]))
-        
         self.track_error = error_front_axle
         return target_idx, heading_error, error_front_axle, yawrate_error
 
@@ -133,7 +124,6 @@ class PathTracker:
 
         return w
 
-
     # Calculates distance between two points in 2D
     def distance_calc(self, x1, y1, x2, y2):
 
@@ -141,16 +131,12 @@ class PathTracker:
         return dist
 
     # Stanley controller determines the appropriate steering angle
-    def stanley_control(self, last_target_idx):
+    def stanley_control(self):
 
         target_idx, heading_error, error_front_axle, yawrate_error = self.target_index_calculator()
-
-        # Ensures no backtracking to already missed targets
-        if last_target_idx >= target_idx:
-            target_idx = last_target_idx
         
-        crosstrack_term = np.arctan2(self.k * error_front_axle, self.ksoft + self.target_vel)
-        heading_term = heading_error
+        crosstrack_term = np.arctan2((self.k * error_front_axle), (self.ksoft + self.target_vel))
+        heading_term = self.normalise_angle(heading_error)
         yawrate_term = self.kyaw * yawrate_error
 
         sigma_t = crosstrack_term + heading_term + yawrate_term
@@ -194,21 +180,18 @@ def main():
     # Time execution
     begin_time = datetime.datetime.now()
     n = 0
-
-    # Initialise the class
-    path_tracker = PathTracker()
-    target_idx, _, _, _ = path_tracker.target_index_calculator()
-
     # Initialise the node
     rospy.init_node('path_tracker')
-
+    # Initialise the class
+    path_tracker = PathTracker()
     # Set update rate
-    r = rospy.Rate(path_tracker.frequency)
-
+    r = rospy.Rate(30)
     while not rospy.is_shutdown():
         try:
-            steering_angle, target_idx = path_tracker.stanley_control(target_idx)
+
+            steering_angle, target_idx = path_tracker.stanley_control()
             path_tracker.set_vehicle_command(path_tracker.target_vel, steering_angle)
+
             r.sleep()
 
             if n == 50:
