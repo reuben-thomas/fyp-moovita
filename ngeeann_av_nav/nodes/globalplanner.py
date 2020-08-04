@@ -99,7 +99,7 @@ class GlobalPathPlanner:
 
         ''' Callback function to receive information on the vehicle's current target '''
 
-        if np.around(msg.x) == np.around(self.ax[self.lowerindex - 1]) and np.around(msg.y) == np.around(self.ay[self.lowerindex - 1]):
+        if np.around(msg.x) == np.around(self.ax[self.lowerindex + 1]) and np.around(msg.y) == np.around(self.ay[self.lowerindex + 1]):
             self.almost_reached(True)
             
         else:
@@ -114,7 +114,6 @@ class GlobalPathPlanner:
             self.set_waypoints(False)
             self.success_pub.publish("Reached.")
 
-            print("\nVehicle has almost reached waypoint {}".format(self.points))
             self.points += 1
 
         else:
@@ -140,8 +139,8 @@ class GlobalPathPlanner:
             if  self.givenwp > (len(self.ax) - self.lowerindex): # If the number of waypoints to give is more than the number of waypoints left
                 self.upperbound = self.lowerbound + (len(self.ax) - self.lowerbound) # New upper index
 
-                self.ax_pub = self.ax[self.lowerbound : self.upperbound]
-                self.ay_pub = self.ay[self.lowerbound : self.upperbound]
+                self.ax_pub = self.ax[self.lowerbound - 1 : self.upperbound]
+                self.ay_pub = self.ay[self.lowerbound - 1 : self.upperbound]
 
                 self.success_pub.publish("Success.")
 
@@ -151,8 +150,8 @@ class GlobalPathPlanner:
                 self.lowerindex += 1
                 self.upperindex += 1
                 
-                self.ax_pub = self.ax[self.lowerbound : self.upperbound]
-                self.ay_pub = self.ay[self.lowerbound : self.upperbound]
+                self.ax_pub = self.ax[self.lowerbound - 1 : self.upperbound]
+                self.ay_pub = self.ay[self.lowerbound - 1 : self.upperbound]
 
             print("ax_pub:{}\nay_pub{}".format(self.ax_pub, self.ay_pub))
             self.publish_goals(self.ax_pub, self.ay_pub)

@@ -112,6 +112,7 @@ class PathTracker:
     
     # Calculates the desired yawrate of the vehicle
     def trajectory_yawrate_calc(self):
+
         target_range = 2    #number of points to look ahead and behind
         intervals = 0
         delta_theta = 0.0
@@ -147,7 +148,7 @@ class PathTracker:
     # Calculates distance between two points in 2D
     def distance_calc(self, x1, y1, x2, y2):
 
-        dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)        
+        dist = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)        
         return dist
 
     # Stanley controller determines the appropriate steering angle
@@ -194,6 +195,7 @@ class PathTracker:
         self.tracker_pub.publish(drive)
 
 def main():
+    
     # Time execution
     begin_time = datetime.datetime.now()
     n = 0
