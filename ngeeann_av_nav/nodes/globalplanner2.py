@@ -16,9 +16,6 @@ class GlobalPathPlanner:
         self.goals_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=10)
         self.goals_viz_pub = rospy.Publisher('/ngeeann_av/viz_goals', Path, queue_size=10)
 
-        # Initialise suscriber(s)
-        #self.targets_sub = rospy.Subscriber('/ngeeann_av/current_target', Pose2D, self.target_check_cb, queue_size=10)
-
         # Load parameters
         try:
             self.global_planner_params = rospy.get_param("/global_path_planner")
@@ -40,8 +37,6 @@ class GlobalPathPlanner:
         self.ay = [0, 10, 19, 29, 39, 48, 56, 64, 72, 79]
 
         # Class variables to use whenever within the class when necessary
-        self.alive = False
-
         self.lowerbound = 0
         self.upperbound = self.lowerbound + (self.givenwp)
 
@@ -50,8 +45,6 @@ class GlobalPathPlanner:
 
         self.ax_pub = self.ax[self.lowerbound : self.upperbound]
         self.ay_pub = self.ay[self.lowerbound : self.upperbound]
-
-        self.current_target = None
 
         self.points = 1
         self.total_goals = 0

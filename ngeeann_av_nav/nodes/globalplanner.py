@@ -24,6 +24,7 @@ class GlobalPathPlanner:
         # Initialise suscriber(s)
         self.initialised_sub = rospy.Subscriber('/ngeeann_av/localplanner_hb', String, self.initialised_cb, queue_size=10)
         self.targets_sub = rospy.Subscriber('/ngeeann_av/current_target', Pose2D, self.target_check_cb, queue_size=10)
+        # self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=10)
 
         # Load parameters
         try:
@@ -56,6 +57,9 @@ class GlobalPathPlanner:
         # Class variables to use whenever within the class when necessary
         self.alive = False
 
+        self.x = None
+        self.y = None
+
         self.lowerbound = 0
         self.upperbound = self.lowerbound + (self.givenwp)
 
@@ -80,20 +84,26 @@ class GlobalPathPlanner:
         else:
             self.alive = False
 
+    # def vehicle_state_cb(self, msg):
+        
+    #     self.x = msg.pose.x
+    #     self.y = msg.pose.y
+
+    #     if np.around(self.x) == np.around(self.ax[self.lowerindex + 1]) and np.around(self.y) == np.around(self.ay[self.lowerindex + 1]):
+    #         self.almost_reached(True)
+            
+    #     else:
+    #         pass
+
     def target_check_cb(self, msg):
 
         ''' Callback function to receive information on the vehicle's current target '''
-        
-        current_target_x = msg.x
-        current_target_y = msg.y
 
-        print("Next goal: ({}, {})".format(self.ax[self.upperindex], self.ay[self.upperindex]))
-
-        if np.around(current_target_x) == np.around(self.ax[self.upperindex - 1]) and np.around(current_target_y) == np.around(self.ay[self.upperindex - 1]):
+        if np.around(msg.x) == np.around(self.ax[self.lowerindex - 1]) and np.around(msg.y) == np.around(self.ay[self.lowerindex - 1]):
             self.almost_reached(True)
             
         else:
-            self.almost_reached(False)
+            pass
 
     def almost_reached(self, reached):
 
@@ -136,10 +146,10 @@ class GlobalPathPlanner:
                 self.success_pub.publish("Success.")
 
             else: # If the number of waypoints to give is less or equal to the number of waypoints left.
-                self.lowerbound += self.givenwp
-                self.upperbound += self.givenwp
-                self.lowerindex += self.givenwp
-                self.upperindex += self.givenwp
+                self.lowerbound += 1
+                self.upperbound += 1
+                self.lowerindex += 1
+                self.upperindex += 1
                 
                 self.ax_pub = self.ax[self.lowerbound : self.upperbound]
                 self.ay_pub = self.ay[self.lowerbound : self.upperbound]
