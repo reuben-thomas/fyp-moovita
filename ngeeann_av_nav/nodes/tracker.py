@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import rospy, cubic_spline_planner, datetime
+import rospy, cubic_spline_planner, datetime, threading
 import numpy as np
-import threading
 
 from gazebo_msgs.srv import GetModelState
 from ngeeann_av_nav.msg import State2D, Path2D

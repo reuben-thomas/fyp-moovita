@@ -23,8 +23,8 @@ class GlobalPathPlanner:
 
         # Initialise suscriber(s)
         self.initialised_sub = rospy.Subscriber('/ngeeann_av/localplanner_hb', String, self.initialised_cb, queue_size=10)
-        self.targets_sub = rospy.Subscriber('/ngeeann_av/current_target', Pose2D, self.target_check_cb, queue_size=10)
-        # self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=10)
+        # self.targets_sub = rospy.Subscriber('/ngeeann_av/current_target', Pose2D, self.target_check_cb, queue_size=10)
+        self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=10)
 
         # Load parameters
         try:
@@ -74,6 +74,9 @@ class GlobalPathPlanner:
         self.points = 1
         self.total_goals = 0
 
+        self.target_x = None
+        self.target_y = None
+
     def initialised_cb(self, msg):
 
         ''' Callback function to check if the Local Path Planner has been initialised '''
@@ -84,32 +87,35 @@ class GlobalPathPlanner:
         else:
             self.alive = False
 
-    # def vehicle_state_cb(self, msg):
+    def vehicle_state_cb(self, msg):
         
-    #     self.x = msg.pose.x
-    #     self.y = msg.pose.y
+        self.x = msg.pose.x
+        self.y = msg.pose.y
 
-    #     if np.around(self.x) == np.around(self.ax[self.lowerindex + 1]) and np.around(self.y) == np.around(self.ay[self.lowerindex + 1]):
-    #         self.almost_reached(True)
+        # if np.around(self.x) == np.around(self.ax[self.lowerindex + 1]) and np.around(self.y) == np.around(self.ay[self.lowerindex + 1]):
+        #     self.reached(True)
+            
+        # else:
+        #     pass
+
+    # def target_check_cb(self, msg):
+
+    #     ''' Callback function to receive information on the vehicle's current target '''
+
+    #     self.target_x = msg.x
+    #     self.target_y = msg.y
+
+    #     if np.around(msg.x) == np.around(self.ax[self.lowerindex + 1]) and np.around(msg.y) == np.around(self.ay[self.lowerindex + 1]):
+    #         self.reached(True)
             
     #     else:
     #         pass
 
-    def target_check_cb(self, msg):
-
-        ''' Callback function to receive information on the vehicle's current target '''
-
-        if np.around(msg.x) == np.around(self.ax[self.lowerindex + 1]) and np.around(msg.y) == np.around(self.ay[self.lowerindex + 1]):
-            self.almost_reached(True)
-            
-        else:
-            pass
-
-    def almost_reached(self, reached):
+    def reached(self, reached):
 
         ''' Tells the node when to compute and publish the waypoints to the Local Path Planner '''
         
-        # If the vehicle has almost reached the goal
+        # If the vehicle has reached the goal
         if reached == True:
             self.set_waypoints(False)
             self.success_pub.publish("Reached.")
@@ -226,6 +232,7 @@ def main():
     while not rospy.is_shutdown():
         if global_planner.alive == True:
             global_planner.initialised_pub.publish("I am alive!")
+            print("\nLocal planner is awake.")
             break
 
         else:
@@ -234,24 +241,18 @@ def main():
     # Publishes the first goal
     global_planner.set_waypoints(True)
 
-    print_alive = True
-
     while not rospy.is_shutdown():
         try:
-            if global_planner.alive == True:
-                if print_alive == True:
-                    print("\nLocal planner is awake.")
+            print("\nVehicle Position: ({}, {})".format(np.around(global_planner.x), np.around(global_planner.y)))
+            print("Goal: ({}, {})".format(np.around(global_planner.ax[global_planner.lowerindex + 1]), np.around(global_planner.ay[global_planner.lowerindex + 1])))
 
-                else:
-                    pass
-
-                print_alive = False
-                global_planner.initialised_pub.publish("I am alive!")
-                r.sleep()
+            if np.around(global_planner.x) == np.around(global_planner.ax[global_planner.lowerindex + 1]) and np.around(global_planner.y) == np.around(global_planner.ay[global_planner.lowerindex + 1]):
+                global_planner.reached(True)
 
             else:
-                print("\nLocal planner is asleep.")
-                r.sleep()
+                pass
+
+            r.sleep()
 
         except KeyboardInterrupt:
             print("\n")
