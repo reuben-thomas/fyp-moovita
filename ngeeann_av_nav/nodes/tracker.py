@@ -63,6 +63,7 @@ class PathTracker:
         '''
 
     def vehicle_state_cb(self, msg):
+        self.lock.acquire()
         self.x = msg.pose.x
         self.y = msg.pose.y
         self.yaw = msg.pose.theta
@@ -71,8 +72,10 @@ class PathTracker:
 
         if(self.cyaw != []):
             self.target_index_calculator()
+        self.lock.release()
 
     def path_cb(self, msg):
+        self.lock.acquire()
         self.cx = []
         self.cy = []
         self.cyaw = []
@@ -84,6 +87,7 @@ class PathTracker:
             self.cx.append(px)
             self.cy.append(py)
             self.cyaw.append(ptheta) 
+        self.lock.release()
 
     # Calculates the target index and each corresponding error
     def target_index_calculator(self):  
@@ -153,7 +157,7 @@ class PathTracker:
 
     # Stanley controller determines the appropriate steering angle
     def stanley_control(self):
-        
+        self.lock.acquire()
         crosstrack_term = np.arctan2((self.k * self.crosstrack_error), (self.ksoft + self.target_vel))
         heading_term = self.normalise_angle(self.heading_error)
         yawrate_term = self.kyaw * self.yawrate_error
@@ -169,6 +173,7 @@ class PathTracker:
             pass
 
         self.set_vehicle_command(self.target_vel, sigma_t)
+        self.lock.release()
 
     # Normalises angle to -pi to pi
     def normalise_angle(self, angle):
@@ -180,7 +185,7 @@ class PathTracker:
             angle += 2 * np.pi
 
         return angle
-
+        self.lock.release()
 
     # Publishes to vehicle state
     def set_vehicle_command(self, velocity, steering_angle):
@@ -216,7 +221,7 @@ def main():
             r.sleep()
 
             if n == 50:
-                print("Current Tracking Error: {} m".format(path_tracker.crosstrack_error))
+                print("\nCurrent Tracking Error: {} m".format(path_tracker.crosstrack_error))
                 print("Point {} of {} in current path".format(path_tracker.target_idx, len(path_tracker.cyaw)))
                 n = 0
             else:
@@ -224,8 +229,7 @@ def main():
 
 
         except KeyboardInterrupt:
-            print("\n")
-            print("Execution time: {}".format(datetime.datetime.now() - begin_time))
+            print("\nExecution time: {}".format(datetime.datetime.now() - begin_time))
             print("Shutting down ROS node...")
 
 if __name__ == "__main__":
