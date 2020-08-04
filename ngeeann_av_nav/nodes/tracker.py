@@ -2,7 +2,6 @@
 
 import rospy, cubic_spline_planner, datetime
 import numpy as np
-import math
 
 from ngeeann_av_nav.msg import State2D, Path2D
 from ackermann_msgs.msg import AckermannDrive
@@ -64,7 +63,7 @@ class PathTracker:
         self.x = msg.pose.x
         self.y = msg.pose.y
         self.yaw = msg.pose.theta
-        self.vel = math.sqrt((msg.twist.x**2.0) + (msg.twist.y**2.0))
+        self.vel = np.sqrt((msg.twist.x**2.0) + (msg.twist.y**2.0))
         self.yawrate = msg.twist.w
         self.target_index_calculator()
 
@@ -104,10 +103,6 @@ class PathTracker:
         if msg.data == "Success.":
             self.path_sub.unregister()
             print("\nVehicle has completed all waypoints")
-
-        elif msg.data == "Reached.":
-            print("\nVehicle has almost reached the waypoint {}".format(self.points))
-            self.points += 1
 
         else:
             print("\nVehicle has not yet reached the final waypoint.")
@@ -151,6 +146,7 @@ class PathTracker:
     
     # Calculates the desired yawrate of the vehicle
     def trajectory_yawrate_calc(self):
+
         target_range = 2    #number of points to look ahead and behind
         intervals = 0
         delta_theta = 0.0
@@ -183,11 +179,10 @@ class PathTracker:
 
         return w
 
-
     # Calculates distance between two points in 2D
     def distance_calc(self, x1, y1, x2, y2):
 
-        dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)        
+        dist = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)        
         return dist
 
 
@@ -256,6 +251,7 @@ class PathTracker:
         self.tracker_pub.publish(drive)
 
 def main():
+    
     # Time execution
     begin_time = datetime.datetime.now()
 
