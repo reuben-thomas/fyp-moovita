@@ -46,23 +46,20 @@ class PathTracker:
         self.lock = threading.Lock()
         self.track_error = 0.0
    
-        # Debug Circle Path
-        ax = [100.0, 100.0, 96.0, 90.0, 0.0]
-        ay = [18.3, 31.0, 43.0, 47.0, 0.0]
+        # Debug Circle Paths
+        ax = [103.67,103.18603057117863,101.73864097687299,99.34134510374726,96.01652585745269,91.79522617946827,86.7168592075202,80.82884028573427,74.18614426034304,66.8507921943588]
+        ay = [0.0,10.00559818120778,19.917776788058948,29.643988479592114,39.09342223782818,48.17785124577748,56.81245663745863,64.91661942879698,72.4146732353573,79.2366107489881]
 
         self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
 
 
     # Callback function to recieve information on the vehicle's vertical and horizontal coordinates
     def vehicle_state_cb(self, msg):
-
-        self.lock.acquire()
         self.x = msg.pose.x
         self.y = msg.pose.y
         self.yaw = msg.pose.theta
         self.vel = math.sqrt((msg.twist.x**2.0) + (msg.twist.y**2.0))
         self.yawrate = msg.twist.w
-        self.lock.release()
 
 
   # Calculates the target index and each corresponding error
