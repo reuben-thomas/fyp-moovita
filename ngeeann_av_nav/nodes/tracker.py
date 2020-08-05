@@ -111,9 +111,8 @@ class PathTracker:
         self.target_idx = target_idx
 
         # Yaw rate discrepancy
-        # yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
-        self.yawrate_error = 0.0
-
+        self.yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
+    
         pose = PoseStamped()
         pose.header.frame_id = "map"
         pose.header.stamp = rospy.Time.now()
@@ -138,7 +137,6 @@ class PathTracker:
     def trajectory_yawrate_calc(self):
 
         target_range = 2    #number of points to look ahead and behind
-        intervals = 0
         delta_theta = 0.0
         delta_s = 0.0
         w = 0.0
@@ -148,7 +146,7 @@ class PathTracker:
 
         for n in range(start, end + 1):
 
-            if (n >= 0) and ((n + 1) < len(cx)):
+            if (n >= 0) and ((n + 1) < len(self.cyaw)):
 
                 x1 = self.cx[n]
                 y1 = self.cy[n]
@@ -157,15 +155,9 @@ class PathTracker:
 
                 delta_s += self.distance_calc(x1, y1, x2, y2)
                 delta_theta = self.cyaw[n + 1] - self.cyaw[n]
-                intervals += 1
-
-        # Average values given calculated intervals between points
-        if (intervals > 0):
-            delta_theta = delta_theta / intervals
-            delta_s = delta_s / intervals
 
             # Angular velocity calculation
-            w = (delta_theta / delta_s) * self.vel
+            w = -(delta_theta / delta_s) * self.vel
 
         return w
 
