@@ -6,7 +6,7 @@ import numpy as np
 from gazebo_msgs.srv import GetModelState
 from ngeeann_av_nav.msg import State2D, Path2D
 from ackermann_msgs.msg import AckermannDrive
-from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose2D, PoseStamped, Quaternion
 from std_msgs.msg import String
 
 class PathTracker:
@@ -15,6 +15,7 @@ class PathTracker:
         
         # Initialise publishers
         self.tracker_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=10)
+        self.lateral_ref_pub = rospy.Publisher('/ngeeann_av/lateral_ref', PoseStamped, queue_size=10)
 
         # Initialise subscribers
         rospy.wait_for_message('/ngeeann_av/state2D', State2D)
@@ -112,6 +113,26 @@ class PathTracker:
         # Yaw rate discrepancy
         # yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
         self.yawrate_error = 0.0
+
+        pose = PoseStamped()
+        pose.header.frame_id = "map"
+        pose.header.stamp = rospy.Time.now()
+        pose.pose.position.x = self.cx[target_idx]
+        pose.pose.position.y = self.cy[target_idx]
+        pose.pose.position.z = 0.0
+        pose.pose.orientation = self.heading_to_quaternion(self.cyaw[target_idx])
+        self.lateral_ref_pub.publish(pose)
+
+    def heading_to_quaternion(self, heading):
+        ''' Converts yaw heading to quaternion coordinates '''
+
+        quaternion = Quaternion()
+        quaternion.x = 0.0
+        quaternion.y = 0.0
+        quaternion.z = np.sin(heading / 2)
+        quaternion.w = np.cos(heading / 2)
+
+        return quaternion
     
     # Calculates the desired yawrate of the vehicle
     def trajectory_yawrate_calc(self):
