@@ -78,8 +78,8 @@ class GlobalPathPlanner:
 
     def find_closest_point(self):
         # Identify position of vehicle front axle
-        fx = self.x + self.cg2frontaxle * np.cos(self.theta)
-        fy = self.y + self.cg2frontaxle * np.sin(self.theta)
+        fx = self.x + self.cg2frontaxle * np.cos(self.theta + np.pi*0.5)
+        fy = self.y + self.cg2frontaxle * np.sin(self.theta + np.pi*0.5)
 
         dx = [fx - icx for icx in self.ax] # Find the x-axis of the front axle relative to the path
         dy = [fy - icy for icy in self.ay] # Find the y-axis of the front axle relative to the path
@@ -97,8 +97,10 @@ class GlobalPathPlanner:
                 closest_id      - Index to closest waypoint to front axle in master waypoint list
                 axle_x, axle_y  - Coordinates (x,y) of vehicle front axle position
         '''
+
         # Creates vehicle frame
-        vehicle_frame = PyKDL.Frame(PyKDL.Rotation.RPY(self.theta, 0, 0), PyKDL.Vector(-self.x, -self.y, 0.0))
+        vehicle_frame = PyKDL.Frame(PyKDL.Rotation.RPY(0, 0, self.theta + (np.pi*0.5)), PyKDL.Vector(axle_x, axle_y, 0.0))
+        print('Current Yaw Angle: {}'.format(self.theta))
 
         # Position vector of closest waypoint in map frame
         p_map = PyKDL.Vector(self.ax[closest_id], self.ay[closest_id], 0.0)
@@ -106,8 +108,9 @@ class GlobalPathPlanner:
         # Transformation of waypoint to vehicle frame
         p_vehicle = vehicle_frame * p_map
         print('Waypoint #: {}'.format(closest_id))
-        print('Map frame: {}'.format(p_map))
-        print('Vehicle_frame: {}'.format(p_vehicle))
+        #print('Vehicle frame: {}'.format(vehicle_frame))
+        print('Map ref      : {}'.format(p_map))
+        print('Vehicle ref  : {}'.format(p_vehicle))
 
 
 

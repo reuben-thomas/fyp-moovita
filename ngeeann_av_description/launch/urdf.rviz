@@ -215,10 +215,10 @@ Visualization Manager:
       Unreliable: false
       Value: false
       Visibility:
-        "": true
         Grid: true
         LaserScan: true
         Path: true
+        PoseArray: true
         RobotModel: true
         TF: false
         Value: false
@@ -248,8 +248,8 @@ Visualization Manager:
       Value: true
     - Alpha: 1
       Arrow Length: 1
-      Axes Length: 1
-      Axes Radius: 0.075000003
+      Axes Length: 0.600000024
+      Axes Radius: 0.0599999987
       Class: rviz/PoseArray
       Color: 226; 0; 255
       Enabled: true
@@ -287,25 +287,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 17.0905647
+      Distance: 14.8231249
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.488352746
-        Y: 2.71927238
-        Z: 0.0935870409
+        X: 0.162855968
+        Y: 2.62033987
+        Z: -0.121479131
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.454797268
+      Pitch: 0.349797308
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.69318295
+      Yaw: 4.69818306
     Saved:
       - Class: rviz/Orbit
         Distance: 12.2737684
