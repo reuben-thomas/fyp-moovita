@@ -225,9 +225,7 @@ class _AckermannCtrlr(object):
 
         while True:
             try:
-                trans, not_used = \
-                    tfl.lookupTransform(self._right_rear_link_name, link,
-                                        rospy.Time(0))
+                trans, not_used = tfl.lookupTransform(self._right_rear_link_name, link, rospy.Time(0))
                 return np.array(trans)
 
             except:
