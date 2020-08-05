@@ -44,13 +44,11 @@ class Localisation:
         state2d.pose.x = self.state.pose.position.x
         state2d.pose.y = self.state.pose.position.y
         state2d.pose.theta = 2.0 * np.arctan2(self.state.pose.orientation.z, self.state.pose.orientation.w)
-        '''
-        # Aligning heading to y-axis
-        if state2d.pose.theta > 2.0 * np.pi:
-            state2d.pose.theta -= 2.0 * np.pi
-        elif state2d.pose.theta < 0.0:
+        
+        # Aligning heading to y-axis, accounts for double rotation error
+        if state2d.pose.theta < 0.0:
             state2d.pose.theta += 2.0 * np.pi
-        '''
+        
         # Define linear velocity x,y and angular velocity w
         state2d.twist.x = self.state.twist.linear.x
         state2d.twist.y = self.state.twist.linear.y
