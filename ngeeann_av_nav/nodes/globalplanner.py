@@ -30,6 +30,7 @@ class GlobalPathPlanner:
 
             self.tracker_params = rospy.get_param("/path_tracker")
             self.cg2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
+
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
 
@@ -43,9 +44,12 @@ class GlobalPathPlanner:
         # Import waypoints.csv into class variables ax and ay
         self.ax = df['X-axis'].values.tolist()
         self.ay = df['Y-axis'].values.tolist()
+        
+        # Class constants
         self.waypoints = min(len(self.ax), len(self.ay))
         self.wp_published = self.wp_ahead + self.wp_behind
-
+        
+        # Class variables to use whenever within the class when necessary
         self.x = None
         self.y = None
         self.theta = None
@@ -98,7 +102,7 @@ class GlobalPathPlanner:
             px = self.ax[0: self.wp_published]
             py = self.ay[0: self.wp_published]
 
-        elif closest_id > self.waypoints - self.wp_published:
+        elif closest_id > (self.waypoints - self.wp_published):
             # If the vehicle is finishing the given set of waypoints
             print('Closest Waypoint #{} (Terminating Path)'.format(closest_id))
             px = self.ax[-self.wp_published:]
@@ -107,8 +111,8 @@ class GlobalPathPlanner:
         elif transform[1] < (0.0 - self.passed_threshold):
             # If the vehicle has passed, closest point is preserved as a point behind the car
             print('Closest Waypoint #{} (Passed)'.format(closest_id))
-            px = self.ax[(closest_id - self.wp_behind - 1) : (closest_id + self.wp_ahead + 1)]
-            py = self.ay[(closest_id - self.wp_behind - 1) : (closest_id + self.wp_ahead + 1)]
+            px = self.ax[closest_id - (self.wp_behind - 1) : closest_id + (self.wp_ahead + 1)]
+            py = self.ay[closest_id - (self.wp_behind - 1) : closest_id + (self.wp_ahead + 1)]
 
         else:
             # If the vehicle has yet to pass, a point behind the closest is preserved as a point behind the car
@@ -123,8 +127,8 @@ class GlobalPathPlanner:
         ''' [NOT IN USE] Dictates the goals published when vehicle is near the start / end of the waypoints list '''
 
         if (closest_id < self.wp_behind):
-            px = self.ax[0:self.wp_ahead]
-            py = self.ay[0:self.wp_ahead]
+            px = self.ax[0 : self.wp_ahead]
+            py = self.ay[0 : self.wp_ahead]
             return px, py
 
         elif  (closest_id > self.waypoints - 1):

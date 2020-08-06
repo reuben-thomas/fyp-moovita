@@ -37,9 +37,9 @@ class PathTracker:
         self.halfpi = np.pi / 2
 
         # Class variables to use whenever within the class when necessary
-        self.x = 0.0
-        self.y = 0.0
-        self.yaw = 0.0
+        self.x = None
+        self.y = None
+        self.yaw = None
         self.points = 1
         self.lock = threading.Lock()
         self.cx = []
