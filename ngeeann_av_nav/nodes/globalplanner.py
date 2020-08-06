@@ -107,8 +107,8 @@ class GlobalPathPlanner:
         elif transform[1] < (0.0 - self.passed_threshold):
             # If the vehicle has passed, closest point is preserved as a point behind the car
             print('Closest Waypoint #{} (Passed)'.format(closest_id))
-            px = self.ax[(closest_id - wp_behind - 1) : (closest_id + wp_ahead + 1)]
-            py = self.ay[(closest_id - wp_behind - 1) : (closest_id + wp_ahead + 1)]
+            px = self.ax[(closest_id - self.wp_behind - 1) : (closest_id + self.wp_ahead + 1)]
+            py = self.ay[(closest_id - self.wp_behind - 1) : (closest_id + self.wp_ahead + 1)]
 
         else:
             # If the vehicle has yet to pass, a point behind the closest is preserved as a point behind the car
