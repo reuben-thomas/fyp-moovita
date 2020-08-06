@@ -4,10 +4,8 @@ import rospy, os
 import numpy as np
 import pandas as pd
 
-from geometry_msgs.msg import Pose2D, Quaternion, PoseStamped
-from nav_msgs.msg import Path
+from geometry_msgs.msg import Pose2D, Pose, PoseArray
 from ngeeann_av_nav.msg import Path2D, State2D
-from std_msgs.msg import String
 
 class GlobalPathPlanner:
 
@@ -17,27 +15,21 @@ class GlobalPathPlanner:
 
         # Initialise publisher(s)
         self.goals_pub = rospy.Publisher('/ngeeann_av/goals', Path2D, queue_size=10)
-        self.goals_viz_pub = rospy.Publisher('/ngeeann_av/viz_goals', Path, queue_size=10)
-        self.success_pub = rospy.Publisher('/ngeeann_av/success', String, queue_size=10)
-        self.initialised_pub = rospy.Publisher('/ngeeann_av/globalplanner_hb', String, queue_size=10)
+        self.goals_viz_pub = rospy.Publisher('/ngeeann_av/viz_goals', PoseArray, queue_size=10)
 
         # Initialise suscriber(s)
-        self.initialised_sub = rospy.Subscriber('/ngeeann_av/localplanner_hb', String, self.initialised_cb, queue_size=10)
-        # self.targets_sub = rospy.Subscriber('/ngeeann_av/current_target', Pose2D, self.target_check_cb, queue_size=10)
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=10)
 
         # Load parameters
         try:
             self.global_planner_params = rospy.get_param("/global_path_planner")
             self.frequency = self.global_planner_params["update_frequency"]
-            self.givenwp = self.global_planner_params["given_number_of_waypoints"]
+            self.wp_ahead = self.global_planner_params["waypoints_ahead"]
+            self.wp_behind = self.global_planner_params["waypoints_behind"]
+            self.passed_threshold = self.global_planner_params["passed_threshold"]
 
-            if self.givenwp < 2:
-                self.givenwp == 2
-            
-            else:
-                pass
-
+            self.tracker_params = rospy.get_param("/path_tracker")
+            self.cg2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
 
@@ -51,157 +43,149 @@ class GlobalPathPlanner:
         # Import waypoints.csv into class variables ax and ay
         self.ax = df['X-axis'].values.tolist()
         self.ay = df['Y-axis'].values.tolist()
-        # self.ay[1] = 47
-
-        # Class variables to use whenever within the class when necessary
-        self.alive = False
+        self.waypoints = min(len(self.ax), len(self.ay))
+        self.wp_published = self.wp_ahead + self.wp_behind
 
         self.x = None
         self.y = None
-
-        self.lowerbound = 0
-        self.upperbound = self.lowerbound + (self.givenwp)
-
-        self.lowerindex = 0
-        self.upperindex = self.lowerindex + (self.givenwp - 1)
-
-        self.ax_pub = self.ax[self.lowerbound : self.upperbound]
-        self.ay_pub = self.ay[self.lowerbound : self.upperbound]
-
-        self.current_target = None
-
-        self.points = 1
-        self.total_goals = 0
-
-        self.target_x = None
-        self.target_y = None
-
-    def initialised_cb(self, msg):
-
-        ''' Callback function to check if the Local Path Planner has been initialised '''
-
-        if msg.data == "I am alive!":
-            self.alive = True
-        
-        else:
-            self.alive = False
+        self.theta = None
 
     def vehicle_state_cb(self, msg):
-        
+        ''' 
+            Callback function to update vehicle state 
+
+            Parameters:
+                self.x          - Represents the current x-coordinate of the vehicle
+                self.y          - Represents the current y-coordinate of the vehicle
+                self.theta      - Represents the current yaw of the vehicle
+        '''
+
         self.x = msg.pose.x
         self.y = msg.pose.y
+        self.theta = msg.pose.theta
 
-        # if np.around(self.x) == np.around(self.ax[self.lowerindex + 1]) and np.around(self.y) == np.around(self.ay[self.lowerindex + 1]):
-        #     self.reached(True)
-            
-        # else:
-        #     pass
+    def set_waypoints(self):
+        ''' 
+            Determines the appropriate set of waypoints to publish by the following steps
 
-    # def target_check_cb(self, msg):
+            1. Identify waypoint closest to front axle
+            2. Determines if this point is ahead or behind, by transformation
+            3. Preserves fixed number of points ahead or behind
 
-    #     ''' Callback function to receive information on the vehicle's current target '''
+            Parameters:
+                self.wp_ahead           - Indicates number of waypoints to look ahead
+                self.wp_behind          - Indicates number of waypoints to preserve behind the vehicle
+                self.wp_published       - Indicates the total number of waypoints published
+                self.passed_threshold   - Indicates the distance after which a waypoint is considered passed
+                self.waypoints          - Total number of waypoints
+        '''
 
-    #     self.target_x = msg.x
-    #     self.target_y = msg.y
+        # Identify position of vehicle front axle
+        fx = self.x + self.cg2frontaxle * -np.sin(self.theta)
+        fy = self.y + self.cg2frontaxle * np.cos(self.theta)
 
-    #     if np.around(msg.x) == np.around(self.ax[self.lowerindex + 1]) and np.around(msg.y) == np.around(self.ay[self.lowerindex + 1]):
-    #         self.reached(True)
-            
-    #     else:
-    #         pass
+        dx = [fx - icx for icx in self.ax] # Find the x-axis of the front axle relative to the path
+        dy = [fy - icy for icy in self.ay] # Find the y-axis of the front axle relative to the path
 
-    def reached(self, reached):
+        d = np.hypot(dx, dy)        # Find the distance from the front axle to the path
+        closest_id = np.argmin(d)   # Returns the index with the shortest distance in the array
 
-        ''' Tells the node when to compute and publish the waypoints to the Local Path Planner '''
+        transform = self.frame_transform(self.ax[closest_id], self.ay[closest_id], fx, fy, self.theta)
+
+        if closest_id < 2:
+            # If the vehicle is starting along the path
+            print('Closest Waypoint #{} (Starting Path)'.format(closest_id))
+            px = self.ax[0: self.wp_published]
+            py = self.ay[0: self.wp_published]
+
+        elif closest_id > self.waypoints - self.wp_published:
+            # If the vehicle is finishing the given set of waypoints
+            print('Closest Waypoint #{} (Terminating Path)'.format(closest_id))
+            px = self.ax[-self.wp_published:]
+            py = self.ay[-self.wp_published:]    
+
+        elif transform[1] < (0.0 - self.passed_threshold):
+            # If the vehicle has passed, closest point is preserved as a point behind the car
+            print('Closest Waypoint #{} (Passed)'.format(closest_id))
+            px = self.ax[(closest_id - wp_behind - 1) : (closest_id + wp_ahead + 1)]
+            py = self.ay[(closest_id - wp_behind - 1) : (closest_id + wp_ahead + 1)]
+
+        else:
+            # If the vehicle has yet to pass, a point behind the closest is preserved as a point behind the car
+            print('Closest Waypoint #{} (Approaching)'.format(closest_id))
+            px = self.ax[(closest_id - self.wp_behind) : (closest_id + self.wp_ahead)]
+            py = self.ay[(closest_id - self.wp_behind) : (closest_id + self.wp_ahead)]
         
-        # If the vehicle has reached the goal
-        if reached == True:
-            self.set_waypoints(False)
-            self.success_pub.publish("Reached.")
+        self.publish_goals(px, py)
 
-            self.points += 1
+    def start_end_condition(self, closest_id):
 
-        else:
-            print("Not yet reached.")
-            pass
+        ''' [NOT IN USE] Dictates the goals published when vehicle is near the start / end of the waypoints list '''
 
-    def set_waypoints(self, first):
+        if (closest_id < self.wp_behind):
+            px = self.ax[0:self.wp_ahead]
+            py = self.ay[0:self.wp_ahead]
+            return px, py
 
-        ''' Set the waypoints that are to be published, given the vehicle's position ''' 
+        elif  (closest_id > self.waypoints - 1):
+            px = self.ax[(self.waypoints - self.wp_ahead - 1) : self.waypoints]
+            py = self.ay[(self.waypoints - self.wp_ahead - 1) : self.waypoints]
+            return px, py
 
-        if first == True:
+    def frame_transform(self, point_x, point_y, axle_x, axle_y, theta):
+        ''' 
+            Recieves position of vehicle front axle, and id of closest waypoint. This waypoint is transformed from
+            "map" frame to the vehicle frame
 
-            # If there is not enough waypoints to publish
-            if  self.givenwp >= len(self.ax):
-                
-                # Publish entire array
-                self.publish_goals(self.ax, self.ay)
+            Arguments:
+                closest_id          - Index to closest waypoint to front axle in master waypoint list
+                point_x, point_y    - Coordinates (x,y) of target point in world frame
+                axle_x, axle_y      - Coordinates (x,y) of vehicle front axle position in world frame
+        '''
 
-            else:
-                self.publish_goals(self.ax_pub, self.ay_pub)
+        c = np.cos(-theta)  # Creates rotation matrix given theta
+        s = np.sin(-theta)  # Creates rotation matrix given theta
+        R = np.array(((c, -s), (s, c)))  
 
-        else:
-            if  self.givenwp > (len(self.ax) - self.lowerindex): # If the number of waypoints to give is more than the number of waypoints left
-                self.upperbound = self.lowerbound + (len(self.ax) - self.lowerbound) # New upper index
+        p = np.array(((point_x), (point_y)))      # Position vector of closest waypoint (world frame)
+        v = np.array(((axle_x), (axle_y)))        # Position vector of vehicle (world frame)
+        vp = p - v                                # Linear translation between vehicle and point     
+        transform = R.dot(vp)                     # Product of rotation matrix and translation vector
 
-                self.ax_pub = self.ax[self.lowerbound - 1 : self.upperbound]
-                self.ay_pub = self.ay[self.lowerbound - 1 : self.upperbound]
+        return transform
 
-                self.success_pub.publish("Success.")
-
-            else: # If the number of waypoints to give is less or equal to the number of waypoints left.
-                self.lowerbound += 1
-                self.upperbound += 1
-                self.lowerindex += 1
-                self.upperindex += 1
-                
-                self.ax_pub = self.ax[self.lowerbound - 1 : self.upperbound]
-                self.ay_pub = self.ay[self.lowerbound - 1 : self.upperbound]
-
-            print("ax_pub:{}\nay_pub{}".format(self.ax_pub, self.ay_pub))
-            self.publish_goals(self.ax_pub, self.ay_pub)
-
-    def publish_goals(self, ax, ay):
+    def publish_goals(self, px, py):
 
         ''' Publishes an array of waypoints for the Local Path Planner '''
+
+        waypoints = min(len(px), len(py))
         goals = Path2D()
 
-        viz_goals = Path()
+        viz_goals = PoseArray()
         viz_goals.header.frame_id = "map"
         viz_goals.header.stamp = rospy.Time.now()
 
-        goals_per_publish = 0
-        self.total_goals += 1
-
-        for i in range(0, self.givenwp):
+        for i in range(0, waypoints):
             # Appending to Target Goals
             goal = Pose2D()
-            goal.x = ax[i]
-            goal.y = ay[i]
+            goal.x = px[i]
+            goal.y = py[i]
             goals.poses.append(goal)
             
             # Appending to Visualization Path
-            vpose = PoseStamped()
-            vpose.header.frame_id = "map"
-            vpose.header.seq = i
-            vpose.header.stamp = rospy.Time.now()
-            vpose.pose.position.x = ax[i]
-            vpose.pose.position.y = ay[i]
-            vpose.pose.position.z = 0.0
+            vpose = Pose()
+            vpose.position.x = px[i]
+            vpose.position.y = py[i]
+            vpose.position.z = 0.0
+            vpose.orientation
             viz_goals.poses.append(vpose)
-            
-            goals_per_publish += 1
-
+        
         self.goals_pub.publish(goals)
         self.goals_viz_pub.publish(viz_goals)
 
-        print("\n")
-        print("Total goals published: {}".format(self.total_goals))
-        print("Goals per publish:{}".format(goals_per_publish))
-        print("\nPublished goals: \n{}".format(goals))
+        print("Total goals published: {}\n".format(waypoints))
 
     def walk_up_folder(self, path, dir_goal='fyp-moovita'):
-
         ''' Searches and returns the directory of the waypoint.csv file ''' 
 
         dir_path = os.path.dirname(path)
@@ -216,8 +200,6 @@ class GlobalPathPlanner:
         return dir_path
         
 def main():
-
-    ''' Main function to initialise the class and node. '''
     
     # Initialise the class
     global_planner = GlobalPathPlanner()
@@ -225,32 +207,14 @@ def main():
     # Initialise the node
     rospy.init_node('global_planner')
 
+    rospy.wait_for_message('/ngeeann_av/state2D', State2D)
+
     # Set update rate
     r = rospy.Rate(global_planner.frequency)
 
     while not rospy.is_shutdown():
-        if global_planner.alive == True:
-            global_planner.initialised_pub.publish("I am alive!")
-            print("\nLocal planner is awake.")
-            break
-
-        else:
-            r.sleep()
-
-    # Publishes the first goal
-    global_planner.set_waypoints(True)
-
-    while not rospy.is_shutdown():
         try:
-            print("\nVehicle Position: ({}, {})".format(np.around(global_planner.x), np.around(global_planner.y)))
-            print("Goal: ({}, {})".format(np.around(global_planner.ax[global_planner.lowerindex + 1]), np.around(global_planner.ay[global_planner.lowerindex + 1])))
-
-            if np.around(global_planner.x) == np.around(global_planner.ax[global_planner.lowerindex + 1]) and np.around(global_planner.y) == np.around(global_planner.ay[global_planner.lowerindex + 1]):
-                global_planner.reached(True)
-
-            else:
-                pass
-
+            global_planner.set_waypoints()
             r.sleep()
 
         except KeyboardInterrupt:

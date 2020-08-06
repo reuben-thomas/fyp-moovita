@@ -3,11 +3,9 @@
 import rospy, cubic_spline_planner, datetime, threading
 import numpy as np
 
-from gazebo_msgs.srv import GetModelState
 from ngeeann_av_nav.msg import State2D, Path2D
 from ackermann_msgs.msg import AckermannDrive
 from geometry_msgs.msg import Pose2D, PoseStamped, Quaternion
-from std_msgs.msg import String
 
 class PathTracker:
 
@@ -18,8 +16,6 @@ class PathTracker:
         self.lateral_ref_pub = rospy.Publisher('/ngeeann_av/lateral_ref', PoseStamped, queue_size=10)
 
         # Initialise subscribers
-        rospy.wait_for_message('/ngeeann_av/state2D', State2D)
-        rospy.wait_for_message('/ngeeann_av/path', Path2D)
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb)
         self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb, queue_size=10)
 
@@ -41,7 +37,7 @@ class PathTracker:
         self.halfpi = np.pi / 2
 
         # Class variables to use whenever within the class when necessary
-        self.x = 100.0
+        self.x = 0.0
         self.y = 0.0
         self.yaw = 0.0
         self.points = 1
@@ -63,6 +59,7 @@ class PathTracker:
         '''
 
     def vehicle_state_cb(self, msg):
+
         self.lock.acquire()
         self.x = msg.pose.x
         self.y = msg.pose.y
@@ -70,11 +67,13 @@ class PathTracker:
         self.vel = np.sqrt((msg.twist.x**2.0) + (msg.twist.y**2.0))
         self.yawrate = msg.twist.w
 
-        if(self.cyaw != []):
+        if self.cyaw:
             self.target_index_calculator()
+
         self.lock.release()
 
     def path_cb(self, msg):
+
         self.lock.acquire()
         self.cx = []
         self.cy = []
@@ -89,12 +88,14 @@ class PathTracker:
             self.cyaw.append(ptheta) 
         self.lock.release()
 
-    # Calculates the target index and each corresponding error
+
     def target_index_calculator(self):  
 
+        ''' Calculates the target index and each corresponding error '''
+
         # Calculate position of the front axle
-        fx = self.x + self.cg2frontaxle * np.cos(self.yaw + self.halfpi)
-        fy = self.y + self.cg2frontaxle * np.sin(self.yaw + self.halfpi)
+        fx = self.x + self.cg2frontaxle * -np.sin(self.yaw)
+        fy = self.y + self.cg2frontaxle * np.cos(self.yaw)
 
         dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
         dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
@@ -200,6 +201,7 @@ class PathTracker:
             angle += 2 * np.pi
 
         return angle
+
         self.lock.release()
 
     # Publishes to vehicle state
@@ -224,19 +226,21 @@ def main():
     # Initialise the node
     rospy.init_node('path_tracker')
 
-    rospy.wait_for_message('/ngeeann_av/state2D', State2D)
-    rospy.wait_for_message('/ngeeann_av/path', Path2D)
-
     # Initialise the class
     path_tracker = PathTracker()
 
     # Set update rate
     r = rospy.Rate(path_tracker.frequency)
 
+    # Wait for messages
+    rospy.wait_for_message('/ngeeann_av/state2D', State2D)
+    rospy.wait_for_message('/ngeeann_av/path', Path2D)
+
     while not rospy.is_shutdown():
         try:
-            if (path_tracker.cyaw != []):
+            if path_tracker.cyaw:
                 path_tracker.stanley_control()
+
             r.sleep()
 
             if n == 100:
@@ -244,6 +248,7 @@ def main():
                 print("Point {} of {} in current path".format(path_tracker.target_idx, len(path_tracker.cyaw)))
                 track_error.append(path_tracker.crosstrack_error)
                 n = 0
+                
             else:
                 n += 1
 

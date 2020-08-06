@@ -2,12 +2,10 @@
 
 import rospy, os, cubic_spline_planner
 import numpy as np
-import pandas as pd
 
 from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
-from nav_msgs.msg import Path
 from ngeeann_av_nav.msg import Path2D, State2D
-from std_msgs.msg import String
+from nav_msgs.msg import Path
 
 class LocalPathPlanner:
 
@@ -18,12 +16,10 @@ class LocalPathPlanner:
         # Initialise publishers
         self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
         self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=10)
-        self.initialised_pub = rospy.Publisher('/ngeeann_av/localplanner_hb', String, queue_size=10)
 
         # Initialise subscribers
         self.goals_sub = rospy.Subscriber('/ngeeann_av/goals', Path2D, self.goals_cb, queue_size=10)
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=10)
-        self.initialised_sub = rospy.Subscriber('/ngeeann_av/globalplanner_hb', String, self.initialised_cb, queue_size=10)
 
         # Load parameters
         try:
@@ -41,17 +37,6 @@ class LocalPathPlanner:
         # Class variables to use whenever within the class when necessary
         self.ax = []
         self.ay = []
-        self.alive = False
-
-    def initialised_cb(self, msg):
-        
-        ''' Callback function to check if the Global Path Planner has been initialised '''
-
-        if msg.data == "I am alive!":
-            self.alive = True
-
-        else:
-            self.alive = False
 
     def goals_cb(self, msg):
 
@@ -82,16 +67,18 @@ class LocalPathPlanner:
 
         cx, cy, cyaw, a, b = cubic_spline_planner.calc_spline_course(self.ax, self.ay, self.ds)
         
+        cells = min(len(cx), len(cy), len(cyaw))
+
         target_path = Path2D()
         
         viz_path = Path()
         viz_path.header.frame_id = "map"
         viz_path.header.stamp = rospy.Time.now()
 
-        for n in range(0, len(cx)):
+        for n in range(0, cells):
             # Appending to Target Path
             npose = Pose2D()
-            npose.x  = cx[n]
+            npose.x = cx[n]
             npose.y = cy[n]
             npose.theta = cyaw[n]
             target_path.poses.append(npose)
@@ -135,34 +122,14 @@ def main():
     # Set update rate
     r = rospy.Rate(local_planner.frequency) 
 
-    print_alive = True
+    # Wait for messages
+    rospy.wait_for_message('/ngeeann_av/goals', Path2D)
 
     while not rospy.is_shutdown():
         try:
-            local_planner.initialised_pub.publish("I am alive!")
+            local_planner.create_pub_path()
 
-            if local_planner.alive == True:
-                if print_alive == True:
-                    print("\nGlobal planner is awake.")
-                
-                else:
-                    pass
-
-                print_alive = False
-
-                local_planner.initialised_pub.publish("I am alive!")
-                
-                # Create path
-                while not local_planner.ax and not local_planner.ay:
-                    pass
-                
-                local_planner.create_pub_path()
-
-                r.sleep()
-
-            else:
-                print("\nGlobal planner is asleep.")
-                r.sleep()
+            r.sleep()
 
         except KeyboardInterrupt:
             print("\n")

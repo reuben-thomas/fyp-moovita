@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import rospy, os, tf
+import rospy, os
 import numpy as np
 import pandas as pd
 
-from geometry_msgs.msg import Pose2D, Quaternion, PoseStamped, TransformStamped
+from geometry_msgs.msg import Pose2D, Quaternion, PoseStamped
 from nav_msgs.msg import Path
 from ngeeann_av_nav.msg import Path2D, State2D
 from std_msgs.msg import String
@@ -31,9 +31,6 @@ class GlobalPathPlanner:
             self.global_planner_params = rospy.get_param("/global_path_planner")
             self.frequency = self.global_planner_params["update_frequency"]
             self.givenwp = self.global_planner_params["given_number_of_waypoints"]
-            
-            self.tracker_params = rospy.get_param("/path_tracker")
-            self.cg2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
 
             if self.givenwp < 2:
                 self.givenwp == 2
@@ -61,7 +58,6 @@ class GlobalPathPlanner:
 
         self.x = None
         self.y = None
-        self.theta = None
 
         self.lowerbound = 0
         self.upperbound = self.lowerbound + (self.givenwp)
@@ -72,13 +68,13 @@ class GlobalPathPlanner:
         self.ax_pub = self.ax[self.lowerbound : self.upperbound]
         self.ay_pub = self.ay[self.lowerbound : self.upperbound]
 
-        # self.current_target = None
+        self.current_target = None
 
         self.points = 1
         self.total_goals = 0
 
-        # self.target_x = None
-        # self.target_y = None
+        self.target_x = None
+        self.target_y = None
 
     def initialised_cb(self, msg):
 
@@ -94,9 +90,6 @@ class GlobalPathPlanner:
         
         self.x = msg.pose.x
         self.y = msg.pose.y
-        self.theta = msg.pose.theta
-
-        self.find_closest_point()
 
         # if np.around(self.x) == np.around(self.ax[self.lowerindex + 1]) and np.around(self.y) == np.around(self.ay[self.lowerindex + 1]):
         #     self.reached(True)
@@ -117,32 +110,6 @@ class GlobalPathPlanner:
     #     else:
     #         pass
 
-    def find_closest_point(self):
-
-        # Identify position of vehicle front axle
-        fx = self.x + self.cg2frontaxle * np.cos(self.theta)
-        fy = self.y + self.cg2frontaxle * np.sin(self.theta)
-
-        dx = [fx - icx for icx in self.ax] # Find the x-axis of the front axle relative to the path
-        dy = [fy - icy for icy in self.ay] # Find the y-axis of the front axle relative to the path
-
-        d = np.hypot(dx, dy) # Find the distance from the front axle to the path
-        closest_id = np.argmin(d) # Find the shortest distance in the array
-
-        self.transformers(closest_id)
-
-    def transformers(self, closest_id):
-        
-        t = tf.Transformer(True, rospy.Duration(10.0))
-        wp = TransformStamped()
-        wp.header.frame_id = 'map'
-        wp.child_frame_id = 'closestpoint'
-        wp.transform.translation.x = self.ax[closest_id]
-        wp.transform.translation.y = self.ay[closest_id]
-        wp.transform.rotation.w = 1.0
-        t.setTransform(wp)
-        t.lookupTransform('map', 'closestpoint', rospy.Time(0))
-        
     def reached(self, reached):
 
         ''' Tells the node when to compute and publish the waypoints to the Local Path Planner '''
