@@ -93,8 +93,8 @@ class PathTracker:
     def target_index_calculator(self):  
 
         # Calculate position of the front axle
-        fx = self.x + self.cg2frontaxle * np.cos(self.yaw + self.halfpi)
-        fy = self.y + self.cg2frontaxle * np.sin(self.yaw + self.halfpi)
+        fx = self.x + self.cg2frontaxle * -np.sin(self.yaw)
+        fy = self.y + self.cg2frontaxle * np.cos(self.yaw)
 
         dx = [fx - icx for icx in self.cx] # Find the x-axis of the front axle relative to the path
         dy = [fy - icy for icy in self.cy] # Find the y-axis of the front axle relative to the path
