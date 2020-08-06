@@ -27,7 +27,7 @@ class PathTracker:
         try:
             self.tracker_params = rospy.get_param("/path_tracker")
             self.frequency = self.tracker_params["update_frequency"]
-            self.target_vel = 5.0
+            self.target_vel = self.tracker_params["target_velocity"]
             self.k = self.tracker_params["control_gain"]
             self.ksoft = self.tracker_params["softening_gain"]
             self.kyaw = self.tracker_params["yawrate_gain"]
@@ -111,7 +111,10 @@ class PathTracker:
         self.target_idx = target_idx
 
         # Yaw rate discrepancy
-        self.yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
+        try:
+            self.yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
+        except:
+            self.yawrate_error = 0.0
     
         pose = PoseStamped()
         pose.header.frame_id = "map"
@@ -145,7 +148,6 @@ class PathTracker:
         end = self.target_idx + target_range
 
         for n in range(start, end + 1):
-
             if (n >= 0) and ((n + 1) < len(self.cyaw)):
 
                 x1 = self.cx[n]
@@ -154,7 +156,7 @@ class PathTracker:
                 y2 = self.cy[n+1]
 
                 delta_s += self.distance_calc(x1, y1, x2, y2)
-                delta_theta = self.cyaw[n + 1] - self.cyaw[n]
+                delta_theta += self.cyaw[n + 1] - self.cyaw[n]
 
             # Angular velocity calculation
             w = -(delta_theta / delta_s) * self.vel
@@ -173,12 +175,7 @@ class PathTracker:
         crosstrack_term = np.arctan2((self.k * self.crosstrack_error), (self.ksoft + self.target_vel))
         heading_term = self.normalise_angle(self.heading_error)
         yawrate_term = 0.0
-
-        # only activates yawrate term if vehicle is currently along path (within 20 degrees and 10cm), allows for path intersection
-        '''
-        if (abs(self.heading_error) < 0.3491) and (abs(self.crosstrack_error ) < 0.1):
-            yawrate_term = self.kyaw * self.yawrate_error
-        '''
+        yawrate_term = -self.kyaw * self.yawrate_error
         
         sigma_t = crosstrack_term + heading_term + yawrate_term
 
@@ -222,6 +219,8 @@ def main():
     # Time execution
     begin_time = datetime.datetime.now()
     n = 0
+    track_error = []
+
     # Initialise the node
     rospy.init_node('path_tracker')
 
@@ -230,24 +229,27 @@ def main():
 
     # Initialise the class
     path_tracker = PathTracker()
+
     # Set update rate
-    r = rospy.Rate(30)
+    r = rospy.Rate(path_tracker.frequency)
+
     while not rospy.is_shutdown():
         try:
             if (path_tracker.cyaw != []):
                 path_tracker.stanley_control()
             r.sleep()
 
-            if n == 50:
+            if n == 100:
                 print("\nCurrent Tracking Error: {} m".format(path_tracker.crosstrack_error))
                 print("Point {} of {} in current path".format(path_tracker.target_idx, len(path_tracker.cyaw)))
+                track_error.append(path_tracker.crosstrack_error)
                 n = 0
             else:
                 n += 1
 
-
         except KeyboardInterrupt:
-            print("\nExecution time: {}".format(datetime.datetime.now() - begin_time))
+            print("\n\nExecution time     : {}".format(datetime.datetime.now() - begin_time))
+            print("Average track error  : {}".format(sum(track_error) / len(track_error)))
             print("Shutting down ROS node...")
 
 if __name__ == "__main__":

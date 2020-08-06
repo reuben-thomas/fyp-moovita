@@ -101,8 +101,8 @@ class GlobalPathPlanner:
         elif (closest_id > self.waypoints - 5):
             # If the vehicle is finishing the given set of waypoints
             print('Closest Waypoint #: {} (Terminating Path)'.format(closest_id))
-            px = self.ax[-5:-1]
-            py = self.ay[-5:-1]        
+            px = self.ax[-5:]
+            py = self.ay[-5:]        
         elif (transform[1] < (0.0 - self.passed_threshold)):
             # If the vehicle has passed, closest point is preserved as a point behind the car
             print('Closest Waypoint #: {} (Passed)'.format(closest_id))
@@ -174,8 +174,7 @@ class GlobalPathPlanner:
         self.goals_pub.publish(goals)
         self.goals_viz_pub.publish(viz_goals)
 
-        print("\n")
-        print("Total goals published: {}".format(len(ax)))
+        print("Total goals published: {}\n".format(len(ax)))
         #print("\nPublished goals: \n{}".format(goals))
 
     def walk_up_folder(self, path, dir_goal='fyp-moovita'):
