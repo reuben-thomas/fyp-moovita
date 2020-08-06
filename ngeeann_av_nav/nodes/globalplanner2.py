@@ -3,8 +3,6 @@
 import rospy, os
 import numpy as np
 import pandas as pd
-import PyKDL
-import threading
 
 from geometry_msgs.msg import Pose2D, Quaternion, Pose, PoseArray
 from nav_msgs.msg import Path
@@ -45,12 +43,15 @@ class GlobalPathPlanner:
         # Import waypoints.csv into class variables ax and ay
         self.ax = df['X-axis'].values.tolist()
         self.ay = df['Y-axis'].values.tolist()
-
-        self.lock = threading.Lock()
+        self.waypoints = len(self.ax)
 
         self.x = None
         self.y = None
         self.theta = None
+
+        self.wp_ahead = 4                   # Determines number of waypoints to look ahead of the vehicle
+        self.wp_behind = 1                  # Determines number of waypoints behind the vehicle to preserve
+        self. passed_threshold = 0.25       # Determines distance after which, a waypoint is deemed to have been passed
 
     def initialised_cb(self, msg):
         ''' Callback function to check if the Local Path Planner has been initialised '''
@@ -71,8 +72,15 @@ class GlobalPathPlanner:
 
             1. Identify waypoint closest to front axle
             2. Determines if this point is ahead or behind, by transformation
-            3. Preserves at least 1 point behind, 5 points ahead at all times
+            3. Preserves fixed number of points ahead or behind
+
+            Parameters:
+                self.wp_ahead           - Indicates number of waypoints to look ahead
+                self.wp_behind          - Indicates number of waypoints to preserve behind the vehicle
+                self.passed_threshold   - Indicates the distance after which a waypoint is considered passed
+                self.waypoints          - Total number of waypoints
         '''
+
         # Identify position of vehicle front axle
         fx = self.x + self.cg2frontaxle * np.cos(self.theta + np.pi*0.5)
         fy = self.y + self.cg2frontaxle * np.sin(self.theta + np.pi*0.5)
@@ -84,20 +92,41 @@ class GlobalPathPlanner:
         closest_id = np.argmin(d)   # Find the shortest distance in the array
 
         transform = self.frame_transform(self.ax[closest_id], self.ay[closest_id], fx, fy, self.theta)
-        
-        if (transform[1] <= 0.0):
-        # If the vehicle has passed, closest point is preserved as a point behind the car
-            px = self.ax[closest_id - 1 : (closest_id + 4)]
-            py = self.ay[closest_id - 1: (closest_id + 4)]
-            print('Closest Waypoint #: {} (Passed)'.format(closest_id))
 
+        if (closest_id < 2):
+            # If the vehicle is starting along the path
+            print('Closest Waypoint #: {} (Starting Path)'.format(closest_id))
+            px = self.ax[0:5]
+            py = self.ay[0:5]
+        elif (closest_id > self.waypoints - 5):
+            # If the vehicle is finishing the given set of waypoints
+            print('Closest Waypoint #: {} (Terminating Path)'.format(closest_id))
+            px = self.ax[-5:-1]
+            py = self.ay[-5:-1]        
+        elif (transform[1] < (0.0 - self.passed_threshold)):
+            # If the vehicle has passed, closest point is preserved as a point behind the car
+            print('Closest Waypoint #: {} (Passed)'.format(closest_id))
+            px = self.ax[(closest_id - 1) : (closest_id + 4)]
+            py = self.ay[(closest_id - 1) : (closest_id + 4)]
         else:
-        # If the vehicle has yet to pass, a point behind the closest is preserved as a point behind the car
+            # If the vehicle has yet to pass, a point behind the closest is preserved as a point behind the car
+            print('Closest Waypoint #: {} (Approaching)'.format(closest_id))
             px = self.ax[(closest_id - 2) : (closest_id + 3)]
             py = self.ay[(closest_id - 2) : (closest_id + 3)]
-            print('Closest Waypoint #: {} (Approaching)'.format(closest_id))
         
         self.publish_goals(px, py)
+
+    def start_end_condition(self, closest_id):
+        ''' [NOT IN USE] Dictates the goals published when vehicle is near the start / end of the waypoints list '''
+
+        if (closest_id < self.wp_behind):
+            px = self.ax[0:5]
+            py = self.ay[0:5]
+            return px, py
+        elif  (closest_id > self.waypoints - 1):
+            px = self.ax[(self.waypoints - self.wp_ahead - 1) : self.waypoints]
+            py = self.ay[(self.waypoints - self.wp_ahead - 1) : self.waypoints]
+            return px, py
 
     def frame_transform(self, point_x, point_y, axle_x, axle_y, theta):
         ''' Recieves position of vehicle front axle, and id of closest waypoint. This waypoint is transformed from
@@ -105,8 +134,8 @@ class GlobalPathPlanner:
 
             Arguments:
                 closest_id          - Index to closest waypoint to front axle in master waypoint list
-                point_x, point_y    - Coordinates (x,y) of vehicle front axle position
-                axle_x, axle_y      - Coordinates (x,y) of vehicle front axle position
+                point_x, point_y    - Coordinates (x,y) of target point in world frame
+                axle_x, axle_y      - Coordinates (x,y) of vehicle front axle position in world frame
         '''
         c, s = np.cos(-theta), np.sin(-theta)     # Creates rotation matrix given theta
         R = np.array(((c, -s), (s, c)))  

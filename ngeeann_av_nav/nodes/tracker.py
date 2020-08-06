@@ -175,9 +175,11 @@ class PathTracker:
         yawrate_term = 0.0
 
         # only activates yawrate term if vehicle is currently along path (within 20 degrees and 10cm), allows for path intersection
+        '''
         if (abs(self.heading_error) < 0.3491) and (abs(self.crosstrack_error ) < 0.1):
             yawrate_term = self.kyaw * self.yawrate_error
-
+        '''
+        
         sigma_t = crosstrack_term + heading_term + yawrate_term
 
         # Constrains steering angle to the vehicle limits
