@@ -114,6 +114,7 @@ class PathTracker:
         # Yaw rate discrepancy
         try:
             self.yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
+
         except:
             self.yawrate_error = 0.0
     
@@ -156,7 +157,7 @@ class PathTracker:
                 x2 = self.cx[n+1]
                 y2 = self.cy[n+1]
 
-                delta_s += self.distance_calc(x1, y1, x2, y2)
+                delta_s += np.hypot(x2 - x1, y2 - y1)
                 delta_theta += self.cyaw[n + 1] - self.cyaw[n]
 
             # Angular velocity calculation
@@ -164,14 +165,9 @@ class PathTracker:
 
         return w
 
-    # Calculates distance between two points in 2D
-    def distance_calc(self, x1, y1, x2, y2):
-
-        dist = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)        
-        return dist
-
     # Stanley controller determines the appropriate steering angle
     def stanley_control(self):
+
         self.lock.acquire()
         crosstrack_term = np.arctan2((self.k * self.crosstrack_error), (self.ksoft + self.target_vel))
         heading_term = self.normalise_angle(self.heading_error)
@@ -183,10 +179,9 @@ class PathTracker:
         # Constrains steering angle to the vehicle limits
         if sigma_t >= self.max_steer:
             sigma_t = self.max_steer
+
         elif sigma_t <= -self.max_steer:
             sigma_t = -self.max_steer
-        else:
-            pass
 
         self.set_vehicle_command(self.target_vel, sigma_t)
         self.lock.release()
