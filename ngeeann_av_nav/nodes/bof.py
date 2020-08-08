@@ -26,7 +26,7 @@ class Map(object):
         grid                -- Numpy array
     """
 
-    def __init__(self, origin_x=-250, origin_y=-250, resolution=.1, width=5000, height=5000):
+    def __init__(self, origin_x=0, origin_y=0, resolution=0.5, width=300, height=300):
         """ Constructs an empty occupancy grid upon initialization """
 
         self.origin_x = origin_x
@@ -35,7 +35,6 @@ class Map(object):
         self.width = width 
         self.height = height 
         self.grid = np.zeros((height, width))
-
     
     def to_message(self):
         """ Returns nav_msgs/OccupancyGrid representation of the map """
@@ -79,7 +78,7 @@ class Map(object):
         ix = int((x - self.origin_x) / self.resolution)
         iy = int((y - self.origin_y) / self.resolution)
         if ix < 0 or iy < 0 or ix >= self.width or iy >= self.height:
-            print("Map to small.")
+            print("Map too small.")
         self.grid[iy, ix] = min(1.0, self.grid[iy, ix] + val)
 
 
@@ -91,12 +90,17 @@ class GridMapping(object):
 
         self.lock = threading.Lock()
         self.scan = None
+        self.cg2lidar = 2.34
+        self.x = None
+        self.y = None
+        self.yaw = None
 
-        rospy.init_node("gridmapping_node")
+        #self.scan = LaserScan()
+        # creates grid map object
         
         # Initialise publishers
-        self._map_pub = rospy.Publisher('map', OccupancyGrid, latch=True, queue_size=10)
-        self._map_data_pub = rospy.Publisher('map_metadata', MapMetaData, latch=True, queue_size=10)
+        self._map_pub = rospy.Publisher('/map', OccupancyGrid, latch=True, queue_size=10)
+        self._map_data_pub = rospy.Publisher('/map_metadata', MapMetaData, latch=True, queue_size=10)
 
         # Initialise subscribers
         rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb)
@@ -108,6 +112,7 @@ class GridMapping(object):
         grid_msg = gmap.to_message()
         self._map_data_pub.publish(grid_msg.info)
         self._map_pub.publish(grid_msg)
+        print('Sent Map')
 
     def scan_cb(self, data):
         self.lock.acquire()
@@ -117,22 +122,89 @@ class GridMapping(object):
     def vehicle_state_cb(self, data):
         # Fill gridmap
         self.lock.acquire()
+        self.x = data.pose.x
+        self.y = data.pose.y
+        self.yaw = data.pose.theta
+        self.lock.release()
+
+    def raycasting(self):
         gmap = Map()
 
+        # Lidar Properties
         angle_min = self.scan.angle_min
         angle_max = self.scan.angle_max
         range_min = self.scan.range_min
         range_max = self.scan.range_max
         angle_increment = self.scan.angle_increment
 
-        x = data.pose.x
-        y = data.pose.y
-        yaw = data.pose.theta
+        print('Distance forwards = {}'.format(self.scan.ranges[360]))
+        
+        for i in range(0, len(self.scan.ranges)):
+
+            theta = i * angle_increment
+
+            # Draws an individual line representitive of a single line of measurement within the LIDAR
+            # If the distance is greater than the range measured in this direction, the cell is assumed occupied
+            # If the distance is lower than the range measured, the cell is considered empty
+            for d in np.arange(range_min, range_max, gmap.resolution):
+
+                # Determines position of detected point in vehicle frame
+                point_x = d*np.cos(theta)  
+                point_y = d*np.sin(theta)
+                transform = self.frame_transform(point_x, point_y)
+
+                if (d >= self.scan.ranges[i]):
+                    gmap.set_cell(transform[0], transform[1], 1)
+                else:
+                    gmap.set_cell(transform[0], transform[1], 0)
+
+        self.publish_map(gmap)
 
 
-        print("Minimum Angle: {}\nMaximum Angle{}".format(angle_min, angle_max))
+        '''
+        # Only accepts data within the valid range of the lidar
+        if (self.scan.ranges[i] > range_min) and (self.scan.ranges[i] < range_max):
+            theta = i * angle_increment
+            
+            # Determines position of detected point in vehicle frame
+            point_x = self.scan.ranges[i]*np.cos(theta)  
+            point_y = self.scan.ranges[i]*np.sin(theta)
 
-        self.lock.release()
+            # Determines point to be updated in global frame
+            transform = self.frame_transform(point_x, point_y)
+            self.gmap.set_cell(transform[0], transform[1], 1)
+            #print('did it')
+        '''
+
+
+    def frame_transform(self, point_x, point_y):
+        ''' 
+            Recieves position of a point in the vehicle frame, and the position and orientation of the
+            vehicle in the global frame. Returns position of the point in global frame
+
+            Arguments:
+                point_x, point_y   - Coordinates (x,y) of point in the vehicle frame
+                self.x, self.y     - Coordinates (x,y) of vehicle centre of gravity in the world frame
+                self.yaw           - Yaw angle of the vehicle respect to global frame
+                self.cg2lidar      - Distance between the centre of gravity of the vehicle and lidar module
+        '''
+        # Lidar position in world frame
+        lidar_x = self.x + self.cg2lidar * -np.sin(self.yaw)
+        lidar_y = self.y + self.cg2lidar * np.cos(self.yaw)
+        lidar_vect = np.array(((lidar_x), (lidar_y)))
+
+        # Creates rotation matrix given theta
+        c = np.cos(self.yaw)
+        s = np.sin(self.yaw)
+        R = np.array(((c, -s), (s, c)))  
+
+        # Vector of point in vehicle frame
+        vp = np.array(((point_x), (point_y)))
+
+        rotate = R.dot(vp)                  # rotation to allign with global frame
+        transform = rotate + lidar_vect     # translates point to global frame
+
+        return transform 
 
 
 
@@ -142,14 +214,22 @@ def main():
 
         It parses the arguments and sets up the GridMapping
     """
-    GridMapping()
 
-    try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        print("Shutting down")
+    gridmapping = GridMapping()
 
-    sys.exit(0)
+    rospy.init_node("gridmapping_node")
+
+    r = rospy.Rate(10)
+
+    while not rospy.is_shutdown():
+        try:
+            gridmapping.raycasting()
+            r.sleep()
+
+        except KeyboardInterrupt:
+            print("\n")
+            print("Shutting down ROS node...")
+
 
 if __name__ == "__main__":
     main()
