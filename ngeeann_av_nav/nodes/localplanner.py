@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import rospy, os, cubic_spline_planner
+import rospy, os
 import numpy as np
 
+from utils.cubic_spline_planner import *
 from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
 from ngeeann_av_nav.msg import Path2D, State2D
 from nav_msgs.msg import Path
