@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import rospy, cubic_spline_planner, datetime, threading
+import rospy, datetime, threading
 import numpy as np
 
 from ngeeann_av_nav.msg import State2D, Path2D
@@ -50,13 +50,6 @@ class PathTracker:
         self.heading_error = 0.0
         self.crosstrack_error = 0.0
         self.yawrate_error = 0.0
-   
-        '''
-        # Debug Circle Paths
-        ax = [103.67,103.18603057117863,101.73864097687299,99.34134510374726,96.01652585745269,91.79522617946827,86.7168592075202,80.82884028573427,74.18614426034304,66.8507921943588]
-        ay = [0.0,10.00559818120778,19.917776788058948,29.643988479592114,39.09342223782818,48.17785124577748,56.81245663745863,64.91661942879698,72.4146732353573,79.2366107489881]
-        self.cx, self.cy, self.cyaw, ck, s = cubic_spline_planner.calc_spline_course(ax, ay, ds=0.1)
-        '''
 
     def vehicle_state_cb(self, msg):
 
