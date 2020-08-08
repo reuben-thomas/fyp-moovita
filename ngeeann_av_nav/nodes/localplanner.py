@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import rospy, os, cubic_spline_planner
+import rospy, os
 import numpy as np
 
+from utils.cubic_spline_planner import *
 from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
 from ngeeann_av_nav.msg import Path2D, State2D
 from nav_msgs.msg import Path
@@ -65,7 +66,7 @@ class LocalPathPlanner:
 
         ''' Uses the cubic_spline_planner library to interpolate a cubic spline path over the given waypoints '''
 
-        cx, cy, cyaw, a, b = cubic_spline_planner.calc_spline_course(self.ax, self.ay, self.ds)
+        cx, cy, cyaw, a, b = calc_spline_course(self.ax, self.ay, self.ds)
         
         cells = min(len(cx), len(cy), len(cyaw))
 
