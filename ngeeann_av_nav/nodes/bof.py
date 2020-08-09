@@ -79,7 +79,13 @@ class Map(object):
         iy = int((y - self.origin_y) / self.resolution)
         if ix < 0 or iy < 0 or ix >= self.width or iy >= self.height:
             print("Map too small.")
-        self.grid[iy, ix] = min(1.0, self.grid[iy, ix] + val)
+
+        self.grid[iy, ix] = self.grid[iy, ix] + val
+
+        if (self.grid[iy, ix] > 1.0):
+            self.grid[iy, ix] = 1.0
+        elif (self.grid[iy, ix] < 0.0):
+            self.grid[iy, ix] = 0.0
 
 
 
@@ -94,6 +100,8 @@ class GridMapping(object):
         self.x = None
         self.y = None
         self.yaw = None
+
+        self.gmap = Map()
 
         #self.scan = LaserScan()
         # creates grid map object
@@ -124,11 +132,11 @@ class GridMapping(object):
         self.lock.acquire()
         self.x = data.pose.x
         self.y = data.pose.y
+        self.vel = data.twist.x**2 + data.twist.y**2
         self.yaw = data.pose.theta
         self.lock.release()
 
     def raycasting(self):
-        gmap = Map()
 
         # Lidar Properties
         angle_min = self.scan.angle_min
@@ -146,7 +154,7 @@ class GridMapping(object):
             # Draws an individual line representitive of a single line of measurement within the LIDAR
             # If the distance is greater than the range measured in this direction, the cell is assumed occupied
             # If the distance is lower than the range measured, the cell is considered empty
-            for d in np.arange(range_min, range_max, gmap.resolution):
+            for d in np.arange(range_min, range_max, self.gmap.resolution):
 
                 # Determines position of detected point in vehicle frame
                 point_x = d*np.cos(theta)  
@@ -154,11 +162,11 @@ class GridMapping(object):
                 transform = self.frame_transform(point_x, point_y)
 
                 if (d >= self.scan.ranges[i]):
-                    gmap.set_cell(transform[0], transform[1], 1)
+                    self.gmap.set_cell(transform[0], transform[1], 0.01*self.vel + 0.001)
                 else:
-                    gmap.set_cell(transform[0], transform[1], 0)
+                    self.gmap.set_cell(transform[0], transform[1], -0.01*self.vel - 0.001)
 
-        self.publish_map(gmap)
+        self.publish_map(self.gmap)
 
 
         '''
