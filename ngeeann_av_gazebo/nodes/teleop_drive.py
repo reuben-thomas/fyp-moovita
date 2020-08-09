@@ -13,6 +13,7 @@ __email__ = 'gkourosg@yahoo.gr'
 import roslib
 import rospy
 from ackermann_msgs.msg import AckermannDriveStamped, AckermannDrive
+from ngeeann_av_nav.msg import State2D
 from std_msgs.msg import Float64
 import sys, select, termios, tty
 import thread
@@ -39,7 +40,7 @@ class AckermannDriveKeyop:
 
     def __init__(self, args):
 
-        max_speed = 10.0
+        max_speed = 4.0
         max_steering_angle = 0.95
 
         self.speed_range = [-float(max_speed), float(max_speed)]
@@ -50,15 +51,17 @@ class AckermannDriveKeyop:
                     (key_bindings[key][0] * float(max_speed) / 5,
                      key_bindings[key][1] * float(max_steering_angle) / 5)
 
-        self.speed = 0
-        self.steering_angle = 0
+        self.speed = 0.0
+        self.acceleration = 0.0
+        self.steering_angle = 0.0
+        self.steering_velocity = 0.0
 
         self.x = 0.0
         self.y = 0.0
         self.vel = 0.0
         
         # Initialise publishers
-        self.motors_pub = rospy.Publisher(cmd_topic, AckermannDrive, queue_size=1)
+        self.motors_pub = rospy.Publisher('/ngeeann_av/ackermann_cmd', AckermannDrive, queue_size=1)
 
         # Initialise subscribers
         rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb)
@@ -76,6 +79,8 @@ class AckermannDriveKeyop:
     def pub_callback(self, event):
         ackermann_cmd_msg = AckermannDrive()
         ackermann_cmd_msg.speed = self.speed
+        ackermann_cmd_msg.acceleration = self.acceleration
+        ackermann_cmd_msg.steering_angle_velocity = self.steering_velocity
         ackermann_cmd_msg.steering_angle = self.steering_angle
         self.motors_pub.publish(ackermann_cmd_msg)
 
@@ -100,16 +105,19 @@ class AckermannDriveKeyop:
 
     def key_loop(self):
         self.settings = termios.tcgetattr(sys.stdin)
+
         while 1:
             key = self.get_key()
             if key in key_bindings.keys():
                 if key == control_keys['space']:
                     self.speed = 0.0
+                    self.acceleration = 4.0
                 elif key == control_keys['tab']:
                     self.steering_angle = 0.0
+                    self.steering_velocity = 2.0
                 else:
                     self.speed = self.speed + key_bindings[key][0]
-                    self.steering_angle = \self.steering_angle + key_bindings[key][1]
+                    self.steering_angle = self.steering_angle + key_bindings[key][1]
                     self.speed = clip(self.speed, self.speed_range[0], self.speed_range[1])
                     self.steering_angle = clip(self.steering_angle, self.steering_angle_range[0], self.steering_angle_range[1])
                 
