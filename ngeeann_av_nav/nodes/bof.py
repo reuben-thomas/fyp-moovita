@@ -132,7 +132,7 @@ class GridMapping(object):
         self.lock.acquire()
         self.x = data.pose.x
         self.y = data.pose.y
-        self.vel = data.twist.x**2 + data.twist.y**2
+        self.vel = np.sqrt(data.twist.x**2 + data.twist.y**2)
         self.yaw = data.pose.theta
         self.lock.release()
 
@@ -168,21 +168,33 @@ class GridMapping(object):
 
         self.publish_map(self.gmap)
 
+    def inverse_range_sensor_model(self):
 
-        '''
-        # Only accepts data within the valid range of the lidar
-        if (self.scan.ranges[i] > range_min) and (self.scan.ranges[i] < range_max):
-            theta = i * angle_increment
+        # Lidar Properties
+        angle_min = self.scan.angle_min
+        angle_max = self.scan.angle_max
+        range_min = self.scan.range_min
+        range_max = self.scan.range_max
+        angle_increment = self.scan.angle_increment
+
+        print('Distance forwards = {}'.format(self.scan.ranges[360]))
+        
+        for i in range(0, len(self.scan.ranges)):
+
+            # Only accepts data within the valid range of the lidar
+            if (self.scan.ranges[i] > range_min) and (self.scan.ranges[i] < range_max):
+                theta = i * angle_increment
             
-            # Determines position of detected point in vehicle frame
-            point_x = self.scan.ranges[i]*np.cos(theta)  
-            point_y = self.scan.ranges[i]*np.sin(theta)
+                # Determines position of detected point in vehicle frame
+                point_x = self.scan.ranges[i]*np.cos(theta)  
+                point_y = self.scan.ranges[i]*np.sin(theta)
 
-            # Determines point to be updated in global frame
-            transform = self.frame_transform(point_x, point_y)
-            self.gmap.set_cell(transform[0], transform[1], 1)
-            #print('did it')
-        '''
+                # Determines point to be updated in global frame
+                transform = self.frame_transform(point_x, point_y)
+                self.gmap.set_cell(transform[0], transform[1], 1)
+
+        self.publish_map(self.gmap)
+        
 
 
     def frame_transform(self, point_x, point_y):
