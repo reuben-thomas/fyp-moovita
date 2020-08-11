@@ -26,7 +26,7 @@ class Map(object):
         grid                -- Numpy array
     """
 
-    def __init__(self, origin_x=0, origin_y=0, resolution=0.5, width=300, height=300):
+    def __init__(self, origin_x=-130, origin_y=-130, resolution=0.5, width=520, height=520):
         """ Constructs an empty occupancy grid upon initialization """
 
         self.origin_x = origin_x
@@ -160,11 +160,14 @@ class GridMapping(object):
                 point_x = d*np.cos(theta)  
                 point_y = d*np.sin(theta)
                 transform = self.frame_transform(point_x, point_y)
-
-                if (d >= self.scan.ranges[i]):
-                    self.gmap.set_cell(transform[0], transform[1], 0.01*self.vel + 0.001)
-                else:
-                    self.gmap.set_cell(transform[0], transform[1], -0.01*self.vel - 0.001)
+                
+                try: 
+                    if (d >= self.scan.ranges[i]):
+                        self.gmap.set_cell(transform[0], transform[1], 0.01*self.vel + 0.001)
+                    else:
+                        self.gmap.set_cell(transform[0], transform[1], -0.01*self.vel - 0.001)
+                except:
+                    pass
 
         self.publish_map(self.gmap)
 
@@ -243,7 +246,7 @@ def main():
 
     while not rospy.is_shutdown():
         try:
-            gridmapping.raycasting()
+            gridmapping.inverse_range_sensor_model()
             r.sleep()
 
         except KeyboardInterrupt:
