@@ -32,7 +32,7 @@ class Traffic:
         # Get path to waypoints.csv
         dir_path = os.path.dirname(os.path.abspath(__file__))
         dir_path = self.walk_up_folder(dir_path)
-        df = pd.read_csv(os.path.join(dir_path, 'scripts', 'traffic.csv'))
+        df = pd.read_csv(os.path.join(dir_path, 'ngeeann_av_nav/scripts', 'traffic.csv'))
         print("Waypoint directory: {}".format(os.path.join(dir_path, 'scripts', 'traffic.csv')))
         self.ax = df['X-axis'].values.tolist()
         self.ay = df['Y-axis'].values.tolist()
