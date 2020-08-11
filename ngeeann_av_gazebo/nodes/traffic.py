@@ -105,7 +105,7 @@ def main():
     # Set update rate
     r = rospy.Rate(60)
     
-    n = 15
+    n = 30
 
     while not rospy.is_shutdown():
         try:
