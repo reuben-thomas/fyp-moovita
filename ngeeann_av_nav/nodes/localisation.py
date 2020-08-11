@@ -8,7 +8,6 @@ from gazebo_msgs.srv import GetModelState
 from nav_msgs.msg import Odometry
 from ngeeann_av_nav.msg import State2D
 
-
 class Localisation:
 
     def __init__(self):
@@ -34,7 +33,6 @@ class Localisation:
 
         # Class constants
         self.state = None
-
 
     # Gets vehicle position from Gazebo and publishes data
     def update_state(self):
