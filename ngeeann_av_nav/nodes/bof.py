@@ -27,7 +27,7 @@ class Map(object):
         grid                -- Numpy array
     """
 
-    def __init__(self, origin_x=-130, origin_y=-130, resolution=0.5, width=520, height=520):
+    def __init__(self, origin_x=-130, origin_y=-130, resolution=0.2, width=1300, height=1300):
         """ Constructs an empty occupancy grid upon initialization """
 
         self.origin_x = origin_x
@@ -36,20 +36,21 @@ class Map(object):
         self.width = width 
         self.height = height 
         self.grid = np.zeros((height, width))
-        self.mask = None
 
         # Creates occupied roadmap
         self.roadmap = np.ones((height, width))
-        for r in np.arange(94, 110, self.resolution):
+        for r in np.arange(100, 107.5, resolution):
             for theta in np.arange(0, 2*np.pi, 0.001):
                 x = r * np.cos(theta)
                 y = r * np.sin(theta)
                 try:
                     ix = int((x - self.origin_x) / self.resolution)
                     iy = int((y - self.origin_y) / self.resolution)
-                    self.grid[iy, ix] = 0
+                    self.roadmap[iy, ix] = 0
                 except:
                     pass
+        
+        self.mask = self.roadmap
     
     def to_message(self):
         """ Returns nav_msgs/OccupancyGrid representation of the map """
@@ -76,7 +77,7 @@ class Map(object):
         # entries are given a different interpretation (like
         # log-odds).
 
-        flat_grid = self.grid.reshape((self.grid.size,)) * 100
+        flat_grid = self.mask.reshape((self.grid.size,)) * 100
         grid_msg.data = list(np.round(flat_grid))
         return grid_msg
 
@@ -101,7 +102,8 @@ class Map(object):
         elif (self.grid[iy, ix] < 0.0):
             self.grid[iy, ix] = 0.0
 
-        self.masked = ma.masked_array(self.roadmap, self.grid)
+        self.mask = np.clip((self.roadmap + self.grid), 0, 1)
+
 
 
 class GridMapping(object):
