@@ -4,6 +4,8 @@ import sys
 import math
 import rospy
 import numpy as np
+import numpy.ma as ma
+import matplotlib.pyplot as plt
 
 from geometry_msgs.msg import Pose, Point, Quaternion, Pose2D
 from ngeeann_av_nav.msg import Path2D, State2D
@@ -13,7 +15,6 @@ import sensor_msgs.point_cloud2 as pc2
 #from ros_graph_slam.msg import PoseNode, Path2D
 # to be replaced by 
 from sensor_msgs.msg import LaserScan
-
 
 class Map(object):
 
@@ -35,6 +36,20 @@ class Map(object):
         self.width = width 
         self.height = height 
         self.grid = np.zeros((height, width))
+        self.mask = None
+
+        # Creates occupied roadmap
+        self.roadmap = np.ones((height, width))
+        for r in np.arange(94, 110, self.resolution):
+            for theta in np.arange(0, 2*np.pi, 0.001):
+                x = r * np.cos(theta)
+                y = r * np.sin(theta)
+                try:
+                    ix = int((x - self.origin_x) / self.resolution)
+                    iy = int((y - self.origin_y) / self.resolution)
+                    self.grid[iy, ix] = 0
+                except:
+                    pass
     
     def to_message(self):
         """ Returns nav_msgs/OccupancyGrid representation of the map """
@@ -60,7 +75,6 @@ class Map(object):
         # range 0-1. This code will need to be modified if the grid
         # entries are given a different interpretation (like
         # log-odds).
-        """ log odds conversion required """
 
         flat_grid = self.grid.reshape((self.grid.size,)) * 100
         grid_msg.data = list(np.round(flat_grid))
@@ -87,7 +101,7 @@ class Map(object):
         elif (self.grid[iy, ix] < 0.0):
             self.grid[iy, ix] = 0.0
 
-
+        self.masked = ma.masked_array(self.roadmap, self.grid)
 
 
 class GridMapping(object):
