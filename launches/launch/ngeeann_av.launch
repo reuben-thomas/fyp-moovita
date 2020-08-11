@@ -16,6 +16,9 @@
 	<arg name="namespace" default="/ngeeann_av"/>
 	<arg name="base_frame" default="base_link"/>
 
+	<!-- Waypoints Parameters -->
+	<arg name="file_name" default="waypoints.csv"/>
+
 	<!-- LiDAR Parameters -->
 	<arg name="max_range" default="30.0"/>
 	<arg name="max_usable_range" default="29.9"/>
@@ -95,6 +98,7 @@
 	<node name="local_planner" pkg="ngeeann_av_nav" type="localplanner.py"/>
 
 	<!-- Global Path Planner node -->
+	<param name="waypoints" type="string" value="$(find ngeeann_av_nav)/scripts/$(arg file_name)"/>
 	<node name="global_planner" pkg="ngeeann_av_nav" type="globalplanner.py"/>
 
 	<!-- Navigation parameters -->
