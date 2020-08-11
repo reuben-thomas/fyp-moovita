@@ -31,15 +31,16 @@ class GlobalPathPlanner:
             self.tracker_params = rospy.get_param("/path_tracker")
             self.cg2frontaxle = self.tracker_params["centreofgravity_to_frontaxle"]
 
+            dir_path = rospy.get_param("/waypoints")
+
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
 
         # Get path to waypoints.csv
-        dir_path = os.path.dirname(os.path.abspath(__file__))
-        dir_path = self.walk_up_folder(dir_path)
-        df = pd.read_csv(os.path.join(dir_path, 'scripts', 'waypoints.csv'))
+        
+        df = pd.read_csv(dir_path)
 
-        print("Waypoint directory: {}".format(os.path.join(dir_path, 'scripts', 'waypoints.csv')))
+        print("Waypoint directory: {}".format(dir_path))
 
         # Import waypoints.csv into class variables ax and ay
         self.ax = df['X-axis'].values.tolist()
@@ -188,20 +189,6 @@ class GlobalPathPlanner:
         self.goals_viz_pub.publish(viz_goals)
 
         print("Total goals published: {}\n".format(waypoints))
-
-    def walk_up_folder(self, path, dir_goal='fyp-moovita'):
-        ''' Searches and returns the directory of the waypoint.csv file ''' 
-
-        dir_path = os.path.dirname(path)
-        split_path = str.split(dir_path, '/')     
-        counter = 0  
-
-        while (split_path[-1] != dir_goal and counter < 20):
-            dir_path = os.path.dirname(dir_path)
-            split_path = str.split(dir_path, '/')
-            counter += 1
-    
-        return dir_path
         
 def main():
     
