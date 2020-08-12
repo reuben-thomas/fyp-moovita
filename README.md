@@ -1,4 +1,4 @@
-# AUTONOMOUS VEHICL: CONTROL AND BEHAVIOUR
+# AUTONOMOUS VEHICLE: CONTROL AND BEHAVIOUR
 ### Ngee Ann Polytechnic Engineering Science Final Year Project with MooVita
 ![ngeeann_av](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/ngeeann_av_ultrawide.png?raw=true)
 
