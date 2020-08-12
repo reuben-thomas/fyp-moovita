@@ -1,6 +1,7 @@
 <launch>
 
-    <arg name="image_topic" default="/rgbcamera/image_raw"/>
+    <!-- <arg name="image_topic" default="/rgbcamera/image_raw"/> -->
+    <arg name="image_topic" default="/kitti/camera_color_left/image_raw"/>
     <arg name="output_image" default="/lane_images"/>
     <arg name="output_lane" default="/Lane"/>
     <arg name="weight_path" default="$(find lane_detector)/model/tusimple_lanenet/tusimple_lanenet.ckpt"/>
