@@ -105,7 +105,6 @@ class Map(object):
         self.mask = np.clip((self.roadmap + self.grid), 0, 1)
 
 
-
 class GridMapping(object):
     
     def __init__(self):
@@ -118,24 +117,18 @@ class GridMapping(object):
         self.yaw = None
 
         self.gmap = Map()
-
-        #self.scan = LaserScan()
-        # creates grid map object
         
         # Initialise publishers
-        self._map_pub = rospy.Publisher('/map', OccupancyGrid, latch=True, queue_size=10)
-        self._map_data_pub = rospy.Publisher('/map_metadata', MapMetaData, latch=True, queue_size=10)
+        self.viz_map_pub = rospy.Publisher('/map', OccupancyGrid, latch=True, queue_size=10)
 
         # Initialise subscribers
         rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb)
-        #rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb)
         rospy.Subscriber('/laser/scan', LaserScan, self.scan_cb)
 
     def publish_map(self, gmap):
         """ Publishes map """
-        grid_msg = gmap.to_message()
-        self._map_data_pub.publish(grid_msg.info)
-        self._map_pub.publish(grid_msg)
+        msg = gmap.to_message()
+        self.viz_map_pub.publish(msg)
         print('Sent Map')
 
     def scan_cb(self, data):

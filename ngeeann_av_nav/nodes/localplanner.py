@@ -6,7 +6,9 @@ import numpy as np
 from utils.cubic_spline_planner import *
 from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
 from ngeeann_av_nav.msg import Path2D, State2D
-from nav_msgs.msg import Path
+from nav_msgs.msg import Path, OccupancyGrid, MapMetaData
+
+class CollisionBreak(Exception): pass
 
 class LocalPathPlanner:
 
@@ -21,12 +23,14 @@ class LocalPathPlanner:
         # Initialise subscribers
         self.goals_sub = rospy.Subscriber('/ngeeann_av/goals', Path2D, self.goals_cb, queue_size=10)
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb, queue_size=10)
+        self.gridmap_sub = rospy.Subscriber('/map', OccupancyGrid, self.gridmap_cb, queue_size=10)
 
         # Load parameters
         try:
             self.planner_params = rospy.get_param("/local_path_planner")
             self.frequency = self.planner_params["update_frequency"]
             self.frame_id = self.planner_params["frame_id"]
+            self.car_width = 1.9
 
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
@@ -38,6 +42,7 @@ class LocalPathPlanner:
         # Class variables to use whenever within the class when necessary
         self.ax = []
         self.ay = []
+        self.gmap = OccupancyGrid()
 
     def goals_cb(self, msg):
 
@@ -62,12 +67,53 @@ class LocalPathPlanner:
         self.y = msg.pose.y
         self.yaw = msg.pose.theta
 
+    def gridmap_cb(self, msg):
+        self.gmap = msg
+
+    def collision_avoidance(self, cx, cy, cyaw):
+
+        width = self.gmap.info.width
+        height = self.gmap.info.height
+        resolution = self.gmap.info.resolution
+        origin_x, origin_y = -130, -130
+        collide_id = None
+        collide_view = []
+
+        required_opening = np.zeros((5, 1))
+
+        try:
+            # Checks points along path
+            for n in range(0, len(cyaw)):
+                # Draws swath of the vehicle
+                for i in np.arange(-0.5*self.car_width, 0.5*self.car_width, resolution):
+
+                    ix = int((cx[n] + i*np.cos(cyaw[n] - 0.5*np.pi) - origin_x) / resolution)
+                    iy = int((cy[n] + i*np.sin(cyaw[n] - 0.5*np.pi) - origin_y) / resolution)
+                    p = iy * width + ix
+
+                    if (self.gmap.data[p] != 0):
+                        collide_id = n
+                        raise CollisionBreak
+
+        except CollisionBreak:
+            print('gg bro potential collision at ({}, {})'.format(cx[n], cy[n]))
+
+        '''
+            # Searching for empty window for vehicle to pass through
+            for i in np.arange(-10, 10, resolution):
+                ix = int((cx[collide_id] + i*np.cos(cyaw[collide_id] - 0.5*np.pi) - origin_x) / resolution)
+                iy = int((cy[collide_id] + i*np.sin(cyaw[collide_id] - 0.5*np.pi) - origin_y) / resolution)
+                p = iy * width + ix
+                collide_view.append(self.gmap.data[p])
+        '''        
+
     def create_pub_path(self):
 
         ''' Uses the cubic_spline_planner library to interpolate a cubic spline path over the given waypoints '''
 
         cx, cy, cyaw, a, b = calc_spline_course(self.ax, self.ay, self.ds)
-        
+        self.collision_avoidance(cx, cy, cyaw)
+
         cells = min(len(cx), len(cy), len(cyaw))
 
         target_path = Path2D()
@@ -125,6 +171,7 @@ def main():
 
     # Wait for messages
     rospy.wait_for_message('/ngeeann_av/goals', Path2D)
+    rospy.wait_for_message('/map', OccupancyGrid)
 
     while not rospy.is_shutdown():
         try:
