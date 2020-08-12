@@ -1,6 +1,6 @@
-LaneNetRos/model/tusimple_lanenet/*
-LaneNetRos/model/new_model/*
-LaneNetRos/.vscode
+LaneNetROS/model/tusimple_lanenet/*
+LaneNetROS/model/new_model/*
+LaneNetROS/.vscode
 
 .vscode
 *.pyc
