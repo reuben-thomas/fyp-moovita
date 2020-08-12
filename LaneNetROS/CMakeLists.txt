@@ -35,12 +35,14 @@ include_directories(
 )
 
 catkin_package(
- INCLUDE_DIRS
+   INCLUDE_DIRS
    CATKIN_DEPENDS roscpp rospy message_runtime std_msgs sensor_msgs
 #  DEPENDS system_lib
 )
 
- target_link_libraries(
+add_executable(curve_fitting node/curve_fitting.cpp)
+
+ target_link_libraries(curve_fitting
          ${catkin_LIBRARIES}
          ${OpenCV_LIBS}
  )

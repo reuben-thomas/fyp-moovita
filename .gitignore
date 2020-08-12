@@ -1,5 +1,4 @@
-LaneNetROS/model/tusimple_lanenet/*
-LaneNetROS/model/new_model/*
+LaneNetROS/model/tusimple_lanenet/
 LaneNetROS/.vscode
 
 .vscode

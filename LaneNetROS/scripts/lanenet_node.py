@@ -18,14 +18,7 @@ class LaneNetDetector:
     def __init__(self):
 
         ''' Class constructor to initialise the class '''
-
-        # Initialise publisher(s)
-        self.pub_image = rospy.Publisher(self.output_image, Image, queue_size=1)
-        self.pub_laneimage = rospy.Publisher(self.lane_image_topic, Lane_Image, queue_size=1)
-
-        # Initialise subscriber(s)
-        sub_image = rospy.Subscriber(self.image_topic, Image, self.img_cb, queue_size=1)
-
+        
         try: 
             self.image_topic = rospy.get_param('~image_topic')
             self.output_image = rospy.get_param('~output_image')
@@ -36,6 +29,13 @@ class LaneNetDetector:
         
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
+
+        # Initialise publisher(s)
+        self.pub_image = rospy.Publisher(self.output_image, Image, queue_size=1)
+        self.pub_laneimage = rospy.Publisher(self.lane_image_topic, Lane_Image, queue_size=1)
+
+        # Initialise subscriber(s)
+        sub_image = rospy.Subscriber(self.image_topic, Image, self.img_cb, queue_size=1)
 
         self.CFG = global_config.cfg
         self.init_lanenet()
