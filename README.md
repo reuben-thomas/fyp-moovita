@@ -3,7 +3,7 @@
 ![ngeeann_av](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/ngeeann_av_ultrawide.png?raw=true)
 
 # Abstract
-This project covers the development of an autonomous vehicle platform in a simulated environment using ROS and Gazebo implementing a think-sense-act cycle in navigating in a virtual world, avoiding static and moving objects.
+This project covers the development of a robust non-holonomic autonomous vehicle platform in a simulated environment using ROS and Gazebo. A sense-think-act cycle is implemented to navigate the virtual world, avoiding static and moving objects.
 
 ## Requirements
 ### Operating System
