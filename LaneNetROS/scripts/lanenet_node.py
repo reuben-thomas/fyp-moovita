@@ -24,6 +24,7 @@ class LaneNetDetector:
             self.output_image = rospy.get_param('~output_image')
             self.output_lane = rospy.get_param('~output_lane')
             self.weight_path = rospy.get_param('~weight_path')
+            self.meta_path = rospy.get_param('~meta_path')
             self.use_gpu = rospy.get_param('~use_gpu')
             self.lane_image_topic = rospy.get_param('~lane_image_topic')
         
@@ -67,6 +68,7 @@ class LaneNetDetector:
         sess_config.gpu_options.allocator_type = 'BFC'
 
         self.sess = tf.Session(config=sess_config)
+        saver = tf.train.import_meta_graph(self.meta_path)
         saver.restore(sess=self.sess, save_path=self.weight_path)
 
     
