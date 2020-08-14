@@ -78,27 +78,22 @@ class LocalPathPlanner:
         origin_x, origin_y = -130, -130
         collide_id = None
 
-        try:
-            # Checks points along path
-            for n in range(0, len(cyaw)):
-                # Draws swath of the vehicle
-                for i in np.arange(-0.5*self.car_width, 0.5*self.car_width, resolution):
+        # Checks points along path
+        for n in range(200, len(cyaw) - 200):
+            # Draws swath of the vehicle
+            for i in np.arange(-0.5*self.car_width, 0.5*self.car_width, resolution):
 
-                    ix = int((cx[n] + i*np.cos(cyaw[n] - 0.5*np.pi) - origin_x) / resolution)
-                    iy = int((cy[n] + i*np.sin(cyaw[n] - 0.5*np.pi) - origin_y) / resolution)
-                    p = iy * width + ix
+                ix = int((cx[n] + i*np.cos(cyaw[n] - 0.5*np.pi) - origin_x) / resolution)
+                iy = int((cy[n] + i*np.sin(cyaw[n] - 0.5*np.pi) - origin_y) / resolution)
+                p = iy * width + ix
 
-                    if (self.gmap.data[p] != 0):
-                        collide_id = n
-                        raise CollisionBreak
-            return cx, cy, cyaw
+                if (self.gmap.data[p] != 0):
+                    collide_id = n
+                    print('\nPotential collision at ({}, {})'.format(cx[n], cy[n]))
+                    cx, cy, cyaw = self.collision_avoidance(collide_id, cx, cy, cyaw)
+                    cx, cy, cyaw = self.determine_path(cx, cy, cyaw)
 
-        except CollisionBreak:
-            print('Potential collision at ({}, {})'.format(cx[n], cy[n]))
-            self.collide_x, self.collide_y, self.collide_yaw = cx[n], cy[n], cyaw[n]
-            cx, cy, cyaw = self.collision_avoidance(collide_id, cx, cy, cyaw)
-            cx, cy, cyaw = self.determine_path(cx, cy, cyaw)
-            return cx, cy, cyaw
+        return cx, cy, cyaw
 
     def collision_reroute(self, cx, cy, cyaw, collide_id, opening_dist):
 
@@ -106,18 +101,18 @@ class LocalPathPlanner:
         act_dist = 7
         
         # Points to leave path
-        dev_x1= cx[collide_id - 120]
-        dev_y1 = cy[collide_id - 120]
+        dev_x1= cx[collide_id - 200]
+        dev_y1 = cy[collide_id - 200]
 
-        dev_x2 = cx[collide_id - 80]
-        dev_y2 = cy[collide_id - 80]
+        dev_x2 = cx[collide_id - 120]
+        dev_y2 = cy[collide_id - 120]
 
         # Point to intersect path
-        intersect_x1 = cx[collide_id + 80]
-        intersect_y1 = cy[collide_id + 80]
+        intersect_x1 = cx[collide_id + 120]
+        intersect_y1 = cy[collide_id + 120]
 
-        intersect_x2 = cx[collide_id + 120]
-        intersect_y2 = cy[collide_id + 120]
+        intersect_x2 = cx[collide_id + 200]
+        intersect_y2 = cy[collide_id + 200]
 
         # Point of avoidance from collision
         avoid_x = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5*np.pi)
@@ -134,9 +129,9 @@ class LocalPathPlanner:
         rcx, rcy, rcyaw, a, b = calc_spline_course(reroute_x, reroute_y, self.ds)
 
         # stiching to form new path
-        cx   = np.concatenate(( cx[0 : collide_id - 121], rcx, cx[(collide_id + 121) : ] ))
-        cy   = np.concatenate(( cy[0 : collide_id - 121], rcy, cy[(collide_id + 121) : ] ))
-        cyaw = np.concatenate(( cyaw[0 : collide_id - 121], rcyaw, cyaw[(collide_id + 121) : ] ))
+        cx   = np.concatenate(( cx[0 : collide_id - 201], rcx, cx[(collide_id + 201) : ] ))
+        cy   = np.concatenate(( cy[0 : collide_id - 201], rcy, cy[(collide_id + 201) : ] ))
+        cyaw = np.concatenate(( cyaw[0 : collide_id - 201], rcyaw, cyaw[(collide_id + 201) : ] ))
 
         print('Generated dev path')
         return cx, cy, cyaw

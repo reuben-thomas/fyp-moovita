@@ -39,7 +39,7 @@ class Map(object):
 
         # Creates occupied roadmap
         self.roadmap = np.ones((height, width))
-        for r in np.arange(100, 107.5, resolution):
+        for r in np.arange(100, 107.5, 0.05):
             for theta in np.arange(0, 2*np.pi, 0.001):
                 x = r * np.cos(theta)
                 y = r * np.sin(theta)
@@ -49,6 +49,7 @@ class Map(object):
                     self.roadmap[iy, ix] = 0
                 except:
                     pass
+        print('Road map initialised')
         
         self.mask = self.roadmap
     
@@ -76,8 +77,8 @@ class Map(object):
         # range 0-1. This code will need to be modified if the grid
         # entries are given a different interpretation (like
         # log-odds).
+        
         self.mask = np.clip((self.roadmap + self.grid), 0, 1)
-
         flat_grid = self.mask.reshape((self.grid.size,)) * 100
         grid_msg.data = list(np.round(flat_grid))
         return grid_msg
@@ -93,11 +94,10 @@ class Map(object):
         ix = int((x - self.origin_x) / self.resolution)
         iy = int((y - self.origin_y) / self.resolution)
         if ix < 0 or iy < 0 or ix >= self.width or iy >= self.height:
-            #print("Map too small.")
-            return
-
-        self.grid[iy, ix] = self.grid[iy, ix] + val
-        self.grid[iy, ix] = np.clip(self.grid[iy, ix], 0, 1)
+            pass    # indicates map too small
+        else:
+            self.grid[iy, ix] = self.grid[iy, ix] + val
+            self.grid[iy, ix] = np.clip(self.grid[iy, ix], 0, 1)
 
 class GridMapping(object):
     
@@ -113,7 +113,7 @@ class GridMapping(object):
         self.gmap = Map()
         
         # Initialise publishers
-        self.viz_map_pub = rospy.Publisher('/map', OccupancyGrid, latch=True, queue_size=10)
+        self.viz_map_pub = rospy.Publisher('/map', OccupancyGrid, latch=True, queue_size=30)
 
         # Initialise subscribers
         rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb)
@@ -126,18 +126,18 @@ class GridMapping(object):
         print('Sent Map')
 
     def scan_cb(self, data):
-        self.lock.acquire()
+        #self.lock.acquire()
         self.scan = data
-        self.lock.release()
+        #self.lock.release()
 
     def vehicle_state_cb(self, data):
         # Fill gridmap
-        self.lock.acquire()
+        #self.lock.acquire()
         self.x = data.pose.x
         self.y = data.pose.y
         self.vel = np.sqrt(data.twist.x**2 + data.twist.y**2)
         self.yaw = data.pose.theta
-        self.lock.release()
+        #self.lock.release()
 
     def raycasting(self):
 
@@ -145,7 +145,7 @@ class GridMapping(object):
         angle_min = self.scan.angle_min
         angle_max = self.scan.angle_max
         range_min = self.scan.range_min
-        range_max = 10 #self.scan.range_max
+        range_max = self.scan.range_max #self.scan.range_max
         angle_increment = self.scan.angle_increment
 
         print('Distance forwards = {}'.format(self.scan.ranges[360]))
@@ -157,9 +157,16 @@ class GridMapping(object):
             # Draws an individual line representitive of a single line of measurement within the LIDAR
             # If the distance is greater than the range measured in this direction, the cell is assumed occupied
             # If the distance is lower than the range measured, the cell is considered empty
+
+            if (theta < np.pi * 0.5) or (theta > np.pi * 0.5):
+                range_max = 4
+            else:
+                range_max = 12
+
             look_range = min(range_max, self.scan.ranges[i])
 
-            for d in np.arange(range_min, range_max + self.gmap.resolution, self.gmap.resolution):
+
+            for d in np.arange(range_min, look_range + self.gmap.resolution, self.gmap.resolution):
 
                 # Determines position of detected point in vehicle frame
                 point_x = d*np.cos(theta)  
@@ -168,9 +175,9 @@ class GridMapping(object):
 
                 try: 
                     if (d < self.scan.ranges[i]):
-                        self.gmap.set_cell(transform[0], transform[1], -0.25)
+                        self.gmap.set_cell(transform[0], transform[1], -0.5)
                     else:
-                        self.gmap.set_cell(transform[0], transform[1], 0.25)
+                        self.gmap.set_cell(transform[0], transform[1], 0.5)
                         break
                 except:
                     pass
@@ -189,7 +196,9 @@ class GridMapping(object):
         print('Distance forwards = {}'.format(self.scan.ranges[360]))
         
         for i in range(0, len(self.scan.ranges)):
+            
             theta = i * angle_increment
+
             # Only accepts data within the valid range of the lidar
             if (self.scan.ranges[i] > range_min) and (self.scan.ranges[i] < range_max):
             
@@ -199,7 +208,7 @@ class GridMapping(object):
 
                 # Determines point to be updated in global frame
                 transform = self.frame_transform(point_x, point_y)
-                self.gmap.set_cell(transform[0], transform[1], 1)
+                self.gmap.set_cell(transform[0], transform[1], 0.5)
 
         self.publish_map(self.gmap)
         
@@ -247,11 +256,11 @@ def main():
 
     rospy.init_node("gridmapping_node")
 
-    r = rospy.Rate(10)
+    r = rospy.Rate(30)
 
     while not rospy.is_shutdown():
         try:
-            gridmapping.raycasting()
+            gridmapping.inverse_range_sensor_model()
             r.sleep()
 
         except KeyboardInterrupt:
