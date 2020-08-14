@@ -76,9 +76,9 @@ class Map(object):
         # range 0-1. This code will need to be modified if the grid
         # entries are given a different interpretation (like
         # log-odds).
-        # self.mask = np.clip((self.roadmap + self.grid), 0, 1)
+        self.mask = np.clip((self.roadmap + self.grid), 0, 1)
 
-        flat_grid = self.grid.reshape((self.grid.size,)) * 100
+        flat_grid = self.mask.reshape((self.grid.size,)) * 100
         grid_msg.data = list(np.round(flat_grid))
         return grid_msg
 
@@ -90,7 +90,6 @@ class Map(object):
             val   - This is the value that should be assigned to the
                     grid cell that contains (x,y).
         """
-
         ix = int((x - self.origin_x) / self.resolution)
         iy = int((y - self.origin_y) / self.resolution)
         if ix < 0 or iy < 0 or ix >= self.width or iy >= self.height:
@@ -98,11 +97,7 @@ class Map(object):
             return
 
         self.grid[iy, ix] = self.grid[iy, ix] + val
-
-        if (self.grid[iy, ix] > 1.0):
-            self.grid[iy, ix] = 1.0
-        elif (self.grid[iy, ix] < 0.0):
-            self.grid[iy, ix] = 0.0
+        self.grid[iy, ix] = np.clip(self.grid[iy, ix], 0, 1)
 
 class GridMapping(object):
     
@@ -194,10 +189,9 @@ class GridMapping(object):
         print('Distance forwards = {}'.format(self.scan.ranges[360]))
         
         for i in range(0, len(self.scan.ranges)):
-
+            theta = i * angle_increment
             # Only accepts data within the valid range of the lidar
             if (self.scan.ranges[i] > range_min) and (self.scan.ranges[i] < range_max):
-                theta = i * angle_increment
             
                 # Determines position of detected point in vehicle frame
                 point_x = self.scan.ranges[i]*np.cos(theta)  
