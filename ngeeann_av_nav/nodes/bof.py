@@ -76,8 +76,9 @@ class Map(object):
         # range 0-1. This code will need to be modified if the grid
         # entries are given a different interpretation (like
         # log-odds).
+        # self.mask = np.clip((self.roadmap + self.grid), 0, 1)
 
-        flat_grid = self.mask.reshape((self.grid.size,)) * 100
+        flat_grid = self.grid.reshape((self.grid.size,)) * 100
         grid_msg.data = list(np.round(flat_grid))
         return grid_msg
 
@@ -93,7 +94,8 @@ class Map(object):
         ix = int((x - self.origin_x) / self.resolution)
         iy = int((y - self.origin_y) / self.resolution)
         if ix < 0 or iy < 0 or ix >= self.width or iy >= self.height:
-            print("Map too small.")
+            #print("Map too small.")
+            return
 
         self.grid[iy, ix] = self.grid[iy, ix] + val
 
@@ -101,9 +103,6 @@ class Map(object):
             self.grid[iy, ix] = 1.0
         elif (self.grid[iy, ix] < 0.0):
             self.grid[iy, ix] = 0.0
-
-        self.mask = np.clip((self.roadmap + self.grid), 0, 1)
-
 
 class GridMapping(object):
     
@@ -151,7 +150,7 @@ class GridMapping(object):
         angle_min = self.scan.angle_min
         angle_max = self.scan.angle_max
         range_min = self.scan.range_min
-        range_max = self.scan.range_max
+        range_max = 10 #self.scan.range_max
         angle_increment = self.scan.angle_increment
 
         print('Distance forwards = {}'.format(self.scan.ranges[360]))
@@ -163,18 +162,21 @@ class GridMapping(object):
             # Draws an individual line representitive of a single line of measurement within the LIDAR
             # If the distance is greater than the range measured in this direction, the cell is assumed occupied
             # If the distance is lower than the range measured, the cell is considered empty
-            for d in np.arange(range_min, range_max, self.gmap.resolution):
+            look_range = min(range_max, self.scan.ranges[i])
+
+            for d in np.arange(range_min, range_max + self.gmap.resolution, self.gmap.resolution):
 
                 # Determines position of detected point in vehicle frame
                 point_x = d*np.cos(theta)  
                 point_y = d*np.sin(theta)
                 transform = self.frame_transform(point_x, point_y)
-                
+
                 try: 
-                    if (d >= self.scan.ranges[i]):
-                        self.gmap.set_cell(transform[0], transform[1], 0.01*self.vel + 0.001)
+                    if (d < self.scan.ranges[i]):
+                        self.gmap.set_cell(transform[0], transform[1], -0.25)
                     else:
-                        self.gmap.set_cell(transform[0], transform[1], -0.01*self.vel - 0.001)
+                        self.gmap.set_cell(transform[0], transform[1], 0.25)
+                        break
                 except:
                     pass
 
@@ -255,7 +257,7 @@ def main():
 
     while not rospy.is_shutdown():
         try:
-            gridmapping.inverse_range_sensor_model()
+            gridmapping.raycasting()
             r.sleep()
 
         except KeyboardInterrupt:
