@@ -8,7 +8,8 @@ from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
 from ngeeann_av_nav.msg import Path2D, State2D
 from nav_msgs.msg import Path, OccupancyGrid, MapMetaData
 
-class CollisionBreak(Exception): pass
+class CollisionBreak(Exception): 
+    pass
 
 class LocalPathPlanner:
 
@@ -68,6 +69,7 @@ class LocalPathPlanner:
         self.yaw = msg.pose.theta
 
     def gridmap_cb(self, msg):
+
         self.gmap = msg
 
     def determine_path(self, cx, cy, cyaw):
@@ -75,16 +77,18 @@ class LocalPathPlanner:
         width = self.gmap.info.width
         height = self.gmap.info.height
         resolution = self.gmap.info.resolution
-        origin_x, origin_y = -130, -130
+        origin_x = -130
+        origin_y = -130
         collide_id = None
 
         # Checks points along path
         for n in range(200, len(cyaw) - 200):
-            # Draws swath of the vehicle
-            for i in np.arange(-0.5*self.car_width, 0.5*self.car_width, resolution):
 
-                ix = int((cx[n] + i*np.cos(cyaw[n] - 0.5*np.pi) - origin_x) / resolution)
-                iy = int((cy[n] + i*np.sin(cyaw[n] - 0.5*np.pi) - origin_y) / resolution)
+            # Draws swath of the vehicle
+            for i in np.arange(-0.5 * self.car_width, 0.5 * self.car_width, resolution):
+
+                ix = int((cx[n] + i*np.cos(cyaw[n] - 0.5 * np.pi) - origin_x) / resolution)
+                iy = int((cy[n] + i*np.sin(cyaw[n] - 0.5 * np.pi) - origin_y) / resolution)
                 p = iy * width + ix
 
                 if (self.gmap.data[p] != 0):
@@ -115,8 +119,8 @@ class LocalPathPlanner:
         intersect_y2 = cy[collide_id + 200]
 
         # Point of avoidance from collision
-        avoid_x = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5*np.pi)
-        avoid_y = cy[collide_id] + opening_dist*np.sin(cyaw[collide_id] - 0.5*np.pi)
+        avoid_x = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5 * np.pi)
+        avoid_y = cy[collide_id] + opening_dist*np.sin(cyaw[collide_id] - 0.5 * np.pi)
 
         '''
         reroute_x = [dev_x1, dev_x2, avoid_x, intersect_x1, intersect_x2]
@@ -146,18 +150,19 @@ class LocalPathPlanner:
         resolution = self.gmap.info.resolution
         width = self.gmap.info.width
         height = self.gmap.info.height
-        origin_x, origin_y = -130, -130
+        origin_x = -130
+        origin_y = -130
             
         for i in np.arange(-10, 10, 0.1):
-            ix = int((cx[collide_id] + i*np.cos(cyaw[collide_id] - 0.5*np.pi) - origin_x) / resolution)
-            iy = int((cy[collide_id] + i*np.sin(cyaw[collide_id] - 0.5*np.pi) - origin_y) / resolution)
+            ix = int((cx[collide_id] + i*np.cos(cyaw[collide_id] - 0.5 * np.pi) - origin_x) / resolution)
+            iy = int((cy[collide_id] + i*np.sin(cyaw[collide_id] - 0.5 * np.pi) - origin_y) / resolution)
             p = iy * width + ix
             collide_view.append(self.gmap.data[p])
         
         print('Collision window created')
         opening_width, opening_id = self.find_opening(collide_view)
         opening_width = opening_width * 0.1
-        opening_dist = (opening_id - 100)*0.1
+        opening_dist = (opening_id - 100) * 0.1
 
         print('Detected opening of width: {}'.format(opening_width))
         print('Detected distance to opening: {}'.format(opening_dist))
@@ -166,20 +171,27 @@ class LocalPathPlanner:
         return cx, cy, cyaw
 
     def find_opening(self, arr):
-        ''' Recieves an array representing the view perpendicular to the path at the point of predicted collision
-            Returns index of midpoint of largest opening, and size'''
+        ''' 
+        Recieves an array representing the view perpendicular to the path at the point of predicted collision
+        Returns index of midpoint of largest opening, and size
+        '''
 
         count = 0 
         result = 0
         idx = 0
+
         for i in range(0, len(arr)): 
             if (arr[i] >= 10): #threshold value
                 count = 0
+
             else: 
                 count+= 1
+
                 if (count > result):
                     idx = i
+
                 result = max(result, count)
+
         idx = int(round(idx - result / 2.0))   #midpoint of largest opening
         return result, idx
 
