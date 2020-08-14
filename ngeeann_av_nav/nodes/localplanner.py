@@ -70,16 +70,13 @@ class LocalPathPlanner:
     def gridmap_cb(self, msg):
         self.gmap = msg
 
-    def collision_avoidance(self, cx, cy, cyaw):
+    def determine_path(self, cx, cy, cyaw):
 
         width = self.gmap.info.width
         height = self.gmap.info.height
         resolution = self.gmap.info.resolution
         origin_x, origin_y = -130, -130
         collide_id = None
-        collide_view = []
-
-        required_opening = np.zeros((5, 1))
 
         try:
             # Checks points along path
@@ -94,25 +91,109 @@ class LocalPathPlanner:
                     if (self.gmap.data[p] != 0):
                         collide_id = n
                         raise CollisionBreak
+            return cx, cy, cyaw
 
         except CollisionBreak:
-            print('gg bro potential collision at ({}, {})'.format(cx[n], cy[n]))
+            print('Potential collision at ({}, {})'.format(cx[n], cy[n]))
+            self.collide_x, self.collide_y, self.collide_yaw = cx[n], cy[n], cyaw[n]
+            cx, cy, cyaw = self.collision_avoidance(collide_id, cx, cy, cyaw)
+            cx, cy, cyaw = self.determine_path(cx, cy, cyaw)
+            return cx, cy, cyaw
+
+    def collision_reroute(self, cx, cy, cyaw, collide_id, opening_dist):
+
+        # Distance before collision to act
+        act_dist = 7
+        
+        # Points to leave path
+        dev_x1= cx[collide_id - 120]
+        dev_y1 = cy[collide_id - 120]
+
+        dev_x2 = cx[collide_id - 80]
+        dev_y2 = cy[collide_id - 80]
+
+        # Point to intersect path
+        intersect_x1 = cx[collide_id + 80]
+        intersect_y1 = cy[collide_id + 80]
+
+        intersect_x2 = cx[collide_id + 120]
+        intersect_y2 = cy[collide_id + 120]
+
+        # Point of avoidance from collision
+        avoid_x = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5*np.pi)
+        avoid_y = cy[collide_id] + opening_dist*np.sin(cyaw[collide_id] - 0.5*np.pi)
 
         '''
-            # Searching for empty window for vehicle to pass through
-            for i in np.arange(-10, 10, resolution):
-                ix = int((cx[collide_id] + i*np.cos(cyaw[collide_id] - 0.5*np.pi) - origin_x) / resolution)
-                iy = int((cy[collide_id] + i*np.sin(cyaw[collide_id] - 0.5*np.pi) - origin_y) / resolution)
-                p = iy * width + ix
-                collide_view.append(self.gmap.data[p])
-        '''        
+        reroute_x = [dev_x1, dev_x2, avoid_x, intersect_x1, intersect_x2]
+        reroute_y = [dev_y1, dev_y2, avoid_y, intersect_y1, intersect_y2]
+        '''
+
+        reroute_x = [dev_x1, dev_x2, avoid_x, intersect_x1, intersect_x2]
+        reroute_y = [dev_y1, dev_y2, avoid_y, intersect_y1, intersect_y2]
+        
+        rcx, rcy, rcyaw, a, b = calc_spline_course(reroute_x, reroute_y, self.ds)
+
+        # stiching to form new path
+        cx   = np.concatenate(( cx[0 : collide_id - 121], rcx, cx[(collide_id + 121) : ] ))
+        cy   = np.concatenate(( cy[0 : collide_id - 121], rcy, cy[(collide_id + 121) : ] ))
+        cyaw = np.concatenate(( cyaw[0 : collide_id - 121], rcyaw, cyaw[(collide_id + 121) : ] ))
+
+        print('Generated dev path')
+        return cx, cy, cyaw
+
+    def collision_avoidance(self, collide_id, cx, cy, cyaw):
+
+        opening_width = 0
+        opening_id = 0
+        opening_dist = 0
+        collide_view = []
+
+        resolution = self.gmap.info.resolution
+        width = self.gmap.info.width
+        height = self.gmap.info.height
+        origin_x, origin_y = -130, -130
+            
+        for i in np.arange(-10, 10, 0.1):
+            ix = int((cx[collide_id] + i*np.cos(cyaw[collide_id] - 0.5*np.pi) - origin_x) / resolution)
+            iy = int((cy[collide_id] + i*np.sin(cyaw[collide_id] - 0.5*np.pi) - origin_y) / resolution)
+            p = iy * width + ix
+            collide_view.append(self.gmap.data[p])
+        
+        print('Collision window created')
+        opening_width, opening_id = self.find_opening(collide_view)
+        opening_width = opening_width * 0.1
+        opening_dist = (opening_id - 100)*0.1
+
+        print('Detected opening of width: {}'.format(opening_width))
+        print('Detected distance to opening: {}'.format(opening_dist))
+
+        cx, cy, cyaw = self.collision_reroute(cx, cy, cyaw, collide_id, opening_dist)
+        return cx, cy, cyaw
+
+    def find_opening(self, arr):
+        ''' Recieves an array representing the view perpendicular to the path at the point of predicted collision
+            Returns index of midpoint of largest opening, and size'''
+
+        count = 0 
+        result = 0
+        idx = 0
+        for i in range(0, len(arr)): 
+            if (arr[i] >= 10): #threshold value
+                count = 0
+            else: 
+                count+= 1
+                if (count > result):
+                    idx = i
+                result = max(result, count)
+        idx = int(round(idx - result / 2.0))   #midpoint of largest opening
+        return result, idx
 
     def create_pub_path(self):
 
         ''' Uses the cubic_spline_planner library to interpolate a cubic spline path over the given waypoints '''
 
         cx, cy, cyaw, a, b = calc_spline_course(self.ax, self.ay, self.ds)
-        self.collision_avoidance(cx, cy, cyaw)
+        cx, cy, cyaw = self.determine_path(cx, cy, cyaw)
 
         cells = min(len(cx), len(cy), len(cyaw))
 
