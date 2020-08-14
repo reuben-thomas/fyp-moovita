@@ -86,7 +86,7 @@ This project covers the development of a robust non-holonomic autonomous vehicle
     - `pip install --upgrade pip`
     - `pip install pandas`
     
-## Usage
+## Setup
 1. Create catkin workspace
    - Open your terminal
    - Type `cd`
