@@ -6,6 +6,7 @@ import numpy as np
 from ngeeann_av_nav.msg import State2D, Path2D
 from ackermann_msgs.msg import AckermannDrive
 from geometry_msgs.msg import Pose2D, PoseStamped, Quaternion
+from std_msgs.msg import Float32
 
 class PathTracker:
 
@@ -18,12 +19,12 @@ class PathTracker:
         # Initialise subscribers
         self.localisation_sub = rospy.Subscriber('/ngeeann_av/state2D', State2D, self.vehicle_state_cb)
         self.path_sub = rospy.Subscriber('/ngeeann_av/path', Path2D, self.path_cb, queue_size=10)
+        self.target_vel_sub = rospy.Subscriber('/ngeeann_av/target_velocity', Float32, self.target_vel_cb, queue_size=10)
 
         # Load parameters
         try:
             self.tracker_params = rospy.get_param("/path_tracker")
             self.frequency = self.tracker_params["update_frequency"]
-            self.target_vel = self.tracker_params["target_velocity"]
             self.k = self.tracker_params["control_gain"]
             self.ksoft = self.tracker_params["softening_gain"]
             self.kyaw = self.tracker_params["yawrate_gain"]
@@ -40,8 +41,11 @@ class PathTracker:
         self.x = None
         self.y = None
         self.yaw = None
+        self.target_vel = 0.0
+
         self.points = 1
         self.lock = threading.Lock()
+
         self.cx = []
         self.cy = []
         self.cyaw = []
@@ -81,6 +85,9 @@ class PathTracker:
             self.cyaw.append(ptheta) 
         self.lock.release()
 
+    def target_vel_cb(self, msg):
+
+        self.target_vel = msg.data
 
     def target_index_calculator(self):  
 

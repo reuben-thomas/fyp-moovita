@@ -4,6 +4,8 @@ localisation:
 
 local_path_planner:
     update_frequency: 10.0
+    target_velocity: 3.0
+    car_width: 2.0
     frame_id: base_link
 
 global_path_planner:
@@ -14,7 +16,6 @@ global_path_planner:
 
 path_tracker:
     update_frequency: 50.0
-    target_velocity: 3.0
     control_gain: 1.0
     softening_gain: 1.0
     yawrate_gain: 1.0

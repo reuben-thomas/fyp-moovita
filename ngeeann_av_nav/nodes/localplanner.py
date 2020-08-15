@@ -7,6 +7,7 @@ from utils.cubic_spline_planner import *
 from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
 from ngeeann_av_nav.msg import Path2D, State2D
 from nav_msgs.msg import Path, OccupancyGrid, MapMetaData
+from std_msgs.msg import Float32
 
 class CollisionBreak(Exception): 
     pass
@@ -20,6 +21,7 @@ class LocalPathPlanner:
         # Initialise publishers
         self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
         self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=10)
+        self.target_vel_pub = rospy.Publisher('/ngeeann_av/target_velocity', Float32, queue_size=10)
 
         # Initialise subscribers
         self.goals_sub = rospy.Subscriber('/ngeeann_av/goals', Path2D, self.goals_cb, queue_size=10)
@@ -31,9 +33,8 @@ class LocalPathPlanner:
             self.planner_params = rospy.get_param("/local_path_planner")
             self.frequency = self.planner_params["update_frequency"]
             self.frame_id = self.planner_params["frame_id"]
-            self.car_width = 2.0
-            self.origin_x = 0
-            self.origin_y = 0
+            self.target_vel_def = self.planner_params["target_velocity"]
+            self.car_width = self.planner_params["car_width"]
 
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
@@ -41,8 +42,11 @@ class LocalPathPlanner:
         # Class constants
         self.halfpi = np.pi / 2
         self.ds = 0.1
+        self.origin_x = 0
+        self.origin_y = 0
 
         # Class variables to use whenever within the class when necessary
+        self.target_vel = self.target_vel_def
         self.ax = []
         self.ay = []
         self.gmap = OccupancyGrid()
@@ -168,10 +172,20 @@ class LocalPathPlanner:
             p = iy * width + ix
             collide_view.append(self.gmap.data[p])
         
-        print('Collision window created')
+        print('\nCollision window constructed.')
         opening_width, opening_id = self.find_opening(collide_view)
         opening_width = opening_width * 0.1
         opening_dist = (opening_id - 100) * 0.1
+
+        print('Predicting possible avoidance...')
+
+        if opening_width < self.car_width:
+            print('Avoidance is not possible.\nInitiating emergency brakes.\n')
+            self.target_vel = 0
+        
+        else:
+            print('Avoidance is possible.\nCommencing avoidance manoeuvre.\n')
+            self.target_vel = self.target_vel_def
 
         print('Obstacle Length: {}'.format(0.1*len(collisions)))
         print('Detected opening of width: {}'.format(opening_width))
@@ -274,6 +288,7 @@ def main():
     while not rospy.is_shutdown():
         try:
             local_planner.create_pub_path()
+            local_planner.target_vel_pub.publish(local_planner.target_vel)
 
             r.sleep()
 
