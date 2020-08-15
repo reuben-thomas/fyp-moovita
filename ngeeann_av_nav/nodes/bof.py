@@ -27,7 +27,7 @@ class Map(object):
         grid                -- Numpy array
     """
 
-    def __init__(self, origin_x=-130, origin_y=-130, resolution=0.2, width=1300, height=1300):
+    def __init__(self, origin_x=0, origin_y=0, resolution=0.2, width=650, height=650):
         """ Constructs an empty occupancy grid upon initialization """
 
         self.origin_x = origin_x
@@ -40,7 +40,7 @@ class Map(object):
         # Creates occupied roadmap
         self.roadmap = np.ones((height, width))
         for r in np.arange(100, 107.5, 0.05):
-            for theta in np.arange(0, 2*np.pi, 0.001):
+            for theta in np.arange(0, 0.5*np.pi, 0.001):
                 x = r * np.cos(theta)
                 y = r * np.sin(theta)
                 try:
