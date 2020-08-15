@@ -38,6 +38,30 @@ class Map(object):
         self.grid = np.zeros((height, width))
 
         # Creates occupied roadmap
+        self.roadmap = np.zeros((height, width))
+        for r in np.arange(95, 100, 0.05):
+            for theta in np.arange(0, 0.5*np.pi, 0.001):
+                x = r * np.cos(theta)
+                y = r * np.sin(theta)
+                try:
+                    ix = int((x - self.origin_x) / self.resolution)
+                    iy = int((y - self.origin_y) / self.resolution)
+                    self.roadmap[iy, ix] = 1
+                except:
+                    pass
+        for r in np.arange(107.5, 112.5, 0.05):
+            for theta in np.arange(0, 0.5*np.pi, 0.001):
+                x = r * np.cos(theta)
+                y = r * np.sin(theta)
+                try:
+                    ix = int((x - self.origin_x) / self.resolution)
+                    iy = int((y - self.origin_y) / self.resolution)
+                    self.roadmap[iy, ix] = 1
+                except:
+                    pass
+
+
+        '''
         self.roadmap = np.ones((height, width))
         for r in np.arange(100, 107.5, 0.05):
             for theta in np.arange(0, 0.5*np.pi, 0.001):
@@ -49,6 +73,7 @@ class Map(object):
                     self.roadmap[iy, ix] = 0
                 except:
                     pass
+        '''
         print('Road map initialised')
         
         self.mask = self.roadmap
@@ -159,9 +184,9 @@ class GridMapping(object):
             # If the distance is lower than the range measured, the cell is considered empty
 
             if (theta < np.pi * 0.5) or (theta > np.pi * 0.5):
-                range_max = 4
+                range_max = 7
             else:
-                range_max = 12
+                range_max = 10
 
             look_range = min(range_max, self.scan.ranges[i])
 
@@ -256,7 +281,7 @@ def main():
 
     rospy.init_node("gridmapping_node")
 
-    r = rospy.Rate(30)
+    r = rospy.Rate(10)
 
     while not rospy.is_shutdown():
         try:
