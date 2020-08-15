@@ -31,7 +31,9 @@ class LocalPathPlanner:
             self.planner_params = rospy.get_param("/local_path_planner")
             self.frequency = self.planner_params["update_frequency"]
             self.frame_id = self.planner_params["frame_id"]
-            self.car_width = 1.9
+            self.car_width = 2.0
+            self.origin_x = 0
+            self.origin_y = 0
 
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
@@ -77,12 +79,13 @@ class LocalPathPlanner:
         width = self.gmap.info.width
         height = self.gmap.info.height
         resolution = self.gmap.info.resolution
-        origin_x = -130
-        origin_y = -130
+        origin_x = self.origin_x
+        origin_y = self.origin_y
+        collisions = []
         collide_id = None
 
         # Checks points along path
-        for n in range(200, len(cyaw) - 200):
+        for n in range(150, len(cyaw) - 150):
 
             # Draws swath of the vehicle
             for i in np.arange(-0.5 * self.car_width, 0.5 * self.car_width, resolution):
@@ -92,55 +95,59 @@ class LocalPathPlanner:
                 p = iy * width + ix
 
                 if (self.gmap.data[p] != 0):
-                    collide_id = n
-                    print('\nPotential collision at ({}, {})'.format(cx[n], cy[n]))
-                    cx, cy, cyaw = self.collision_avoidance(collide_id, cx, cy, cyaw)
-                    cx, cy, cyaw = self.determine_path(cx, cy, cyaw)
+                    collisions.append(n)
+                    #print('\nPotential collision at ({}, {})'.format(cx[n], cy[n]))
+        
+        if len(collisions) != 0:
+            cx, cy, cyaw = self.collision_avoidance(collisions, cx, cy, cyaw)
 
         return cx, cy, cyaw
 
-    def collision_reroute(self, cx, cy, cyaw, collide_id, opening_dist):
-
-        # Distance before collision to act
-        act_dist = 7
+    def collision_reroute(self, cx, cy, cyaw, collisions, opening_dist):
         
-        # Points to leave path
-        dev_x1= cx[collide_id - 200]
-        dev_y1 = cy[collide_id - 200]
+        collide_id = collisions[0]
+        collide_id_end = collisions[-1]
 
-        dev_x2 = cx[collide_id - 120]
-        dev_y2 = cy[collide_id - 120]
+        # Points to leave path
+        dev_x1= cx[collide_id - 150]
+        dev_y1 = cy[collide_id - 150]
+
+        dev_x2 = cx[collide_id - 75]
+        dev_y2 = cy[collide_id - 75]
 
         # Point to intersect path
-        intersect_x1 = cx[collide_id + 120]
-        intersect_y1 = cy[collide_id + 120]
+        intersect_x1 = cx[collide_id_end + 75]
+        intersect_y1 = cy[collide_id_end + 75]
 
-        intersect_x2 = cx[collide_id + 200]
-        intersect_y2 = cy[collide_id + 200]
+        intersect_x2 = cx[collide_id_end + 150]
+        intersect_y2 = cy[collide_id_end + 150]
 
         # Point of avoidance from collision
-        avoid_x = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5 * np.pi)
-        avoid_y = cy[collide_id] + opening_dist*np.sin(cyaw[collide_id] - 0.5 * np.pi)
+        avoid_x1 = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5 * np.pi)
+        avoid_y1 = cy[collide_id] + opening_dist*np.sin(cyaw[collide_id] - 0.5 * np.pi)
+        
+        avoid_x2 = cx[collide_id_end] + opening_dist*np.cos(cyaw[collide_id_end] - 0.5 * np.pi)
+        avoid_y2 = cy[collide_id_end] + opening_dist*np.sin(cyaw[collide_id_end] - 0.5 * np.pi)
 
         '''
         reroute_x = [dev_x1, dev_x2, avoid_x, intersect_x1, intersect_x2]
         reroute_y = [dev_y1, dev_y2, avoid_y, intersect_y1, intersect_y2]
         '''
 
-        reroute_x = [dev_x1, dev_x2, avoid_x, intersect_x1, intersect_x2]
-        reroute_y = [dev_y1, dev_y2, avoid_y, intersect_y1, intersect_y2]
+        reroute_x = [dev_x1, dev_x2, avoid_x1, avoid_x2, intersect_x1, intersect_x2]
+        reroute_y = [dev_y1, dev_y2, avoid_y1, avoid_y2, intersect_y1, intersect_y2]
         
         rcx, rcy, rcyaw, a, b = calc_spline_course(reroute_x, reroute_y, self.ds)
 
         # stiching to form new path
-        cx   = np.concatenate(( cx[0 : collide_id - 201], rcx, cx[(collide_id + 201) : ] ))
-        cy   = np.concatenate(( cy[0 : collide_id - 201], rcy, cy[(collide_id + 201) : ] ))
-        cyaw = np.concatenate(( cyaw[0 : collide_id - 201], rcyaw, cyaw[(collide_id + 201) : ] ))
+        cx   = np.concatenate(( cx[0 : collide_id - 151], rcx, cx[(collide_id_end + 151) : ] ))
+        cy   = np.concatenate(( cy[0 : collide_id - 151], rcy, cy[(collide_id_end + 151) : ] ))
+        cyaw = np.concatenate(( cyaw[0 : collide_id - 151], rcyaw, cyaw[(collide_id_end + 151) : ] ))
 
         print('Generated dev path')
         return cx, cy, cyaw
 
-    def collision_avoidance(self, collide_id, cx, cy, cyaw):
+    def collision_avoidance(self, collisions, cx, cy, cyaw):
 
         opening_width = 0
         opening_id = 0
@@ -150,8 +157,10 @@ class LocalPathPlanner:
         resolution = self.gmap.info.resolution
         width = self.gmap.info.width
         height = self.gmap.info.height
-        origin_x = -130
-        origin_y = -130
+        origin_x = self.origin_x
+        origin_y = self.origin_y
+
+        collide_id = collisions[0]
             
         for i in np.arange(-10, 10, 0.1):
             ix = int((cx[collide_id] + i*np.cos(cyaw[collide_id] - 0.5 * np.pi) - origin_x) / resolution)
@@ -164,10 +173,11 @@ class LocalPathPlanner:
         opening_width = opening_width * 0.1
         opening_dist = (opening_id - 100) * 0.1
 
+        print('Obstacle Length: {}'.format(0.1*len(collisions)))
         print('Detected opening of width: {}'.format(opening_width))
         print('Detected distance to opening: {}'.format(opening_dist))
 
-        cx, cy, cyaw = self.collision_reroute(cx, cy, cyaw, collide_id, opening_dist)
+        cx, cy, cyaw = self.collision_reroute(cx, cy, cyaw, collisions, opening_dist)
         return cx, cy, cyaw
 
     def find_opening(self, arr):

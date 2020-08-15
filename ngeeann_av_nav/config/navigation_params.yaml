@@ -8,8 +8,8 @@ local_path_planner:
 
 global_path_planner:
     update_frequency: 2.0
-    waypoints_ahead: 5
-    waypoints_behind: 3
+    waypoints_ahead: 3
+    waypoints_behind: 2
     passed_threshold: 0.25
 
 path_tracker:
