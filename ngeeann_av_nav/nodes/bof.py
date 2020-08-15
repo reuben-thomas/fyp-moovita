@@ -39,7 +39,7 @@ class Map(object):
 
         # Creates occupied roadmap
         self.roadmap = np.zeros((height, width))
-        for r in np.arange(95, 100, 0.05):
+        for r in np.arange(70, 100, 0.05):
             for theta in np.arange(0, 0.5*np.pi, 0.001):
                 x = r * np.cos(theta)
                 y = r * np.sin(theta)
@@ -49,7 +49,7 @@ class Map(object):
                     self.roadmap[iy, ix] = 1
                 except:
                     pass
-        for r in np.arange(107.5, 112.5, 0.05):
+        for r in np.arange(107.5, 137.5, 0.05):
             for theta in np.arange(0, 0.5*np.pi, 0.001):
                 x = r * np.cos(theta)
                 y = r * np.sin(theta)
