@@ -183,10 +183,10 @@ class GridMapping(object):
             # If the distance is greater than the range measured in this direction, the cell is assumed occupied
             # If the distance is lower than the range measured, the cell is considered empty
 
-            if (theta < np.pi * 0.5) or (theta > np.pi * 0.5):
-                range_max = 7
+            if (theta < np.pi * 0.25) or (theta > np.pi * 0.75):
+                range_max = 12
             else:
-                range_max = 10
+                range_max = self.scan.range_max
 
             look_range = min(range_max, self.scan.ranges[i])
 
