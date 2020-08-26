@@ -41,6 +41,7 @@ class PathTracker:
         self.x = None
         self.y = None
         self.yaw = None
+        self.vel = None
         self.target_vel = 0.0
 
         self.points = 1
@@ -114,6 +115,9 @@ class PathTracker:
         # Yaw rate discrepancy
         try:
             self.yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
+            self.vel = self.target_vel - abs(self.trajectory_yawrate_calc()) * 15
+            self.vel = np.clip(self.vel, 2.0, 10.0)
+            print('good speed to go would be: {}'.format(self.vel))
 
         except:
             self.yawrate_error = 0.0
@@ -183,7 +187,7 @@ class PathTracker:
         elif sigma_t <= -self.max_steer:
             sigma_t = -self.max_steer
 
-        self.set_vehicle_command(self.target_vel, sigma_t)
+        self.set_vehicle_command(self.vel, sigma_t)
         self.lock.release()
 
     # Normalises angle to -pi to pi
@@ -206,7 +210,7 @@ class PathTracker:
         
         drive = AckermannDrive()
         drive.speed = velocity
-        drive.acceleration = 1.0
+        drive.acceleration = 3.0
         drive.steering_angle = steering_angle
         drive.steering_angle_velocity = 0.0
         self.tracker_pub.publish(drive)
