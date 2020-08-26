@@ -115,10 +115,11 @@ class PathTracker:
         # Yaw rate discrepancy
         try:
             self.yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
-            self.vel = self.target_vel - abs(self.trajectory_yawrate_calc()) * 15
-            self.vel = np.clip(self.vel, 2.0, 10.0)
-            print('good speed to go would be: {}'.format(self.vel))
+            print('actual  : {}'.format(self.yawrate_error))
+            print('desired : {}'.format(self.trajectory_yawrate_calc()))
 
+            self.vel = self.target_vel - abs(self.trajectory_yawrate_calc()) * 10
+            self.vel = np.clip(self.vel, 4.0, self.target_vel)
         except:
             self.yawrate_error = 0.0
     
@@ -148,6 +149,9 @@ class PathTracker:
         target_range = 2    #number of points to look ahead and behind
         delta_theta = 0.0
         delta_s = 0.0
+
+        delta_w = []
+
         w = 0.0
 
         start = self.target_idx - target_range
@@ -164,9 +168,8 @@ class PathTracker:
                 delta_s += np.hypot(x2 - x1, y2 - y1)
                 delta_theta += self.cyaw[n + 1] - self.cyaw[n]
 
-            # Angular velocity calculation
-            w = -(delta_theta / delta_s) * self.vel
-
+        # Angular velocity calculation
+        w = -(delta_theta / delta_s) * self.vel
         return w
 
     # Stanley controller determines the appropriate steering angle
@@ -176,7 +179,7 @@ class PathTracker:
         crosstrack_term = np.arctan2((self.k * self.crosstrack_error), (self.ksoft + self.target_vel))
         heading_term = self.normalise_angle(self.heading_error)
         yawrate_term = 0.0
-        #yawrate_term = -self.kyaw * self.yawrate_error
+        yawrate_term = -self.kyaw * self.yawrate_error
         
         sigma_t = crosstrack_term + heading_term + yawrate_term
 

@@ -30,9 +30,10 @@ class Simulate:
     def form_targets(self):
         X, Y = [], []
 
-        for n in np.arange(0, len(self.ax)):
-            X.append(self.ax[n])
-            Y.append(self.ay[n])
+        for n in np.arange(0, len(self.cx)):
+            if n % 50 == 0:
+                X.append(self.cx[n])
+                Y.append(self.cy[n])
 
         print(X)
         print(Y)
@@ -40,7 +41,6 @@ class Simulate:
         axis = {'X-axis': X, 'Y-axis': Y}
         df = pd.DataFrame(axis, columns= ['X-axis', 'Y-axis'])
         df.to_csv("waypoints.csv", index = False)
-        plot_waypoints(df)
 
     def plot_waypoints(self):
         figure(num=None, figsize=(10, 10), dpi=80, facecolor='w', edgecolor='k')
