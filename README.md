@@ -73,6 +73,7 @@ This project covers the development of a robust non-holonomic autonomous vehicle
 ## circle_road_gen.py 
 ### Description
 circle_road_gen.py is a custom script which uses the NumPy library to calculate and generate the three-dimensional <point> coordinates of a circle for Gazebo's world file. This is primarily used to create a circular road of a certain radius and smoothness. The radius of the circle is calculated from the centre of the circle to the middle of the road (using Gazebo's SDF tag).
+![Road Generation](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/road_gen.gif?raw=true)
 
 ### Usage
 1. Download the circle_road_gen.py script if you have not cloned this repository
