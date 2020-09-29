@@ -117,7 +117,7 @@ The user is unable to choose how many waypoints to generate, and the smoothness 
 |-----------|--------|-------|
 |gazebo.launch|gazebo, no world, ngeeann_av|For debugging
 |road.launch|gazebo, road.world, ngeeann_av|Foundational launch file for future launch files
-|display.launch|RViz, ngeeann_av|Foundational launch file for future launch files
+|display.launch|rviz, ngeeann_av|Foundational launch file for future launch files
 |controller.launch|axle controllers, steer controllers|Foundational launch file for future launch files
 
 ### ackermann_vehicle.launch
