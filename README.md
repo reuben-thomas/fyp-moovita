@@ -4,7 +4,6 @@
 
 # Abstract
 This project covers the development of a robust non-holonomic autonomous vehicle platform in a simulated environment using ROS and Gazebo. A sense-think-act cycle is implemented to navigate the virtual world, avoiding static and moving objects.
-[![SIMULATING AUTONOMOUS OBSTACLE AVOIDANCE IN GAZEBO](http://img.youtube.com/vi/lc_y6H5dAEQ/0.jpg)](https://www.youtube.com/lc_y6H5dAEQ "SIMULATING AUTONOMOUS OBSTACLE AVOIDANCE IN GAZEBO")
 
 ## Requirements
 ### Operating System
