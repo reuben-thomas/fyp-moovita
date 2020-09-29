@@ -55,7 +55,7 @@ This project covers the development of a robust non-holonomic autonomous vehicle
    
 2. Place ROS package into source folder
    - Type `nautilus ~/catkin_ws/src`
-   - Type `https://github.com/reuben-thomas/fyp-moovita.git`
+   - Type `git clone https://github.com/reuben-thomas/fyp-moovita.git`
    
 3. Setup ROS workspace
    - Type `source devel/setup.bash`
