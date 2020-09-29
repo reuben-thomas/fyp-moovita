@@ -113,8 +113,9 @@ The user is unable to choose how many waypoints to generate, and the smoothness 
    - Input your desired smoothness in number of points (if you chose Point mode) or degrees (if you chose Angle mode)
 
 ## Launch Files
-### gazebo.launch
-Used for debugging. Launch file launches Gazebo with an empty world and spawns the ngeeann_av at the centre.
+|Launch File|Launches|Purpose|
+|-----------|--------|-------|
+|gazebo.launch|Gazebo, ngeeann_av car|For debugging
 
 ### road.launch
 A foundational launch file for future launch files. Launches the road.world file into Gazebo and spawns the ngeeann_av onto the road.
