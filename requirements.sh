@@ -16,7 +16,7 @@ sudo apt-get update
 sudo apt-get install gazebo7 gazebo7-common -y
 sudo apt-get install libgazebo7-dev -y
 
-# apt-get installs
+# other apt-get installs
 sudo apt-get install git -y
 sudo apt-get install joint-state-publisher -y
 sudo apt-get install ros-kinetic-joint-state-publisher-gui -y
