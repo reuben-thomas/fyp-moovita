@@ -22,7 +22,7 @@ This project covers the development of a robust non-holonomic autonomous vehicle
    - [NumPy](https://pypi.org/project/numpy/)
    - [pandas](https://pandas.pydata.org/getting_started.html)
   
-3. [Gazebo 7.1](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
+3. [Gazebo 7.16](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
    - [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
 
 4. [Git](https://git-scm.com/download/linux)
@@ -45,46 +45,6 @@ This project covers the development of a robust non-holonomic autonomous vehicle
    - Type `chmod +x requirements.sh`
 
 3. Type `./requirements.sh` to install the required packages
-
-### Manual Install
-1. Update package list
-   - `sudo apt-get update`
- 
-2. Install [Gazebo 7.1](http://gazebosim.org/tutorials?tut=install_ubuntu&ver=7.0&cat=install)
-   - `sudo apt-get install gazebo7 gazebo7-common`
-   - `sudo apt-get install libgazebo7-dev`
-  
-3. Install [Git](https://git-scm.com/download/linux)
-   - `sudo apt-get install git`
-  
-4. Install [joint_state_publisher](http://wiki.ros.org/joint_state_publisher)
-    - `sudo apt-get install joint-state-publisher`
-  
-5. Install joint_state_publisher_gui
-    - `sudo apt-get install ros-kinetic-joint-state-publisher-gui`
-  
-6. Install [ros_controller](http://wiki.ros.org/ros_control#Install)
-    - `sudo apt-get install ros-kinetic-ros-control ros-kinetic-ros-controllers`
-    
-7. Install [gazebo_ros_pkgs](http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
-    - `sudo apt-get install ros-kinetic-gazebo-ros-pkgs ros-kinetic-gazebo-ros-control`
-    
-8. Install [rospy](http://wiki.ros.org/rospy)
-    - `sudo apt-get install python-rospy`
-   
-10. Clone [ackermann_msgs](https://github.com/ros-drivers/ackermann_msgs.git)
-   - `git clone https://github.com/ros-drivers/ackermann_msgs.git`
-   
-10. Install [pip](https://pypi.org/project/pip/)
-    - `sudo apt-get install python-pip`
-   
-11. Install [NumPy](https://pypi.org/project/numpy/)
-    - `pip install --upgrade pip`
-    - `pip install NumPy`
-    
-12. Install [pandas](https://pandas.pydata.org/getting_started.html)
-    - `pip install --upgrade pip`
-    - `pip install pandas`
     
 ## Setup
 1. Create catkin workspace
