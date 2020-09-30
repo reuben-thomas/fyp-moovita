@@ -35,20 +35,23 @@ This project covers the development of a robust non-holonomic autonomous vehicle
 ## Installation
 1. Install [Ubuntu 16.04.6 LTS (Xenial Xerus)](http://releases.ubuntu.com/16.04/)
 
-2. Install [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
+2. Git clone this repository
+   - Open your terminal
+   - Go to the directory you wish to clone the repository in
+   - Type `git clone https://github.com/reuben-thomas/fyp-moovita.git'
+   
+3. Change directory to your cloned path
+   - Go to your terminal
+   - Type `cd <workspace>/src/fyp-moovita`
+   
+4. Install [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
    - Type `chmod +x ros-kinetic-desktop-full-install.sh`
    - Type `./ros-kinetic-desktop-full-install.sh` to install Desktop-Full ROS Kinetic
-
-### Automatic Install
-1. Change directory to your cloned path
-   - Go to your terminal
-   - Type `cd catkin_ws/src/fyp-moovita`
   
-2. Make the requirements.sh file an executable
+5. Install the required packages
    - Type `chmod +x requirements.sh`
-
-3. Type `./requirements.sh` to install the required packages
-    
+   - Type `./requirements.sh` 
+   
 ## Setup
 1. Create catkin workspace
    - Open your terminal
