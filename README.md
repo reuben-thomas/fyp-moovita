@@ -52,21 +52,6 @@ This project covers the development of a robust non-holonomic autonomous vehicle
    - Type `chmod +x requirements.sh`
    - Type `./requirements.sh` 
    
-## Setup
-1. Create catkin workspace
-   - Open your terminal
-   - Type `cd`
-   - Type `mkdir -p catkin_ws/src`
-   - Type `cd catkin_ws`
-   
-2. Place ROS package into source folder
-   - Type `nautilus ~/catkin_ws/src`
-   - Type `git clone https://github.com/reuben-thomas/fyp-moovita.git`
-   
-3. Setup ROS workspace
-   - Type `source devel/setup.bash`
-   - Type `echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc`
-   
 ## Main Launch
 ### Usage
 1. Launch ngeeann_av.launch
