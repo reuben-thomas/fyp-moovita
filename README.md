@@ -38,7 +38,7 @@ This project covers the development of a robust non-holonomic autonomous vehicle
 2. Git clone this repository
    - Open your terminal
    - Go to the directory you wish to clone the repository in
-   - Type `git clone https://github.com/reuben-thomas/fyp-moovita.git'
+   - Type `git clone https://github.com/reuben-thomas/fyp-moovita.git`
    
 3. Change directory to your cloned path
    - Go to your terminal
