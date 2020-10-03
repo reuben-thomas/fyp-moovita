@@ -8,6 +8,14 @@ This project covers the development of a robust non-holonomic autonomous vehicle
 <br />
 ![Obstacle Avoidance](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/obstacle_avoidance.gif?raw=true)
 
+# Table of Contents
+- [Requirements](#Requirements)
+  - [Operating System](#Operating-System)
+  - [Software](#Software)
+- [Installation](#Installation)
+- [Main Launch](#Main-Launch)
+  - [Usage](#Usage)
+
 ## Requirements
 ### Operating System
 1. [Ubuntu 16.04.6 LTS (Xenial Xerus)](http://releases.ubuntu.com/16.04/)
