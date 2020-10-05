@@ -9,12 +9,13 @@ This project covers the development of a robust non-holonomic autonomous vehicle
 ![Obstacle Avoidance](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/obstacle_avoidance.gif?raw=true)
 
 # Table of Contents
+- [Abstract](#Abstract)
 - [Requirements](#Requirements)
   - [Operating System](#Operating-System)
   - [Software](#Software)
 - [Installation](#Installation)
-- [Main Launch](#Main-Launch)
-  - [Usage](#Usage)
+- [Quick Start](#Quick-Start)
+- [Scripts
 
 ## Requirements
 ### Operating System
@@ -60,18 +61,17 @@ This project covers the development of a robust non-holonomic autonomous vehicle
    - Type `chmod +x requirements.sh`
    - Type `./requirements.sh` 
    
-## Main Launch
-### Usage
+## Quick Start
 1. Launch ngeeann_av.launch
    - Launch your terminal
    - Type `catkin_make`
    - Type `roslaunch launches ngeeann_av.launch`
 2. Execute tracker.py
    - Type `rosrun ngeeann_av_nav tracker.py`
-   
+
 ## circle_road_gen.py
 ![Road Generation](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/road_gen.gif?raw=true)
-### Description
+#### Description
 circle_road_gen.py is a custom script which uses the NumPy library to calculate and generate the three-dimensional <point> coordinates of a circle for Gazebo's world file. This is primarily used to create a circular road of a certain radius and smoothness. The radius of the circle is calculated from the centre of the circle to the middle of the road (using Gazebo's SDF tag).
 
 ### Usage
