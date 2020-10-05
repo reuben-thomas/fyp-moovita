@@ -32,8 +32,8 @@ This project covers the development of a robust non-holonomic autonomous vehicle
 ## Requirements
 ### Hardware
 Recommended its equivalent or higher:
- - Intel Core i7-8700 Desktop Processor
- - NVIDIA GeForce GTX 1080
+- Intel Core i7-8700 Desktop Processor
+- NVIDIA GeForce GTX 1080
 
 ### Operating System
 1. [Ubuntu 16.04.6 LTS (Xenial Xerus)](http://releases.ubuntu.com/16.04/)
