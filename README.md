@@ -15,7 +15,19 @@ This project covers the development of a robust non-holonomic autonomous vehicle
   - [Software](#Software)
 - [Installation](#Installation)
 - [Quick Start](#Quick-Start)
-- [Scripts
+- [Scripts](#Scripts)
+  - [circle_road_gen.py](#circle_road_gen.py)
+    - [Description](#Description)
+    - [Usage](#Usage)
+  - [circle_wp_gen.py](#circle_wp_gen.py)
+    - [Description](#Description)
+    - [Point mode](#Point-mode)
+    - [Angle mode](#Angle-mode)
+    - [Usage](#Usage)
+- [Launch Files](#Launch Files)
+  - [ackermann_vehicle.launch](#ackermann_vehicle.launch)
+  - [ackermann_controller.launch](#ackermann_controller.launch)
+- [Renders](#Renders)
 
 ## Requirements
 ### Operating System
@@ -69,12 +81,14 @@ This project covers the development of a robust non-holonomic autonomous vehicle
 2. Execute tracker.py
    - Type `rosrun ngeeann_av_nav tracker.py`
 
-## circle_road_gen.py
+## Scripts
+### circle_road_gen.py
 ![Road Generation](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/road_gen.gif?raw=true)
+
 #### Description
 circle_road_gen.py is a custom script which uses the NumPy library to calculate and generate the three-dimensional <point> coordinates of a circle for Gazebo's world file. This is primarily used to create a circular road of a certain radius and smoothness. The radius of the circle is calculated from the centre of the circle to the middle of the road (using Gazebo's SDF tag).
 
-### Usage
+#### Usage
 1. Download the circle_road_gen.py script if you have not cloned this repository
 
 2. Go to the script's directory
@@ -87,18 +101,18 @@ circle_road_gen.py is a custom script which uses the NumPy library to calculate 
    - Input your desired smoothness in degrees (lower value is smoother)
    - Copy and paste result into your world file
   
-## circle_wp_gen.py
+### circle_wp_gen.py
 ![circle_wp_gen](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/circle_wp_gen.png?raw=true)
-### Description
+#### Description
 circle_wp_gen.py is a custom script which uses the NumPy and pandas library to calculate and generate a csv file that contains the two-dimensional coordinates; x-axis and y-axis in their respective columns. This is primarily used to generate waypoints on a circular road of a certain radius and smoothness. The user is given two different smoothness modes; Point mode and Angle mode. The radius of the circle is calculated from the centre of gazebo world.
 
-### Point mode
+#### Point mode
 The user is able to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on how many points the user has set. More points means a smoother waypoint
 
-### Angle mode
+#### Angle mode
 The user is unable to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on the degree value the user has set. Lower value means a smoother waypoint.
 
-### Usage
+#### Usage
 1. Download the circle_wp_gen.py script if you have not cloned this repository.
 
 2. Go to the script's directory
