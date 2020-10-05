@@ -24,7 +24,7 @@ This project covers the development of a robust non-holonomic autonomous vehicle
     - [Point mode](#Point-mode)
     - [Angle mode](#Angle-mode)
     - [Usage](#Usage)
-- [Launch Files](#Launch Files)
+- [Launch Files](#Launch-Files)
   - [ackermann_vehicle.launch](#ackermann_vehicle.launch)
   - [ackermann_controller.launch](#ackermann_controller.launch)
 - [Renders](#Renders)
