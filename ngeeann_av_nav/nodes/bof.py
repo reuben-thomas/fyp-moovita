@@ -39,8 +39,6 @@ class Map(object):
 
         # Creates occupied roadmap
         self.roadmap = np.zeros((height, width))
-
-        '''
         for r in np.arange(70, 100, 0.05):
             for theta in np.arange(0, 0.5*np.pi, 0.001):
                 x = r * np.cos(theta)
@@ -61,7 +59,6 @@ class Map(object):
                     self.roadmap[iy, ix] = 1
                 except:
                     pass
-        '''
 
 
         '''
@@ -213,7 +210,7 @@ class GridMapping(object):
         self.publish_map(self.gmap)
 
     def inverse_range_sensor_model(self):
-        '''
+
         # Lidar Properties
         angle_min = self.scan.angle_min
         angle_max = self.scan.angle_max
@@ -237,7 +234,6 @@ class GridMapping(object):
                 # Determines point to be updated in global frame
                 transform = self.frame_transform(point_x, point_y)
                 self.gmap.set_cell(transform[0], transform[1], 0.5)
-        '''
 
         self.publish_map(self.gmap)
         

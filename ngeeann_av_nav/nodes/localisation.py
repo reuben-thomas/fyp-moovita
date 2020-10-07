@@ -3,10 +3,10 @@
 import rospy
 import numpy as np
 import tf
-
 from gazebo_msgs.srv import GetModelState  
 from nav_msgs.msg import Odometry
 from ngeeann_av_nav.msg import State2D
+from tf.transformations import quaternion_from_euler
 
 class Localisation:
 
@@ -18,6 +18,7 @@ class Localisation:
 
         # Initialise publishers
         self.localisation_pub = rospy.Publisher('/ngeeann_av/state2D', State2D, queue_size=10)
+        self.odom_pub = rospy.Publisher('/ngeeann_av/odom', Odometry, queue_size=10)
 
         # Publishes artificial map frame
         self.map_broadcaster = tf.TransformBroadcaster()
@@ -52,7 +53,16 @@ class Localisation:
         state2d.twist.y = self.state.twist.linear.y
         state2d.twist.w = -self.state.twist.angular.z
 
+        # Publish odometry message
+        odom = Odometry()
+        odom.pose.pose.position.x = self.state.pose.position.x
+        odom.pose.pose.position.y = self.state.pose.position.y
+        odom.header.stamp = rospy.Time.now()
+        odom.header.frame_id = "/map"
+        odom.pose.pose.orientation = self.state.pose.orientation
+
         self.localisation_pub.publish(state2d)
+        self.odom_pub.publish(odom)
 
         # Print state
         print("Position (x,y): ({},{})".format(round(state2d.pose.x, 5), round(state2d.pose.y, 5)))
