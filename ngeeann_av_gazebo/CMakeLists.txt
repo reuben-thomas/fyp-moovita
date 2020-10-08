@@ -166,6 +166,8 @@ include_directories(
 catkin_install_python(PROGRAMS
   nodes/ackermann_controller.py
   nodes/teleop_drive.py
+  nodes/dynamics.py
+  nodes/traffic.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

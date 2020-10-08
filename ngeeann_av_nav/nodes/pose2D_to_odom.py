@@ -9,13 +9,11 @@ import time
 import math
 from tf.transformations import quaternion_from_euler
 
-    # Initialise publishers
-    self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
+# Initialise publishers
+self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
 
-    # Initialise subscribers
-    self.goals_sub = rospy.Subscriber('/ngeeann_av/', Path2D, self.goals_cb, queue_size=10)
-
-
+# Initialise subscribers
+self.goals_sub = rospy.Subscriber('/ngeeann_av/', Path2D, self.goals_cb, queue_size=10)
 
 def callback(data):
     odom = Odometry()
