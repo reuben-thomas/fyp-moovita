@@ -1,18 +1,16 @@
 #!/usr/bin/env python
-"""
-Cubic spline planner
-Author: Atsushi Sakai(@Atsushi_twi)
-"""
 
 import numpy as np
 import bisect
 
 class Spline:
+    
     """
     Cubic Spline class
     """
 
     def __init__(self, x, y):
+
         self.b, self.c, self.d, self.w = [], [], [], []
 
         self.x = x
@@ -39,7 +37,7 @@ class Spline:
 
     def calc(self, t):
         """
-        Calc position
+        Calculate position
         if t is outside of the input x, return None
         """
 
@@ -57,7 +55,7 @@ class Spline:
 
     def calcd(self, t):
         """
-        Calc first derivative
+        Calculate first derivative
         if t is outside of the input x, return None
         """
 
@@ -73,7 +71,7 @@ class Spline:
 
     def calcdd(self, t):
         """
-        Calc second derivative
+        Calculate second derivative
         """
 
         if t < self.x[0]:
@@ -119,7 +117,6 @@ class Spline:
             B[i + 1] = 3.0 * (self.a[i + 2] - self.a[i + 1]) / \
                 h[i + 1] - 3.0 * (self.a[i + 1] - self.a[i]) / h[i]
         return B
-
 
 class Spline2D:
     """
@@ -168,7 +165,6 @@ class Spline2D:
         yaw = np.arctan2(dy, dx)
         return yaw
 
-
 def calc_spline_course(x, y, ds=0.1):
     sp = Spline2D(x, y)
     s = list(np.arange(0, sp.s[-1], ds))
@@ -183,50 +179,10 @@ def calc_spline_course(x, y, ds=0.1):
 
     return rx, ry, ryaw, rk, s
 
-
 def main():
-    print("Spline 2D test")
-    import matplotlib.pyplot as plt
-    x = [-2.5, 0.0, 2.5, 5.0, 7.5, 3.0, -1.0]
-    y = [0.7, -6, 5, 6.5, 0.0, 5.0, -2.0]
-    ds = 0.1  # [m] distance of each intepolated points
-
-    sp = Spline2D(x, y)
-    s = np.arange(0, sp.s[-1], ds)
-
-    rx, ry, ryaw, rk = [], [], [], []
-    for i_s in s:
-        ix, iy = sp.calc_position(i_s)
-        rx.append(ix)
-        ry.append(iy)
-        ryaw.append(sp.calc_yaw(i_s))
-        rk.append(sp.calc_curvature(i_s))
-
-    plt.subplots(1)
-    plt.plot(x, y, "xb", label="input")
-    plt.plot(rx, ry, "-r", label="spline")
-    plt.grid(True)
-    plt.axis("equal")
-    plt.xlabel("x[m]")
-    plt.ylabel("y[m]")
-    plt.legend()
-
-    plt.subplots(1)
-    plt.plot(s, [np.rad2deg(iyaw) for iyaw in ryaw], "-r", label="yaw")
-    plt.grid(True)
-    plt.legend()
-    plt.xlabel("line length[m]")
-    plt.ylabel("yaw angle[deg]")
-
-    plt.subplots(1)
-    plt.plot(s, rk, "-r", label="curvature")
-    plt.grid(True)
-    plt.legend()
-    plt.xlabel("line length[m]")
-    plt.ylabel("curvature [1/m]")
-
-    plt.show()
-
+    """
+    ds is the distance in metres of each intepolated point
+    """
 
 if __name__ == '__main__':
     main()
