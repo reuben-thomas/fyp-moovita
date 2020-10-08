@@ -1,14 +1,40 @@
 # AUTONOMOUS VEHICLE: CONTROL AND BEHAVIOUR
-### Ngee Ann Polytechnic Engineering Science Final Year Project with MooVita
+### Ngee Ann Polytechnic Engineering Science Final Year Project with MooVita, 2020
 ![ngeeann_av](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/ngeeann_av_ultrawide.png?raw=true)
 
-# Abstract
+## Abstract
 This project covers the development of a robust non-holonomic autonomous vehicle platform in a simulated environment using ROS and Gazebo. A sense-think-act cycle is implemented to navigate the virtual world, avoiding static and moving objects.
 <br />
 <br />
 ![Obstacle Avoidance](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/obstacle_avoidance.gif?raw=true)
 
+# Table of Contents
+- [Abstract](#Abstract)
+- [Requirements](#Requirements)
+  - [Operating System](#Operating-System)
+  - [Software](#Software)
+- [Installation](#Installation)
+- [Quick Start](#Quick-Start)
+- [Scripts](#Scripts)
+  - [circle_road_gen.py](#circle_road_gen.py)
+    - [Description](#Description)
+    - [Usage](#Usage)
+  - [circle_wp_gen.py](#circle_wp_gen.py)
+    - [Description](#Description)
+    - [Point mode](#Point-mode)
+    - [Angle mode](#Angle-mode)
+    - [Usage](#Usage)
+- [Launch Files](#Launch-Files)
+  - [ackermann_vehicle.launch](#ackermann_vehicle.launch)
+  - [ackermann_controller.launch](#ackermann_controller.launch)
+- [Renders](#Renders)
+
 ## Requirements
+### Hardware
+Recommended its equivalent or higher:
+- Intel Core i7-8700 Desktop Processor
+- NVIDIA GeForce GTX 1080
+
 ### Operating System
 1. [Ubuntu 16.04.6 LTS (Xenial Xerus)](http://releases.ubuntu.com/16.04/)
 
@@ -35,50 +61,39 @@ This project covers the development of a robust non-holonomic autonomous vehicle
 ## Installation
 1. Install [Ubuntu 16.04.6 LTS (Xenial Xerus)](http://releases.ubuntu.com/16.04/)
 
-2. Install [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
-   - Type `chmod +x ros-kinetic-desktop-full-install.sh`
-   - Type `./ros-kinetic-desktop-full-install.sh` to install Desktop-Full ROS Kinetic
-
-### Automatic Install
-1. Change directory to your cloned path
-   - Go to your terminal
-   - Type `cd catkin_ws/src/fyp-moovita`
-  
-2. Make the requirements.sh file an executable
-   - Type `chmod +x requirements.sh`
-
-3. Type `./requirements.sh` to install the required packages
-    
-## Setup
-1. Create catkin workspace
+2. Git clone this repository
    - Open your terminal
-   - Type `cd`
-   - Type `mkdir -p catkin_ws/src`
-   - Type `cd catkin_ws`
-   
-2. Place ROS package into source folder
-   - Type `nautilus ~/catkin_ws/src`
+   - Go to the directory you wish to clone the repository in
    - Type `git clone https://github.com/reuben-thomas/fyp-moovita.git`
    
-3. Setup ROS workspace
-   - Type `source devel/setup.bash`
-   - Type `echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc`
+3. Change directory to your cloned path
+   - Go to your terminal
+   - Type `cd <workspace>/src/fyp-moovita`
    
-## Main Launch
-### Usage
+4. Install [Desktop-Full ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu)
+   - Type `chmod +x ros-kinetic-desktop-full-install.sh`
+   - Type `./ros-kinetic-desktop-full-install.sh` to install Desktop-Full ROS Kinetic
+  
+5. Install the required packages
+   - Type `chmod +x requirements.sh`
+   - Type `./requirements.sh` 
+   
+## Quick Start
 1. Launch ngeeann_av.launch
    - Launch your terminal
    - Type `catkin_make`
    - Type `roslaunch launches ngeeann_av.launch`
 2. Execute tracker.py
    - Type `rosrun ngeeann_av_nav tracker.py`
-   
-## circle_road_gen.py
+
+## Scripts
+### circle_road_gen.py
 ![Road Generation](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/road_gen.gif?raw=true)
-### Description
+
+#### Description
 circle_road_gen.py is a custom script which uses the NumPy library to calculate and generate the three-dimensional <point> coordinates of a circle for Gazebo's world file. This is primarily used to create a circular road of a certain radius and smoothness. The radius of the circle is calculated from the centre of the circle to the middle of the road (using Gazebo's SDF tag).
 
-### Usage
+#### Usage
 1. Download the circle_road_gen.py script if you have not cloned this repository
 
 2. Go to the script's directory
@@ -91,18 +106,18 @@ circle_road_gen.py is a custom script which uses the NumPy library to calculate 
    - Input your desired smoothness in degrees (lower value is smoother)
    - Copy and paste result into your world file
   
-## circle_wp_gen.py
+### circle_wp_gen.py
 ![circle_wp_gen](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/circle_wp_gen.png?raw=true)
-### Description
+#### Description
 circle_wp_gen.py is a custom script which uses the NumPy and pandas library to calculate and generate a csv file that contains the two-dimensional coordinates; x-axis and y-axis in their respective columns. This is primarily used to generate waypoints on a circular road of a certain radius and smoothness. The user is given two different smoothness modes; Point mode and Angle mode. The radius of the circle is calculated from the centre of gazebo world.
 
-### Point mode
+#### Point mode
 The user is able to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on how many points the user has set. More points means a smoother waypoint
 
-### Angle mode
+#### Angle mode
 The user is unable to choose how many waypoints to generate, and the smoothness of the circular waypoint is based on the degree value the user has set. Lower value means a smoother waypoint.
 
-### Usage
+#### Usage
 1. Download the circle_wp_gen.py script if you have not cloned this repository.
 
 2. Go to the script's directory
@@ -128,3 +143,6 @@ Launches the populated_road.world file into Gazebo and spawns the ngeeann_av ont
 
 ### ackerman_controller.launch
 Launches nodes used by both RViz and Gazebo when visualizing a vehicle with Ackermann steering.
+
+## Renders
+![Renders](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/renders.gif?raw=true)

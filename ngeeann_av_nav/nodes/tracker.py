@@ -41,7 +41,6 @@ class PathTracker:
         self.x = None
         self.y = None
         self.yaw = None
-        self.vel = None
         self.target_vel = 0.0
 
         self.points = 1
@@ -115,11 +114,7 @@ class PathTracker:
         # Yaw rate discrepancy
         try:
             self.yawrate_error = self.trajectory_yawrate_calc() - self.yawrate
-            print('actual  : {}'.format(self.yawrate_error))
-            print('desired : {}'.format(self.trajectory_yawrate_calc()))
 
-            self.vel = self.target_vel - abs(self.trajectory_yawrate_calc()) * 10
-            self.vel = np.clip(self.vel, 4.0, self.target_vel)
         except:
             self.yawrate_error = 0.0
     
@@ -149,9 +144,6 @@ class PathTracker:
         target_range = 2    #number of points to look ahead and behind
         delta_theta = 0.0
         delta_s = 0.0
-
-        delta_w = []
-
         w = 0.0
 
         start = self.target_idx - target_range
@@ -168,8 +160,9 @@ class PathTracker:
                 delta_s += np.hypot(x2 - x1, y2 - y1)
                 delta_theta += self.cyaw[n + 1] - self.cyaw[n]
 
-        # Angular velocity calculation
-        w = -(delta_theta / delta_s) * self.vel
+            # Angular velocity calculation
+            w = -(delta_theta / delta_s) * self.vel
+
         return w
 
     # Stanley controller determines the appropriate steering angle
@@ -179,7 +172,7 @@ class PathTracker:
         crosstrack_term = np.arctan2((self.k * self.crosstrack_error), (self.ksoft + self.target_vel))
         heading_term = self.normalise_angle(self.heading_error)
         yawrate_term = 0.0
-        yawrate_term = -self.kyaw * self.yawrate_error
+        #yawrate_term = -self.kyaw * self.yawrate_error
         
         sigma_t = crosstrack_term + heading_term + yawrate_term
 
@@ -190,7 +183,7 @@ class PathTracker:
         elif sigma_t <= -self.max_steer:
             sigma_t = -self.max_steer
 
-        self.set_vehicle_command(self.vel, sigma_t)
+        self.set_vehicle_command(self.target_vel, sigma_t)
         self.lock.release()
 
     # Normalises angle to -pi to pi
@@ -213,7 +206,7 @@ class PathTracker:
         
         drive = AckermannDrive()
         drive.speed = velocity
-        drive.acceleration = 3.0
+        drive.acceleration = 1.0
         drive.steering_angle = steering_angle
         drive.steering_angle_velocity = 0.0
         self.tracker_pub.publish(drive)
