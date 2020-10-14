@@ -172,6 +172,50 @@ class LocalPathPlanner:
         idx = int(round(idx - result / 2.0))   #midpoint of largest opening
         return result, idx
 
+    def collision_reroute(self, cx, cy, cyaw, collisions, opening_dist):
+
+        collide_id = collisions[0]
+        collide_id_end = collisions[-1]
+
+        # Points to leave path
+        dev_x1= cx[collide_id - 150]
+        dev_y1 = cy[collide_id - 150]
+
+        dev_x2 = cx[collide_id - 75]
+        dev_y2 = cy[collide_id - 75]
+
+        # Point to intersect path
+        intersect_x1 = cx[collide_id_end + 75]
+        intersect_y1 = cy[collide_id_end + 75]
+
+        intersect_x2 = cx[collide_id_end + 150]
+        intersect_y2 = cy[collide_id_end + 150]
+
+        # Point of avoidance from collision
+        avoid_x1 = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5 * np.pi)
+        avoid_y1 = cy[collide_id] + opening_dist*np.sin(cyaw[collide_id] - 0.5 * np.pi)
+
+        avoid_x2 = cx[collide_id_end] + opening_dist*np.cos(cyaw[collide_id_end] - 0.5 * np.pi)
+        avoid_y2 = cy[collide_id_end] + opening_dist*np.sin(cyaw[collide_id_end] - 0.5 * np.pi)
+
+        '''
+        reroute_x = [dev_x1, dev_x2, avoid_x, intersect_x1, intersect_x2]
+        reroute_y = [dev_y1, dev_y2, avoid_y, intersect_y1, intersect_y2]
+        '''
+
+        reroute_x = [dev_x1, dev_x2, avoid_x1, avoid_x2, intersect_x1, intersect_x2]
+        reroute_y = [dev_y1, dev_y2, avoid_y1, avoid_y2, intersect_y1, intersect_y2]
+
+        rcx, rcy, rcyaw, a, b = calc_spline_course(reroute_x, reroute_y, self.ds)
+
+        # stiching to form new path
+        cx   = np.concatenate(( cx[0 : collide_id - 151], rcx, cx[(collide_id_end + 151) : ] ))
+        cy   = np.concatenate(( cy[0 : collide_id - 151], rcy, cy[(collide_id_end + 151) : ] ))
+        cyaw = np.concatenate(( cyaw[0 : collide_id - 151], rcyaw, cyaw[(collide_id_end + 151) : ] ))
+
+        print('Generated dev path')
+        return cx, cy, cyaw
+
     def create_pub_path(self):
 
         ''' Uses the cubic_spline_planner library to interpolate a cubic spline path over the given waypoints '''
