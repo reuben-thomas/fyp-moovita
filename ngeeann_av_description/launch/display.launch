@@ -7,11 +7,12 @@ This launch file launches RViz with the ngeeann_av at the centre.
 <launch>
   <arg default="$(find ngeeann_av_description)/urdf/ngeeann_av.xacro" name="model"/>
   <arg default="true" name="gui"/>
+  <arg default="$(find ngeeann_av_description)/launch/urdf.rviz" name="rvizconfig"/>
   
   <param command="$(find xacro)/xacro $(arg model)" name="robot_description"/>
   <param name="use_gui" value="$(arg gui)"/>
   
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find ngeeann_av_description)/rviz/urdf.rviz" />
+  <node args="-d $(arg rvizconfig)" name="rviz" pkg="rviz" required="true" type="rviz"/>
 </launch>
