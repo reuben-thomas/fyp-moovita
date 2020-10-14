@@ -7,6 +7,7 @@ from ngeeann_av_nav.msg import State2D, Path2D
 from ackermann_msgs.msg import AckermannDrive
 from geometry_msgs.msg import Pose2D, PoseStamped, Quaternion
 from std_msgs.msg import Float32
+from utils.normalise_angle import normalise_angle
 
 class PathTracker:
 
@@ -108,7 +109,7 @@ class PathTracker:
         self.crosstrack_error = np.dot([dx[target_idx], dy[target_idx]], front_axle_vec)
 
         # Heading error
-        self.heading_error = self.normalise_angle(self.cyaw[target_idx] - self.yaw - self.halfpi)
+        self.heading_error = normalise_angle(self.cyaw[target_idx] - self.yaw - self.halfpi)
         self.target_idx = target_idx
 
         # Yaw rate discrepancy
@@ -170,7 +171,7 @@ class PathTracker:
 
         self.lock.acquire()
         crosstrack_term = np.arctan2((self.k * self.crosstrack_error), (self.ksoft + self.target_vel))
-        heading_term = self.normalise_angle(self.heading_error)
+        heading_term = normalise_angle(self.heading_error)
         yawrate_term = 0.0
         #yawrate_term = -self.kyaw * self.yawrate_error
         
