@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /RobotModel1/Links1/spoiler_link1
+        - /Path2
       Splitter Ratio: 0.5
     Tree Height: 357
   - Class: rviz/Selection
@@ -152,25 +153,26 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
+        base_link:
+          chassis_link:
+            bl_1:
+              {}
+            br_1:
+              {}
+            camera_link:
+              {}
+            hokuyo_link:
+              {}
+            l_steer_1:
+              fl_1:
+                {}
+            r_steer_1:
+              fr_1:
+                {}
+            spoiler_link:
+              {}
         map:
-          base_link:
-            chassis_link:
-              bl_1:
-                {}
-              br_1:
-                {}
-              camera_link:
-                {}
-              hokuyo_link:
-                {}
-              l_steer_1:
-                fl_1:
-                  {}
-              r_steer_1:
-                fr_1:
-                  {}
-              spoiler_link:
-                {}
+          {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -248,6 +250,29 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 85; 0
+      Enabled: true
+      Head Diameter: 0.300000012
+      Head Length: 0.200000003
+      Length: 0.300000012
+      Line Style: Billboards
+      Line Width: 0.0500000007
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.0299999993
+      Shaft Diameter: 0.100000001
+      Shaft Length: 0.100000001
+      Topic: /nggeeann_av/viz_collisions
+      Unreliable: false
+      Value: true
+    - Alpha: 1
       Arrow Length: 1
       Axes Length: 0.400000006
       Axes Radius: 0.0399999991
@@ -320,18 +345,18 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 7.43339491
-        Y: 5.67384195
-        Z: -0.93313539
+        X: 5.51536655
+        Y: 6.53350639
+        Z: -1.41817999
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.329797655
+      Pitch: 0.504797637
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.93317175
+      Yaw: 4.16317272
     Saved:
       - Class: rviz/Orbit
         Distance: 12.2737684

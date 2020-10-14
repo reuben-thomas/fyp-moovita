@@ -22,6 +22,7 @@ class LocalPathPlanner:
         # Initialise publishers
         self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
         self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=10)
+        #self.collisions_pub = rospy.Publisher('/nggeeann_av/viz_collisions', Path, queue_size=10)
         self.target_vel_pub = rospy.Publisher('/ngeeann_av/target_velocity', Float32, queue_size=10)
 
         # Initialise subscribers
@@ -36,6 +37,7 @@ class LocalPathPlanner:
             self.frame_id = self.planner_params["frame_id"]
             self.target_vel_def = self.planner_params["target_velocity"]
             self.car_width = self.planner_params["car_width"]
+            self.cg2frontaxle = 1.483
 
         except:
             raise Exception("Missing ROS parameters. Check the configuration file.")
@@ -51,10 +53,14 @@ class LocalPathPlanner:
         self.ax = []
         self.ay = []
         self.gmap = OccupancyGrid()
+        
+        # distance before or after obstacles to deviate and intersect with the original path
+        self.react_dist = 75
+        
+        
 
     def goals_cb(self, msg):
-
-        ''' Callback function to receive waypoint data from the Global Path Planner '''
+        ''' Callback function to recieve immediate goals from global planner in global frame'''
 
         self.ax = []
         self.ay = []
@@ -68,19 +74,39 @@ class LocalPathPlanner:
         print("\nGoals received: {}".format(len(msg.poses)))
 
     def vehicle_state_cb(self, msg):
-
-        ''' Callback function to receive information on the vehicle's vertical and horizontal coordinates '''
+        ''' Callback function to recieve vehicle state information from localization in global frame'''
 
         self.x = msg.pose.x
         self.y = msg.pose.y
         self.yaw = msg.pose.theta
 
     def gridmap_cb(self, msg):
+        ''' Callback function to recieve map data'''
 
         self.gmap = msg
 
-    def determine_path(self, cx, cy, cyaw):
+    def target_index_calculator(self, cx, cy):  
+        ''' Calculates closest point along the path to vehicle front axle'''
 
+        # Calculate position of the front axle
+        fx = self.x + self.cg2frontaxle * -np.sin(self.yaw)
+        fy = self.y + self.cg2frontaxle * np.cos(self.yaw)
+
+        dx = [fx - icx for icx in cx] # Find the x-axis of the front axle relative to the path
+        dy = [fy - icy for icy in cy] # Find the y-axis of the front axle relative to the path
+
+        d = np.hypot(dx, dy) # Find the distance from the front axle to the path
+        reference_idx = np.argmin(d) # Find the shortest distance in the array
+        return reference_idx
+
+    def determine_path(self, cx, cy, cyaw):
+        ''' Map function to validate and determine a path by the following steps:
+
+            1: Identify vehicle's progress along path, search all points ahead for potential collisions
+            2: Draft a collision avoidance strategy
+        '''
+
+        # Initializing map information
         width = self.gmap.info.width
         height = self.gmap.info.height
         resolution = self.gmap.info.resolution
@@ -89,26 +115,28 @@ class LocalPathPlanner:
         collisions = []
         collide_id = None
 
-        # Checks points along path
-        for n in range(150, len(cyaw) - 150):
+        # Current vehicle progress along path
+        lateral_ref_id = self.target_index_calculator(cx, cy)
 
-            # Draws swath of the vehicle
+        #  Validates path of collisions
+        for n in range(lateral_ref_id, len(cyaw) - 76):
+
+            # Draws side profile of the vehicle along the path ahead
             for i in np.arange(-0.5 * self.car_width, 0.5 * self.car_width, resolution):
-
                 ix = int((cx[n] + i*np.cos(cyaw[n] - 0.5 * np.pi) - origin_x) / resolution)
                 iy = int((cy[n] + i*np.sin(cyaw[n] - 0.5 * np.pi) - origin_y) / resolution)
                 p = iy * width + ix
-
                 if (self.gmap.data[p] != 0):
                     collisions.append(n)
-                    #print('\nPotential collision at ({}, {})'.format(cx[n], cy[n]))
         
         if len(collisions) != 0:
+            
             cx, cy, cyaw = self.collision_avoidance(collisions, cx, cy, cyaw)
 
-        return cx, cy, cyaw
+        return cx, cy, cyaw, collisions
 
     def collision_avoidance(self, collisions, cx, cy, cyaw):
+        ''' Function that determines the collision avoidance strategy'''
 
         opening_width = 0
         opening_id = 0
@@ -123,13 +151,13 @@ class LocalPathPlanner:
 
         collide_id = collisions[0]
             
+        # Creates collision window, looking 10 meters to the left and right at the point of collision
         for i in np.arange(-10, 10, 0.1):
             ix = int((cx[collide_id] + i*np.cos(cyaw[collide_id] - 0.5 * np.pi) - origin_x) / resolution)
             iy = int((cy[collide_id] + i*np.sin(cyaw[collide_id] - 0.5 * np.pi) - origin_y) / resolution)
             p = iy * width + ix
             collide_view.append(self.gmap.data[p])
-        
-        print('\nCollision window constructed.')
+
         opening_width, opening_id = self.find_opening(collide_view)
         opening_width = opening_width * 0.1
         opening_dist = (opening_id - 100) * 0.1
@@ -172,59 +200,66 @@ class LocalPathPlanner:
         idx = int(round(idx - result / 2.0))   #midpoint of largest opening
         return result, idx
 
+    def find_closest_opening(self, arr):
+        ''' 
+        Recieves an array representing the view perpendicular to the path at the point of predicted collision
+        Returns index of midpoint of closest viable opening for the vehicle
+        '''
+        return result, idx
+
     def collision_reroute(self, cx, cy, cyaw, collisions, opening_dist):
 
         collide_id = collisions[0]
         collide_id_end = collisions[-1]
+        react_dist = self.react_dist
 
         # Points to leave path
-        dev_x1= cx[collide_id - 150]
-        dev_y1 = cy[collide_id - 150]
-
-        dev_x2 = cx[collide_id - 75]
-        dev_y2 = cy[collide_id - 75]
-
-        # Point to intersect path
-        intersect_x1 = cx[collide_id_end + 75]
-        intersect_y1 = cy[collide_id_end + 75]
-
-        intersect_x2 = cx[collide_id_end + 150]
-        intersect_y2 = cy[collide_id_end + 150]
+        x_1 = cx[collide_id - react_dist]
+        y_1 = cy[collide_id - react_dist]
+        yaw_1 = cyaw[collide_id - react_dist]
 
         # Point of avoidance from collision
-        avoid_x1 = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5 * np.pi)
-        avoid_y1 = cy[collide_id] + opening_dist*np.sin(cyaw[collide_id] - 0.5 * np.pi)
+        x_2 = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5 * np.pi)
+        y_2 = cy[collide_id] + opening_dist*np.sin(cyaw[collide_id] - 0.5 * np.pi)
+        yaw_2 = cyaw[collide_id]
 
-        avoid_x2 = cx[collide_id_end] + opening_dist*np.cos(cyaw[collide_id_end] - 0.5 * np.pi)
-        avoid_y2 = cy[collide_id_end] + opening_dist*np.sin(cyaw[collide_id_end] - 0.5 * np.pi)
+        x_3 = cx[collide_id_end] + opening_dist*np.cos(cyaw[collide_id_end] - 0.5 * np.pi)
+        y_3 = cy[collide_id_end] + opening_dist*np.sin(cyaw[collide_id_end] - 0.5 * np.pi)
+        yaw_3 = cyaw[collide_id_end]
 
-        '''
-        reroute_x = [dev_x1, dev_x2, avoid_x, intersect_x1, intersect_x2]
-        reroute_y = [dev_y1, dev_y2, avoid_y, intersect_y1, intersect_y2]
-        '''
+        # Point to intersect path
+        x_4 = cx[collide_id_end + react_dist]
+        y_4 = cy[collide_id_end + react_dist]
+        yaw_4 = cyaw[collide_id_end + react_dist] 
 
-        reroute_x = [dev_x1, dev_x2, avoid_x1, avoid_x2, intersect_x1, intersect_x2]
-        reroute_y = [dev_y1, dev_y2, avoid_y1, avoid_y2, intersect_y1, intersect_y2]
+        curve_vel = 0.1
 
-        rcx, rcy, rcyaw, a, b = calc_spline_course(reroute_x, reroute_y, self.ds)
+        # Deviation Spline
+        _, dev_cx, dev_cy, dev_cyaw, _, _, _ = quintic_polynomials_planner(x_1, y_1, yaw_1, curve_vel, 0.0, x_2, y_2, yaw_2, curve_vel, 0.0, 5.0, 5.0, self.ds)
+        # Avoidance Spline
+        _, avoid_cx, avoid_cy, avoid_cyaw, _, _, _ = quintic_polynomials_planner(x_2, y_2, yaw_2, curve_vel, 0.0, x_3, y_3, yaw_3, curve_vel, 0.0, 5.0, 5.0, self.ds)
+        # Intersection Spline
+        _, intersect_cx, intersect_cy, intersect_cyaw, _, _, _ = quintic_polynomials_planner(x_3, y_3, yaw_3, curve_vel, 0.0, x_4, y_4, yaw_4, curve_vel, 0.0, 5.0, 5.0, self.ds)
+        # Complete Debug Spline
+        # _, debug_cx, debug_cy, debug_cyaw, _, _, _ = quintic_polynomials_planner(x_1, y_1, yaw_1, curve_vel, 0.0, x_4, y_4, yaw_4, curve_vel, 0.0, 5.0, 5.0, self.ds)
 
         # stiching to form new path
-        cx   = np.concatenate(( cx[0 : collide_id - 151], rcx, cx[(collide_id_end + 151) : ] ))
-        cy   = np.concatenate(( cy[0 : collide_id - 151], rcy, cy[(collide_id_end + 151) : ] ))
-        cyaw = np.concatenate(( cyaw[0 : collide_id - 151], rcyaw, cyaw[(collide_id_end + 151) : ] ))
+        cx = np.concatenate(( cx[0 : collide_id - react_dist], dev_cx, avoid_cx, intersect_cx, cx[(collide_id_end + react_dist) : ] ))
+        cy = np.concatenate(( cy[0 : collide_id - react_dist], dev_cy, avoid_cy, intersect_cy, cy[(collide_id_end + react_dist) : ] ))
+        cyaw = np.concatenate(( cyaw[0 : collide_id - react_dist], dev_cyaw, avoid_cyaw, intersect_cyaw, cyaw[(collide_id_end + react_dist) : ] ))
 
         print('Generated dev path')
         return cx, cy, cyaw
 
     def create_pub_path(self):
-
         ''' Uses the cubic_spline_planner library to interpolate a cubic spline path over the given waypoints '''
 
-        cx, cy, cyaw, a, b = calc_spline_course(self.ax, self.ay, self.ds)
-        cx, cy, cyaw = self.determine_path(cx, cy, cyaw)
+        # Default direct path drawn across waypoints
+        ocx, ocy, ocyaw, _, _ = calc_spline_course(self.ax, self.ay, self.ds)
+        # Validated path returned
+        cx, cy, cyaw, collisions = self.determine_path(ocx, ocy, ocyaw)
 
         cells = min(len(cx), len(cy), len(cyaw))
-
         target_path = Path2D()
         
         viz_path = Path()
@@ -249,6 +284,25 @@ class LocalPathPlanner:
             vpose.pose.position.z = 0.0
             vpose.pose.orientation = self.heading_to_quaternion(np.pi * 0.5 - cyaw[n])
             viz_path.poses.append(vpose)
+
+        '''
+        viz_collisions = Path()
+        viz_collisions.header.frame_id = "map"
+        viz_collisions.header.stamp = rospy.Time.now()
+
+        for i in collisions:
+            vpose = PoseStamped()
+            vpose.header.frame_id = self.frame_id
+            vpose.header.seq = i
+            vpose.header.stamp = rospy.Time.now()
+            vpose.pose.position.x = ocx[i]
+            vpose.pose.position.y = ocy[i]
+            vpose.pose.position.z = 0.0
+            vpose.pose.orientation = self.heading_to_quaternion(np.pi * 0.5 - ocyaw[i])
+            viz_collisions.poses.append(vpose)
+
+            self.collisions_pub.publish(viz_collisions)
+        '''
 
         self.local_planner_pub.publish(target_path)
         self.path_viz_pub.publish(viz_path)

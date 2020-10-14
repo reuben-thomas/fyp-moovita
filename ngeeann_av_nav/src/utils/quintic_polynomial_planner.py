@@ -15,7 +15,7 @@ import numpy as np
 MAX_T = 100.0  # maximum time to the goal [s]
 MIN_T = 5.0  # minimum time to the goal[s]
 
-show_animation = True
+show_animation = False
 
 
 class QuinticPolynomial:
@@ -130,9 +130,11 @@ def quintic_polynomials_planner(sx, sy, syaw, sv, sa, gx, gy, gyaw, gv, ga, max_
                 j *= -1
             rj.append(j)
 
+        '''
         if max([abs(i) for i in ra]) <= max_accel and max([abs(i) for i in rj]) <= max_jerk:
             print("find path!!")
             break
+        '''
 
     if show_animation:  # pragma: no cover
         for i, _ in enumerate(time):
