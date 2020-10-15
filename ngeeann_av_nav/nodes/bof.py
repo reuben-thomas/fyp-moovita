@@ -39,41 +39,51 @@ class Map(object):
 
         # Creates occupied roadmap
         self.roadmap = np.zeros((height, width))
-        for r in np.arange(70, 100, 0.05):
+
+        '''Lane Overrun Region'''
+        for r in np.arange(97, 100, 0.05):
             for theta in np.arange(0, 0.5*np.pi, 0.001):
                 x = r * np.cos(theta)
                 y = r * np.sin(theta)
                 try:
                     ix = int((x - self.origin_x) / self.resolution)
                     iy = int((y - self.origin_y) / self.resolution)
-                    self.roadmap[iy, ix] = 1
+                    self.roadmap[iy, ix] = 0.4
                 except:
                     pass
-        for r in np.arange(107.5, 137.5, 0.05):
+        for r in np.arange(107.5, 110.5, 0.05):
             for theta in np.arange(0, 0.5*np.pi, 0.001):
                 x = r * np.cos(theta)
                 y = r * np.sin(theta)
                 try:
                     ix = int((x - self.origin_x) / self.resolution)
                     iy = int((y - self.origin_y) / self.resolution)
-                    self.roadmap[iy, ix] = 1
+                    self.roadmap[iy, ix] = 0.4
                 except:
                     pass
 
-
-        '''
-        self.roadmap = np.ones((height, width))
-        for r in np.arange(100, 107.5, 0.05):
+        '''Add Barriers'''
+        for r in np.arange(110.5, 110.75, 0.05):
             for theta in np.arange(0, 0.5*np.pi, 0.001):
                 x = r * np.cos(theta)
                 y = r * np.sin(theta)
                 try:
                     ix = int((x - self.origin_x) / self.resolution)
                     iy = int((y - self.origin_y) / self.resolution)
-                    self.roadmap[iy, ix] = 0
+                    self.roadmap[iy, ix] = 0.8
                 except:
                     pass
-        '''
+        for r in np.arange(96.75, 97, 0.05):
+            for theta in np.arange(0, 0.5*np.pi, 0.001):
+                x = r * np.cos(theta)
+                y = r * np.sin(theta)
+                try:
+                    ix = int((x - self.origin_x) / self.resolution)
+                    iy = int((y - self.origin_y) / self.resolution)
+                    self.roadmap[iy, ix] = 0.8
+                except:
+                    pass
+
         print('Road map initialised')
         
         self.mask = self.roadmap
@@ -184,7 +194,7 @@ class GridMapping(object):
             # If the distance is lower than the range measured, the cell is considered empty
 
             if (theta < np.pi * 0.25) or (theta > np.pi * 0.75):
-                range_max = 12
+                range_max = 10
             else:
                 range_max = self.scan.range_max
 

@@ -21,8 +21,8 @@ class LocalPathPlanner:
 
         # Initialise publishers
         self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
-        self.path_viz_pub = rospy.Publisher('/nggeeann_av/viz_path', Path, queue_size=10)
-        #self.collisions_pub = rospy.Publisher('/nggeeann_av/viz_collisions', Path, queue_size=10)
+        self.path_viz_pub = rospy.Publisher('/ngeeann_av/viz_path', Path, queue_size=10)
+        #self.collisions_pub = rospy.Publisher('/ngeeann_av/viz_collisions', Path, queue_size=10)
         self.target_vel_pub = rospy.Publisher('/ngeeann_av/target_velocity', Float32, queue_size=10)
 
         # Initialise subscribers
@@ -119,7 +119,7 @@ class LocalPathPlanner:
         lateral_ref_id = self.target_index_calculator(cx, cy)
 
         #  Validates path of collisions
-        for n in range(lateral_ref_id, len(cyaw) - 76):
+        for n in range(self.react_dist, len(cyaw) - self.react_dist - 1):
 
             # Draws side profile of the vehicle along the path ahead
             for i in np.arange(-0.5 * self.car_width, 0.5 * self.car_width, resolution):

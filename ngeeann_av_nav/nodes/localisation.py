@@ -57,6 +57,17 @@ class Localisation:
         odom = Odometry()
         odom.pose.pose.position.x = self.state.pose.position.x
         odom.pose.pose.position.y = self.state.pose.position.y
+        odom.pose.pose.position.z = 0.0
+        odom.twist.twist.linear.x = self.state.twist.linear.x
+        odom.twist.twist.linear.y = self.state.twist.linear.y
+        odom.twist.twist.linear.z = 0.0
+        odom.twist.twist.angular.z = self.state.twist.angular.zs
+        odom.pose.pose.orientation.x = self.state.pose.orientation.x
+        odom.pose.pose.orientation.y = self.state.pose.orientation.y
+        odom.pose.pose.orientation.z = self.state.pose.orientation.z
+        odom.pose.pose.orientation.w = self.state.pose.orientation.w
+
+
         odom.header.stamp = rospy.Time.now()
         odom.header.frame_id = "/map"
         odom.pose.pose.orientation = self.state.pose.orientation
