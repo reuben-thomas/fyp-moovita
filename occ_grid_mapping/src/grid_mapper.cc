@@ -16,7 +16,7 @@ void GridMapper::updateMap ( const sensor_msgs::LaserScanConstPtr& scan,  Pose2d
     const double& ang_max = scan->angle_max;
     const double& ang_inc = scan->angle_increment;
     const double& range_max = scan->range_max;
-    const double& range_min = scan->range_min;
+    const double& range_min = 0.0;
     
     /* 设置遍历的步长，沿着一条激光线遍历 */
     const double& cell_size = map_->getCellSize();

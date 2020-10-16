@@ -111,8 +111,8 @@ class LocalPathPlanner:
         width = self.gmap.info.width
         height = self.gmap.info.height
         resolution = self.gmap.info.resolution
-        origin_x = self.origin_x
-        origin_y = self.origin_y
+        origin_x = self.gmap.info.origin.position.x
+        origin_y = self.gmap.info.origin.position.y
         collisions = []
         collide_id = None
         current_target = self.target_index_calculator(cx, cy)
@@ -124,7 +124,7 @@ class LocalPathPlanner:
 
         dist_weight = 2.0
         offset_weight = 1.0
-        occ_weight = 100.0
+        occ_weight = 0.0
         
         # Coordinates of points of deviation before collision period
         ax = [(cx[0])]
@@ -183,8 +183,8 @@ class LocalPathPlanner:
         width = self.gmap.info.width
         height = self.gmap.info.height
         resolution = self.gmap.info.resolution
-        origin_x = self.origin_x
-        origin_y = self.origin_y
+        origin_x = self.gmap.info.origin.position.x
+        origin_y = self.gmap.info.origin.position.y
         collisions = []
         occ_thresh = 30
 
