@@ -5,9 +5,10 @@ import numpy as np
 
 from utils.cubic_spline_planner import *
 from utils.quintic_polynomial_planner import *
-from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D
+from geometry_msgs.msg import PoseStamped, Quaternion, Pose2D, Point
 from ngeeann_av_nav.msg import Path2D, State2D
 from nav_msgs.msg import Path, OccupancyGrid, MapMetaData
+from visualization_msgs.msg import Marker
 from std_msgs.msg import Float32
 
 class CollisionBreak(Exception): 
@@ -22,7 +23,8 @@ class LocalPathPlanner:
         # Initialise publishers
         self.local_planner_pub = rospy.Publisher('/ngeeann_av/path', Path2D, queue_size=10)
         self.path_viz_pub = rospy.Publisher('/ngeeann_av/viz_path', Path, queue_size=10)
-        #self.collisions_pub = rospy.Publisher('/ngeeann_av/viz_collisions', Path, queue_size=10)
+        self.node_pub = rospy.Publisher('ngeeann_av/lp_nodes', Marker, queue_size = 10)
+        self.collisions_pub = rospy.Publisher('/ngeeann_av/viz_collisions', Path, queue_size=10)
         self.target_vel_pub = rospy.Publisher('/ngeeann_av/target_velocity', Float32, queue_size=10)
 
         # Initialise subscribers
@@ -57,8 +59,6 @@ class LocalPathPlanner:
         # distance before or after obstacles to deviate and intersect with the original path
         self.react_dist = 75
         
-        
-
     def goals_cb(self, msg):
         ''' Callback function to recieve immediate goals from global planner in global frame'''
 
@@ -100,13 +100,14 @@ class LocalPathPlanner:
         return reference_idx
 
     def determine_path(self, cx, cy, cyaw):
-        ''' Map function to validate and determine a path by the following steps:
+        ''' Map function to validate and determine a path by the following steps. Method inspired by:
+            https://ri.cmu.edu/pub_files/2013/6/IV2013-Tianyu.pdf [Chapter III, Part A. Road Blockage Detection & Seeding Path Generation]
 
-            1: Identify vehicle's progress along path, search all points ahead for potential collisions
-            2: Draft a collision avoidance strategy
+            1: Draw vehicle swath along path to detect collisions
+            2: Create node grid along the path from a point prior to collision
+            3: Create and validate path (Greedy Algorithm)
         '''
-
-        # Initializing map information
+        # Initializing map parameters
         width = self.gmap.info.width
         height = self.gmap.info.height
         resolution = self.gmap.info.resolution
@@ -114,142 +115,175 @@ class LocalPathPlanner:
         origin_y = self.origin_y
         collisions = []
         collide_id = None
+        current_target = self.target_index_calculator(cx, cy)
 
-        # Current vehicle progress along path
-        lateral_ref_id = self.target_index_calculator(cx, cy)
-
-        #  Validates path of collisions
+        #  Step 1: Drawing vehicle profile along path to detect collisions
         for n in range(self.react_dist, len(cyaw) - self.react_dist - 1):
-
-            # Draws side profile of the vehicle along the path ahead
             for i in np.arange(-0.5 * self.car_width, 0.5 * self.car_width, resolution):
                 ix = int((cx[n] + i*np.cos(cyaw[n] - 0.5 * np.pi) - origin_x) / resolution)
                 iy = int((cy[n] + i*np.sin(cyaw[n] - 0.5 * np.pi) - origin_y) / resolution)
                 p = iy * width + ix
                 if (self.gmap.data[p] != 0):
                     collisions.append(n)
-        
-        if len(collisions) != 0:
-            
-            cx, cy, cyaw = self.collision_avoidance(collisions, cx, cy, cyaw)
+    
+        if len(collisions) != 0 and (current_target - self.react_dist) <= collisions[-5]:
+            cx, cy, cyaw, collisions = self.collision_avoidance(collisions, cx, cy, cyaw)
 
         return cx, cy, cyaw, collisions
 
-    def collision_avoidance(self, collisions, cx, cy, cyaw):
-        ''' Function that determines the collision avoidance strategy'''
+    def collision_avoidance(self, collisions, ocx, ocy, ocyaw):
 
-        opening_width = 0
-        opening_id = 0
-        opening_dist = 0
-        collide_view = []
-
-        resolution = self.gmap.info.resolution
+        # Initializing map parameters
         width = self.gmap.info.width
         height = self.gmap.info.height
+        resolution = self.gmap.info.resolution
         origin_x = self.origin_x
         origin_y = self.origin_y
 
-        collide_id = collisions[0]
-            
-        # Creates collision window, looking 10 meters to the left and right at the point of collision
-        for i in np.arange(-10, 10, 0.1):
-            ix = int((cx[collide_id] + i*np.cos(cyaw[collide_id] - 0.5 * np.pi) - origin_x) / resolution)
-            iy = int((cy[collide_id] + i*np.sin(cyaw[collide_id] - 0.5 * np.pi) - origin_y) / resolution)
-            p = iy * width + ix
-            collide_view.append(self.gmap.data[p])
+        delta_L = 2.0       # Interval distance of sampling origin path [m]
+        delta_o = 0.5       # Lateral offset between nodes of each layer [m]
+        max_o = 10          # Maximum lateral offset in either direction [m]
+        occ_thresh = 20     # Occupancy threshold
 
-        opening_width, opening_id = self.find_opening(collide_view)
-        opening_width = opening_width * 0.1
-        opening_dist = (opening_id - 100) * 0.1
+        dist_weight = 1.0
+        offset_weight = 1.0
+        occ_weight = 100.0
 
-        if opening_width < self.car_width:
-            self.target_vel = 0
+        dev_id = collisions[0] - self.react_dist
+        intersect_id = collisions[-1] + int(delta_L / self.ds) + self.react_dist
         
+        # Coordinates of points of deviation before collision period
+        ax = [(ocx[dev_id])]
+        ay = [(ocy[dev_id])]
+
+        # Clear node visualization
+        self.display_node(0,0,0,0,1)
+
+        # Sample points along path delta L
+        for n in range(collisions[0], collisions[-1] + int(delta_L / self.ds)):
+            if n%int(delta_L / self.ds) == 0:
+
+                # Arrays describing the x,y coordinates of the nodes on layer for this
+                nx = []
+                ny = []
+                n_occ = np.array([])
+                n_offset = np.array([])
+
+                # Construct layer of nodes
+                for i in np.arange(-max_o, max_o, delta_o):
+                    x = (ocx[n] + i*np.cos(ocyaw[n] - 0.5 * np.pi) - origin_x)
+                    y = (ocy[n] + i*np.sin(ocyaw[n] - 0.5 * np.pi) - origin_y)
+                    ix = int(x / resolution)
+                    iy = int(y / resolution)
+                    p = iy * width + ix
+                    self.display_node(x, y, p, 0, 0)
+
+                    nx.append(x)
+                    ny.append(y)
+                    n_occ = np.append(n_occ, self.gmap.data[p])
+                    n_offset = np.append(n_offset, abs(i))
+
+                dx = [ax[-1] - icx for icx in nx]
+                dy = [ay[-1] - icy for icy in ny] 
+
+                dist_cost = dist_weight * np.hypot(dx, dy) 
+                occ_cost = occ_weight * n_occ
+                offset_cost = offset_weight * n_offset
+                total_cost = dist_cost + occ_cost + offset_cost
+                
+                # Determines the next node by the greedy method
+                order = np.argsort(total_cost)
+                for q in order:
+                    if self.edge_verified_free(ax[-1], ay[-1], nx[q], ny[q]):
+                        ax.append(nx[q])
+                        ay.append(ny[q])
+                        break
+
+        # If the final link to point of intersection not viable, collision window extended and node grid reconstructed
+        if self.edge_verified_free(ax[-1], ay[-1], ocx[intersect_id], ocy[intersect_id]):
+            ax.append(ocx[intersect_id])
+            ay.append(ocy[intersect_id])
+            ocx, ocy, ocyaw = self.collision_reroute(ocx, ocy, ocyaw, ax, ay, dev_id, intersect_id)
         else:
-            self.target_vel = self.target_vel_def
+            pass
+            collisions.append(collisions[-1] + int(delta_L / self.ds))
+            self.collision_avoidance(collisions, ocx, ocy, ocyaw)
+        
+        return ocx, ocy, ocyaw, collisions
 
-        print('Obstacle Length: {}'.format(0.1*len(collisions)))
-        print('Detected opening of width: {}'.format(opening_width))
-        print('Detected distance to opening: {}'.format(opening_dist))
-
-        cx, cy, cyaw = self.collision_reroute(cx, cy, cyaw, collisions, opening_dist)
-        return cx, cy, cyaw
-
-    def find_opening(self, arr):
-        ''' 
-        Recieves an array representing the view perpendicular to the path at the point of predicted collision
-        Returns index of midpoint of largest opening, and size
-        '''
-
-        count = 0 
-        result = 0
-        idx = 0
-
-        for i in range(0, len(arr)): 
-            if (arr[i] >= 10): #threshold value
-                count = 0
-
-            else: 
-                count+= 1
-
-                if (count > result):
-                    idx = i
-
-                result = max(result, count)
-
-        idx = int(round(idx - result / 2.0))   #midpoint of largest opening
-        return result, idx
-
-    def find_closest_opening(self, arr):
-        ''' 
-        Recieves an array representing the view perpendicular to the path at the point of predicted collision
-        Returns index of midpoint of closest viable opening for the vehicle
-        '''
-        return result, idx
-
-    def collision_reroute(self, cx, cy, cyaw, collisions, opening_dist):
-
-        collide_id = collisions[0]
-        collide_id_end = collisions[-1]
-        react_dist = self.react_dist
-
-        # Points to leave path
-        x_1 = cx[collide_id - react_dist]
-        y_1 = cy[collide_id - react_dist]
-        yaw_1 = cyaw[collide_id - react_dist]
-
-        # Point of avoidance from collision
-        x_2 = cx[collide_id] + opening_dist*np.cos(cyaw[collide_id] - 0.5 * np.pi)
-        y_2 = cy[collide_id] + opening_dist*np.sin(cyaw[collide_id] - 0.5 * np.pi)
-        yaw_2 = cyaw[collide_id]
-
-        x_3 = cx[collide_id_end] + opening_dist*np.cos(cyaw[collide_id_end] - 0.5 * np.pi)
-        y_3 = cy[collide_id_end] + opening_dist*np.sin(cyaw[collide_id_end] - 0.5 * np.pi)
-        yaw_3 = cyaw[collide_id_end]
-
-        # Point to intersect path
-        x_4 = cx[collide_id_end + react_dist]
-        y_4 = cy[collide_id_end + react_dist]
-        yaw_4 = cyaw[collide_id_end + react_dist] 
-
+    def collision_reroute(self, cx, cy, cyaw, ax, ay, dev_id, intersect_id):
         curve_vel = 0.1
-
-        # Deviation Spline
-        _, dev_cx, dev_cy, dev_cyaw, _, _, _ = quintic_polynomials_planner(x_1, y_1, yaw_1, curve_vel, 0.0, x_2, y_2, yaw_2, curve_vel, 0.0, 5.0, 5.0, self.ds)
         # Avoidance Spline
-        _, avoid_cx, avoid_cy, avoid_cyaw, _, _, _ = quintic_polynomials_planner(x_2, y_2, yaw_2, curve_vel, 0.0, x_3, y_3, yaw_3, curve_vel, 0.0, 5.0, 5.0, self.ds)
-        # Intersection Spline
-        _, intersect_cx, intersect_cy, intersect_cyaw, _, _, _ = quintic_polynomials_planner(x_3, y_3, yaw_3, curve_vel, 0.0, x_4, y_4, yaw_4, curve_vel, 0.0, 5.0, 5.0, self.ds)
-        # Complete Debug Spline
-        # _, debug_cx, debug_cy, debug_cyaw, _, _, _ = quintic_polynomials_planner(x_1, y_1, yaw_1, curve_vel, 0.0, x_4, y_4, yaw_4, curve_vel, 0.0, 5.0, 5.0, self.ds)
+        if (len(ax) >= 4):
+                avoid_cx, avoid_cy, avoid_cyaw, _, _ = calc_spline_course(ax[1:-1], ay[1:-1], self.ds)
+        else:
+            # Draws single point when cubic spline unavailable due to insufficient points
+            avoid_cx = [ax[1]]
+            avoid_cy = [ay[1]]
+            avoid_cyaw = [cyaw[dev_id + self.react_dist]]
+
+        # Deviation Quintic Spline
+        _, dev_cx, dev_cy, dev_cyaw, _, _, _ = quintic_polynomials_planner(cx[dev_id], cy[dev_id], cyaw[dev_id], curve_vel, 0.0, avoid_cx[0], avoid_cy[0], avoid_cyaw[0], curve_vel, 0.0, 5.0, 5.0, self.ds)
+        # Intersection Quintic Spline
+        _, intersect_cx, intersect_cy, intersect_cyaw, _, _, _ = quintic_polynomials_planner(avoid_cx[-1], avoid_cy[-1], avoid_cyaw[-1], curve_vel, 0.0, cx[intersect_id], cy[intersect_id], cyaw[intersect_id], curve_vel, 0.0, 5.0, 5.0, self.ds)
 
         # stiching to form new path
-        cx = np.concatenate(( cx[0 : collide_id - react_dist], dev_cx, avoid_cx, intersect_cx, cx[(collide_id_end + react_dist) : ] ))
-        cy = np.concatenate(( cy[0 : collide_id - react_dist], dev_cy, avoid_cy, intersect_cy, cy[(collide_id_end + react_dist) : ] ))
-        cyaw = np.concatenate(( cyaw[0 : collide_id - react_dist], dev_cyaw, avoid_cyaw, intersect_cyaw, cyaw[(collide_id_end + react_dist) : ] ))
-
-        print('Generated dev path')
+        cx = np.concatenate(( cx[0 : dev_id], dev_cx, avoid_cx, intersect_cx, cx[intersect_id : ] ))
+        cy = np.concatenate(( cy[0 : dev_id], dev_cy, avoid_cy, intersect_cy, cy[intersect_id : ] ))
+        cyaw = np.concatenate(( cyaw[0 : dev_id], dev_cyaw, avoid_cyaw, intersect_cyaw, cyaw[intersect_id : ] ))
         return cx, cy, cyaw
+                
+    def straight_path_planner(self, x1, y1, x2, y2):
+        yaw = np.arctan2((y2-y1), (x2-x1))
+        dist = np.hypot((x2 - x1),(y2 - y1))
+
+        cx = []
+        cy = []
+        cyaw = []
+
+        for n in np.arange(0, dist, self.ds):
+            cx.append(x1 + n * np.cos(yaw))
+            cy.append(y1 + n * np.sin(yaw))
+            cyaw.append(yaw)
+
+        return cx, cy, cyaw
+
+    def edge_verified_free(self, x1, y1, x2, y2):
+        ''' Verifies if an edge betweeen two nodes is occupied or free of collisions '''
+
+        width = self.gmap.info.width
+        height = self.gmap.info.height
+        resolution = self.gmap.info.resolution
+        origin_x = self.origin_x
+        origin_y = self.origin_y
+        collisions = []
+        occ_thresh = 45
+
+        yaw = np.arctan2((y2-y1), (x2-x1))
+        dist = np.hypot((x2-x1),(y2-y1)) + 0.5 * self.car_width
+        #print('distance is {}'.format(dist))
+
+        for n in np.arange(0, dist, self.ds):
+            
+            x = x1 + n * np.cos(yaw)
+            y = y1 + n * np.sin(yaw)
+
+            for i in np.arange(-0.5 * self.car_width, 0.5 * self.car_width, 0.5*resolution):
+                ix = int((x + i*np.cos(yaw - 0.5 * np.pi) - origin_x) / resolution)
+                iy = int((y + i*np.sin(yaw - 0.5 * np.pi) - origin_y) / resolution)
+                p = iy * width + ix
+                if (self.gmap.data[p] >= occ_thresh):
+                    collisions.append(1)
+                    break
+
+        if len(collisions) > 0:
+            # print('point ({}, {}) to point ({}, {}), FAILED'.format(x1, y1, x2, y2))
+            return False
+        else:
+            # print('point ({}, {}) to point ({}, {}), CLEAR'.format(x1, y1, x2, y2))
+            self.display_node(x1, y1, p + 1, 1, 0)
+            self.display_node(x2, y2, p, 1, 0)
+            return True
 
     def create_pub_path(self):
         ''' Uses the cubic_spline_planner library to interpolate a cubic spline path over the given waypoints '''
@@ -285,7 +319,6 @@ class LocalPathPlanner:
             vpose.pose.orientation = self.heading_to_quaternion(np.pi * 0.5 - cyaw[n])
             viz_path.poses.append(vpose)
 
-        '''
         viz_collisions = Path()
         viz_collisions.header.frame_id = "map"
         viz_collisions.header.stamp = rospy.Time.now()
@@ -301,14 +334,11 @@ class LocalPathPlanner:
             vpose.pose.orientation = self.heading_to_quaternion(np.pi * 0.5 - ocyaw[i])
             viz_collisions.poses.append(vpose)
 
-            self.collisions_pub.publish(viz_collisions)
-        '''
-
+        self.collisions_pub.publish(viz_collisions)
         self.local_planner_pub.publish(target_path)
         self.path_viz_pub.publish(viz_path)
 
     def heading_to_quaternion(self, heading):
-
         ''' Converts yaw heading to quaternion coordinates '''
 
         quaternion = Quaternion()
@@ -318,6 +348,32 @@ class LocalPathPlanner:
         quaternion.w = np.cos(heading / 2)
 
         return quaternion
+    
+    def display_node(self, x, y, idx, color, clear):
+
+        points = Marker()		
+        points.header.frame_id = "map"	# publish path in map frame		
+        points.type = points.POINTS
+        if (clear != 0):
+            points.action = points.DELETEALL
+        else:
+            points.action = points.ADD
+            points.lifetime = rospy.Duration(0)
+            points.id = idx
+            points.scale.x = 0.1
+            points.scale.y = 0.1	
+            points.color.a = 0.5 + (0.5*color)
+            points.color.r = 0.0 + color
+            points.color.g = 1.0 - color
+            points.color.b = 1.0 - color
+            points.pose.orientation.w = 1.0
+
+            point = Point()
+            point.x = x
+            point.y = y
+            points.points.append(point);
+        self.node_pub.publish(points)
+
 
 def main():
 
