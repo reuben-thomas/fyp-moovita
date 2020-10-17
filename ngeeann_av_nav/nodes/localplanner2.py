@@ -120,7 +120,6 @@ class LocalPathPlanner:
         delta_L = 3.0       # Interval distance of sampling origin path [m]
         delta_o = 1.0       # Lateral offset between nodes of each layer [m]
         max_o = 10          # Maximum lateral offset in either direction [m]
-        occ_thresh = 20     # Occupancy threshold
 
         dist_weight = 2.0
         offset_weight = 1.0
@@ -150,7 +149,7 @@ class LocalPathPlanner:
                     ix = int(x / resolution)
                     iy = int(y / resolution)
                     p = iy * width + ix
-                    #self.display_node(x, y, p, 0, 0)
+                    self.display_node(x, y, p, 0, 0)
 
                     nx.append(x)
                     ny.append(y)
@@ -186,7 +185,7 @@ class LocalPathPlanner:
         origin_x = self.gmap.info.origin.position.x
         origin_y = self.gmap.info.origin.position.y
         collisions = []
-        occ_thresh = 30
+        occ_thresh = 60
 
         yaw = np.arctan2((y2-y1), (x2-x1))
         dist = np.hypot((x2-x1),(y2-y1)) * 2.0

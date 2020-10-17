@@ -27,16 +27,19 @@ void GridMapper::updateMap ( const sensor_msgs::LaserScanConstPtr& scan,  Pose2d
     {
         /* 获取当前beam的距离 */
         double R = scan->ranges.at(i); 
-        if(R > range_max || R < range_min)
+        if(R < range_min)
             continue;
-        
+
         /* 沿着激光射线以inc_step步进，更新地图*/
         double angle = ang_inc * i + ang_min;
         double cangle = cos(angle);
         double sangle = sin(angle);
         Eigen::Vector2d last_grid(Eigen::Infinity, Eigen::Infinity); //上一步更新的grid位置，防止重复更新
-        for(double r = 0; r < R + cell_size; r += inc_step)
+        for(double r = 0; r < range_max + cell_size; r += inc_step)
         {
+            if (r > R + 1.25*cell_size)
+                break;
+
             Eigen::Vector2d p_l(
                 r * cangle,
                 r * sangle
@@ -49,9 +52,12 @@ void GridMapper::updateMap ( const sensor_msgs::LaserScanConstPtr& scan,  Pose2d
             /* 更新这个grid */
             if(p_w == last_grid) //避免重复更新
                 continue;
-            
-            updateGrid(p_w, laserInvModel(r, R, cell_size));
-            	    
+              
+            if(r < ( R - 0.5*cell_size) )
+                updateGrid(p_w, P_free_);
+            else
+                updateGrid(p_w, P_occ_);
+	    
             last_grid = p_w;
         }//for each step
     }// for each beam
@@ -69,12 +75,10 @@ void GridMapper::updateGrid ( const Eigen::Vector2d& grid, const double& pmzx )
 
 double GridMapper::laserInvModel ( const double& r, const double& R, const double& cell_size )
 {
-    if(r < ( R - 0.5*cell_size) )
-        return P_free_;
-    
-    if(r > ( R + 0.5*cell_size) )
-        return P_prior_;
-    
+    if(r > ( R + 0.75*cell_size) )
+        return P_prior_;  
+    if(r < ( R - 0.75*cell_size) )
+        return P_free_;    
     return P_occ_;
 }
 

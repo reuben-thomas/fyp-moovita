@@ -7,13 +7,13 @@ GridMap::GridMap ( const int& size_x, const int& size_y, const int& init_x, cons
     size_x_ ( size_x ), size_y_ ( size_y ), init_x_ ( init_x ), init_y_ ( init_y ), cell_size_ ( cell_size )
 {
     bel_data_.resize ( size_x_, size_y_ );
-    bel_data_.setOnes() *= 0.2; //全部设为0.5的概率
+    bel_data_.setOnes() *= 0.05; //全部设为0.5的概率
     
     /* 为opencv图片显示相关 */
     m_one_.resize(size_x_, size_y_);
     m_one_.setOnes();
     m_show_.resize(size_x_, size_y_);
-    m_show_.setOnes() * 0.2;
+    m_show_.setOnes() * 0.05;
 }
 
 bool GridMap::getIdx ( const double& x, const double& y, Eigen::Vector2i& idx )
