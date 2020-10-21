@@ -199,7 +199,7 @@ Visualization Manager:
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
-      Size (Pixels): 2
+      Size (Pixels): 3.5
       Size (m): 0.0500000007
       Style: Points
       Topic: /laser/scan
@@ -308,7 +308,7 @@ Visualization Manager:
       Topic: /ngeeann_av/lateral_ref
       Unreliable: false
       Value: true
-    - Alpha: 0.699999988
+    - Alpha: 0.400000006
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: true
@@ -323,7 +323,7 @@ Visualization Manager:
       Marker Topic: /ngeeann_av/lp_nodes
       Name: Nodes
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Angle Tolerance: 0.100000001

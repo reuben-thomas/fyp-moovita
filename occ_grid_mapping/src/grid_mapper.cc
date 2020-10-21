@@ -37,7 +37,7 @@ void GridMapper::updateMap ( const sensor_msgs::LaserScanConstPtr& scan,  Pose2d
         Eigen::Vector2d last_grid(Eigen::Infinity, Eigen::Infinity); //上一步更新的grid位置，防止重复更新
         for(double r = 0; r < range_max + cell_size; r += inc_step)
         {
-            if (r > R + 1.25*cell_size)
+            if (fabs(r * sangle) > 10.0 || fabs(r * cangle) > 30.0)
                 break;
 
             Eigen::Vector2d p_l(
@@ -50,11 +50,13 @@ void GridMapper::updateMap ( const sensor_msgs::LaserScanConstPtr& scan,  Pose2d
             Eigen::Vector2d p_w = laser_pose * p_l;
 
             /* 更新这个grid */
-            if(p_w == last_grid) //避免重复更新
-                continue;
+            //if(p_w == last_grid) //避免重复更新
+            //    continue;
               
-            if(r < ( R - 0.5*cell_size) )
+            if(r < ( R - 0.75*cell_size) )
                 updateGrid(p_w, P_free_);
+            else if(r > ( R + 0.75*cell_size) )
+                updateGrid(p_w, P_prior_);
             else
                 updateGrid(p_w, P_occ_);
 	    
