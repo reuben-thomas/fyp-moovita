@@ -48,6 +48,49 @@ class QuinticPolynomial:
 
         return xs
 
+class QuarticPolynomial:
+
+    def __init__(self, init_pos, init_vel, init_accel, final_vel, final_accel, dist):
+
+        self.a_0 = init_pos
+        self.a_1 = init_vel
+        self.a_2 = init_accel / 2.0
+
+        A = np.array([[3 * dist ** 2,  4 * dist ** 3],
+                      [6 * dist,       12 * dist ** 2]])
+
+        B = np.array([final_vel - self.a_1 - init_accel * dist,
+                      final_accel - init_accel])
+
+        x = np.linalg.solve(A, B)
+
+        self.a_3 = x[0]
+        self.a_4 = x[1]
+
+    def calc_point(self, s):
+
+        xs = self.a_0 + self.a_1 * s + self.a_2 * s ** 2 + self.a_3 * s ** 3 + self.a_4 * s ** 4
+
+        return xs
+
+    def calc_first_derivative(self, s):
+
+        xs = self.a_1 + 2 * self.a_2 * s + 3 * self.a_3 * s ** 2 + 4 * self.a_4 * s ** 3
+
+        return xs
+
+    def calc_second_derivative(self, s):
+
+        xs = 2 * self.a_2 + 6 * self.a_3 * s + 12 * self.a_4 * s ** 2
+
+        return xs
+
+    def calc_third_derivative(self, s):
+
+        xs = 6 * self.a_3 + 24 * self.a_4 * s
+
+        return xs
+
 class CubicPolynomial:
 
     def __init__(self, init_pos, init_vel, init_accel):
@@ -121,6 +164,9 @@ def quintic_polynomial_planner(x_i, y_i, yaw_i, v_i, a_i, x_f, y_f, yaw_f, v_f, 
             break
 
     return x, y, v, a, j, yaw
+
+def quartic_polynomial_planner():
+    pass
 
 def cubic_polynomial_planner():
     pass
