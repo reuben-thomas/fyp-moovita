@@ -8,3 +8,5 @@ In our final year, we developed a virtual autonomous vehicle test platform based
 We designed a kinematically accurate vehicle model, physics, virtual sensors, and a series of fundamental algorithms for self-driving from the ground up, allowing anyone to test their ideas in an adaptive, highly configurable environment without the risk and cost of practical testing.
 
 ![Obstacle Avoidance](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/obstacle_avoidance.gif?raw=true)
+
+Please contact Winston for the high-definition copy of these videos/render.
