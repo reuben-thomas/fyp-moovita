@@ -11,4 +11,6 @@ We designed a kinematically accurate vehicle model, physics, virtual sensors, an
 
 More 3D animations of the video process is underway. Please wait.
 
+![Scene 1](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/scene_1.gif?raw=true)
+
 Please contact Winston for the high-definition copy of these videos/render.
