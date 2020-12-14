@@ -9,8 +9,11 @@ We designed a kinematically accurate vehicle model, physics, virtual sensors, an
 
 ![Obstacle Avoidance](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/obstacle_avoidance.gif?raw=true)
 
-More 3D animations of the video process is underway. Please wait.
+![1](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/1.gif?raw=true)
+![2](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/2.gif?raw=true)
+![3](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/3.gif?raw=true)
+![4](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/4.gif?raw=true)
+![5](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/5.gif?raw=true)
 
-![Scene 1](https://github.com/reuben-thomas/fyp-moovita/blob/master/screenshots/scene_1.gif?raw=true)
 
-Please contact Winston for the high-definition copy of these videos/render.
+Please contact Winston for the high-definition copy of these videos/render and sound.
